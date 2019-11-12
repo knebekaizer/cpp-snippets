@@ -1,0 +1,59 @@
+.KEEP_STATE:
+
+USR_INCDIR = .
+USR_LIBDIR = -L.
+USR_HOST_LIBS = -lm
+USR_CELL_LIBS = -lm
+ 
+TARGET		= sort_test
+SHARED_SRCS 	= main.c par_sort.c
+HOST_SRCS	= 
+CELL_SRCS	=
+SHARED_FLAGS	= -O2 -DDOUBLE=1 -DCAP $(W_FLAGS)  -DINTEGER=1 -DSTRING=0 -DSTATS=1 -DRADIX=0
+HOST_CFLAGS	= $(SHARED_FLAGS)
+CELL_CFLAGS	= $(SHARED_FLAGS) 
+
+
+
+
+
+HOST_EXE	= $(TARGET)
+CELL_EXE	= $(TARGET)_cell
+
+all: $(HOST_EXE) $(CELL_EXE)
+
+HOST_SRCS	+= $(SHARED_SRCS)
+CELL_SRCS	+= $(SHARED_SRCS)
+HOST_OBJS	= $(HOST_SRCS:.c=_host.o)
+CELL_OBJS	= $(CELL_SRCS:.c=_cell.o)
+
+
+HOSTFLAGS	= -DHOST=1 $(HOST_CFLAGS) -DCELL_PROG=\"$(CELL_EXE)\" -Dmain=host_main 
+CELLFLAGS	= -DHOST=0 $(CELL_CFLAGS) -DCELL_PROG=\"$(CELL_EXE)\" -Dmain=cell_main 
+
+
+%_host.o: %.c
+	@echo Compiling $< for host
+	@cc.hc7 -c $(HOSTFLAGS) -I$(USR_INCDIR) $< -o $@
+%_cell.o: %.c
+	@echo Compiling $< for cells
+	@cc.cc7 -c $(CELLFLAGS) -I$(USR_INCDIR) $< -o $@
+
+
+$(HOST_EXE):	$(HOST_OBJS)
+	@echo Linking $(HOST_EXE)
+	@rm -f $(HOST_EXE)
+	@cc.hc7 $(HOSTFLAGS) -o $(HOST_EXE) $(HOST_OBJS) $(USR_LIBDIR) $(USR_HOST_LIBS) 
+	@strip $(HOST_EXE)
+
+$(CELL_EXE):	$(CELL_OBJS)
+	@echo Linking $(CELL_EXE)
+	@rm -f $(CELL_EXE)
+	@cc.cc7 $(CELLFLAGS) -o $(CELL_EXE) $(CELL_OBJS) $(USR_LIBDIR) $(USR_CELL_LIBS) 
+
+
+
+clean:
+	/bin/rm -f $(HOST_EXE) $(CELL_EXE) $(CELL_OBJS) $(HOST_OBJS) *~
+
+spotless: clean

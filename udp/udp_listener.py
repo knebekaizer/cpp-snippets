@@ -1,0 +1,1 @@
+import sockets = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)s.bind((socket.gethostname(),1236))data,addr = s.recvfrom(16)#At this point it blocks until we send a messageprint data# -> 1234567890123456print addr# -> ('127.0.0.1', 32792)

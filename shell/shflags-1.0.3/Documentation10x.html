@@ -1,0 +1,533 @@
+
+ 
+
+
+ 
+ 
+ <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <script type="text/javascript">
+ 
+ 
+ 
+ var codesite_token = null;
+ 
+ 
+ var logged_in_user_email = null;
+ 
+ </script>
+ 
+ 
+ <title>Documentation10x - 
+ shflags -
+ 
+ Documentation for the 1.0.x release series. - Project Hosting on Google Code</title>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >
+ 
+ <link type="text/css" rel="stylesheet" href="http://www.gstatic.com/codesite/ph/14614399729835259589/css/ph_core.css">
+ 
+ <link type="text/css" rel="stylesheet" href="http://www.gstatic.com/codesite/ph/14614399729835259589/css/ph_detail.css" >
+ 
+ 
+ 
+ 
+<!--[if IE]>
+ <link type="text/css" rel="stylesheet" href="http://www.gstatic.com/codesite/ph/14614399729835259589/css/d_ie.css" >
+<![endif]-->
+ <style type="text/css">
+ .menuIcon.off { background: no-repeat url(http://www.gstatic.com/codesite/ph/images/dropdown_sprite.gif) 0 -42px }
+ .menuIcon.on { background: no-repeat url(http://www.gstatic.com/codesite/ph/images/dropdown_sprite.gif) 0 -28px }
+ .menuIcon.down { background: no-repeat url(http://www.gstatic.com/codesite/ph/images/dropdown_sprite.gif) 0 0; }
+ .results th a, .results th a:visited { background: url(http://www.gstatic.com/codesite/ph/images/downarrow.gif) no-repeat top right }
+ </style>
+</head>
+<body class="t6">
+ <div id="gaia">
+ 
+ <span>
+ 
+ 
+ <a href="#" id="projects-dropdown" onclick="return false;">My favorites</a>
+ 
+ | <a href="https://www.google.com/accounts/ServiceLogin?service=code&ltmpl=phosting&continue=http%3A%2F%2Fcode.google.com%2Fp%2Fshflags%2Fwiki%2FDocumentation10x&amp;followup=http%3A%2F%2Fcode.google.com%2Fp%2Fshflags%2Fwiki%2FDocumentation10x" onclick="_CS_click('/gb/ph/signin');">Sign in</a>
+ 
+ </span>
+
+ </div>
+ <div class="gbh" style="left: 0pt;"></div>
+ <div class="gbh" style="right: 0pt;"></div>
+ 
+ 
+ <div style="height: 1px"></div>
+<!--[if IE 6]>
+<div style="text-align:center;">
+Support browsers that contribute to open source, try <a href="http://www.firefox.com">Firefox</a> or <a href="http://www.google.com/chrome">Google Chrome</a>.
+</div>
+<![endif]-->
+ <table style="padding:0px; margin: 20px 0px 0px 0px; width:100%" cellpadding="0" cellspacing="0">
+ <tr style="height: 58px;">
+ 
+ <td style="width: 55px; text-align:center;">
+ <a href="/p/shflags/">
+ 
+ 
+ 
+ <img src="http://www.gstatic.com/codesite/ph/images/defaultlogo.png"
+ alt="Project Logo">
+ 
+ 
+ 
+ </a>
+ </td>
+ 
+ <td style="padding-left: 0.8em">
+ 
+ <div id="pname" style="margin: 0px 0px -3px 0px">
+ <a href="/p/shflags/" style="text-decoration:none; color:#000">shflags</a>
+ </div>
+ 
+ <div id="psum">
+ <i><a id="project_summary_link" href="/p/shflags/" style="text-decoration:none; color:#000">Shell Flags – command-line flags module for Unix shell scripts</a></i>
+ </div>
+ 
+ </td>
+ <td style="white-space:nowrap; text-align:right">
+ 
+ <form action="/hosting/search">
+ <input size="30" name="q" value="">
+ <input type="submit" name="projectsearch" value="Search projects" >
+ </form>
+ 
+ </tr>
+ </table>
+
+
+
+ <table id="mt" cellspacing="0" cellpadding="0" width="100%" border="0">
+ <tr>
+ <th onclick="if (!cancelBubble) _go('/p/shflags/');">
+ <div class="tab inactive">
+ <div class="round4"></div>
+ <div class="round2"></div>
+ <div class="round1"></div>
+ <div class="box-inner">
+ <a onclick="cancelBubble=true;" href="/p/shflags/">Project&nbsp;Home</a>
+ </div>
+ </div>
+ </th><td>&nbsp;&nbsp;</td>
+ 
+ 
+ 
+ 
+ <th onclick="if (!cancelBubble) _go('/p/shflags/downloads/list');">
+ <div class="tab inactive">
+ <div class="round4"></div>
+ <div class="round2"></div>
+ <div class="round1"></div>
+ <div class="box-inner">
+ <a onclick="cancelBubble=true;" href="/p/shflags/downloads/list">Downloads</a>
+ </div>
+ </div>
+ </th><td>&nbsp;&nbsp;</td>
+ 
+ 
+ 
+ 
+ 
+ <th onclick="if (!cancelBubble) _go('/p/shflags/w/list');">
+ <div class="tab active">
+ <div class="round4"></div>
+ <div class="round2"></div>
+ <div class="round1"></div>
+ <div class="box-inner">
+ <a onclick="cancelBubble=true;" href="/p/shflags/w/list">Wiki</a>
+ </div>
+ </div>
+ </th><td>&nbsp;&nbsp;</td>
+ 
+ 
+ 
+ 
+ 
+ <th onclick="if (!cancelBubble) _go('/p/shflags/issues/list');">
+ <div class="tab inactive">
+ <div class="round4"></div>
+ <div class="round2"></div>
+ <div class="round1"></div>
+ <div class="box-inner">
+ <a onclick="cancelBubble=true;" href="/p/shflags/issues/list">Issues</a>
+ </div>
+ </div>
+ </th><td>&nbsp;&nbsp;</td>
+ 
+ 
+ 
+ 
+ 
+ <th onclick="if (!cancelBubble) _go('/p/shflags/source/checkout');">
+ <div class="tab inactive">
+ <div class="round4"></div>
+ <div class="round2"></div>
+ <div class="round1"></div>
+ <div class="box-inner">
+ <a onclick="cancelBubble=true;" href="/p/shflags/source/checkout">Source</a>
+ </div>
+ </div>
+ </th><td>&nbsp;&nbsp;</td>
+ 
+ 
+ <td width="100%">&nbsp;</td>
+ </tr>
+</table>
+<table cellspacing="0" cellpadding="0" width="100%" align="center" border="0" class="st">
+ <tr>
+ 
+ 
+ 
+ <td>
+ <div class="issueDetail">
+<div class="isf">
+ 
+ <span class="inIssueList"> 
+ <span>Search</span>
+ <form action="/p/shflags/w/list" method="GET" style="display:inline">
+ <select id="can" name="can" style="font-size:92%">
+ <option disabled="disabled">Search within:</option>
+ 
+ <option value="1" >&nbsp;All wiki pages</option>
+ <option value="3" >&nbsp;Featured pages</option>
+ <option value="2" selected="selected">&nbsp;Current pages</option>
+ 
+ 
+ <option value="4" >&nbsp;Deprecated pages</option>
+ 
+ </select>
+ <span>for</span>
+ <span id="qq"><input type="text" size="32" id="q" name="q" value="" style="font-size:92%" ></span>
+ 
+ 
+ <input type="submit" value="Search" style="font-size:92%" >
+ </form>
+ </span>
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+</div>
+</div>
+
+ </td>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ <td height="4" align="right" valign="top" class="bevel-right">
+ <div class="round4"></div>
+ <div class="round2"></div>
+ <div class="round1"></div>
+ </td>
+ </tr>
+</table>
+<script type="text/javascript">
+ var cancelBubble = false;
+ function _go(url) { document.location = url; }
+</script>
+
+
+<div id="maincol"
+ 
+>
+
+ 
+<!-- IE -->
+
+
+
+
+
+
+ <style type="text/css">
+ .artifactcomment, #commentform {
+ margin: .5em 0 0 0;
+ padding: .3em 0 .3em .3em;
+ border-top: 3px solid #c3d9ff;
+ }
+ #commentform { padding-top: 1em; }
+ .delcom { background: #e8e8e8 }
+ .commentcontent { margin: 1em 0;}
+ </style>
+
+
+ <div id="wikicontent">
+ <table width="100%" border="0" cellspacing="0" cellpadding="0">
+ <tr>
+ 
+ <td class="vt" id="wikimaincol" width="100%">
+ 
+ <div style="float:right; width:18em" id="wikimeta">
+ <div class="pmeta_bubble_bg">
+ <div class="round4"></div>
+ <div class="round2"></div>
+ <div class="round1"></div>
+ <div class="box-inner">
+ <table style="padding: 5px">
+ <tr><td colspan="2" style="padding-bottom:5px">Updated <span title="Sun May 10 11:22:27 2009">May 10, 2009</span>
+ 
+ by <a style="white-space: nowrap" href="/u/@VBZWQV1SABRDXgJ4/">kate.w...@forestent.com</a>
+ </td></tr>
+ 
+ <tr><th class="vt">Labels:</th>
+ <td>
+ 
+ <a href="/p/shflags/w/list?q=label:Featured"
+ title="Listed on project home page"
+ >Featured</a>
+ 
+ </td>
+ </tr>
+ 
+ 
+ 
+ </table>
+ </div>
+ <div class="round1"></div>
+ <div class="round2"></div>
+ <div class="round4"></div>
+ </div>
+ </div>
+ 
+ <div id="wikiheader" style="margin-bottom:1em">
+ 
+ <span style="font-size:120%;font-weight:bold">Documentation10x</span>
+ &nbsp;
+ 
+ 
+ <div style="font-style:italic; margin-top: 3px">Documentation for the 1.0.x release series.</div>
+ 
+ </div>
+ <h1><a name="Introduction"/>Introduction</h1><p>This is the documentation for the shFlags 1.0.x release series. </p><p>At its core, shFlags is simply a library that you include into an existing shell script that gives you some additional functions that can be called. The power behind those functions though is somewhat amazing though, and you will hopefully be amazed with the simplicity with which you can handle command-line arguments in shell. </p><h1><a name="Table_of_Contents"/>Table of Contents</h1><ul><li><a href="#Quick_Start">Quick Start</a> </li><li><a href="#Usage">Usage</a> </li><ul><li><a href="#Understanding_flag_parsing">Understanding flag parsing</a> </li><li><a href="#Supported_flag_types">Supported flag types</a> </li><li><a href="#Automated_help">Automated help</a> </li></ul><li><a href="#Examples">Examples</a> </li><ul><li><a href="#Debug_mode_output">Debug mode output</a> </li><li><a href="#Accept_flags_and_options">Accept flags and options</a> </li></ul><li><a href="#Known_Issues">Known Issues</a> </li></ul><h1><a name="Quick_Start"/>Quick Start</h1><p>Getting started with shFlags is quite easy. We&#x27;ll start with the proverbial &quot;Hello, world&quot; application. </p><p>Just a quick note before we start. All examples assume that the <tt>shflags</tt> library has been copied the current directory, and that the scripts listed here are also in the current directory. You are free to move the <tt>shflags</tt> library wherever you want as long as you remember to update the line that sources the library. </p><p>Example: <tt>examples/hello_world.sh</tt> </p><pre class="prettyprint">#!/bin/sh
+
+# source shflags
+. ./shflags
+
+# define a &#x27;name&#x27; command-line string flag
+DEFINE_string &#x27;name&#x27; &#x27;world&#x27; &#x27;name to say hello to&#x27; &#x27;n&#x27;
+
+# parse the command-line
+FLAGS &quot;$@&quot; || exit 1
+eval set -- &quot;${FLAGS_ARGV}&quot;
+
+# say Hello!
+echo &quot;Hello, ${FLAGS_name}!&quot;</pre><p><i>Don&#x27;t forget to make the script executable with <tt>chmod +x</tt>.</i> </p><p>Go ahead and give the script a run. </p><pre class="prettyprint">$ ./hello_world.sh 
+Hello, world!</pre><p>So what just happened? Let&#x27;s go through the script line-by-line. </p><pre class="prettyprint"># source shflags
+. ./shflags</pre><p>This line sources the <tt>shflags</tt> library into the current shell environment. It brings in several functions and sets several variables, but you won&#x27;t actually see output from this line. </p><pre class="prettyprint"># define a &#x27;name&#x27; command-line string flag
+DEFINE_string &#x27;name&#x27; &#x27;world&#x27; &#x27;name to say hello to&#x27; &#x27;n&#x27;</pre><p>Here we have defined a &#x27;string&#x27; flag called <tt>name</tt>, we gave it a default value of &#x27;world&#x27;, we described the variable with &#x27;name to say hello to&#x27;, and we defined a short flag called <tt>n</tt>. This function has just told shFlags everything it needs to know about the <tt>name</tt> flag. It now knows: <ul><li>how to handle the short command-line option <tt>-n</tt> </li><li>how to handle the long command-line option <tt>--name Kate</tt> (not supported on all systems) </li><li>how to describe the flag if <tt>-h</tt> (or <tt>--help</tt>) is given as an option </li><li>to accept and validate any input as a string value </li><li>to store any input (or the default value) in the <tt>FLAGS_name</tt> variable </li></ul>Wow. That&#x27;s a lot. Let&#x27;s keep going. </p><pre class="prettyprint"># parse the command-line
+FLAGS &quot;$@&quot; || exit 1
+eval set -- &quot;${FLAGS_ARGV}&quot;</pre><p>Here is where all the magic happens. The call to <tt>FLAGS</tt> with the passing of <tt>&quot;$@&quot;</tt> sends all command-line arguments into the shFlags library for processing. If everything is successful, a return value of 0 (<tt>${FLAGS_TRUE}</tt>) is returned an things continue. If a false value of 1 (<tt>${FLAGS_FALSE}</tt>) or an error value of 2 (<tt>${FLAGS_ERROR}</tt>) is returned, the processing is halted with the <tt>exit 1</tt>. If there are any command-line arguments left over that shFlags didn&#x27;t know how to process, they get shifted off the stack with the &#x27;<tt>shift ${FLAGS_ARGC}</tt>&#x27; so the script can handle them itself. </p><p>There is actually a lot that happened with this <tt>FLAGS</tt> call, but the basic action you will be interested in right now is that a <tt>FLAGS_name</tt> variable was defined. As we didn&#x27;t pass the <tt>-n</tt> flag (or <tt>--name</tt>) on the command-line, the value placed in the variable is &#x27;world&#x27;, the default value specified when we defined the flag. </p><pre class="prettyprint"># say Hello!
+echo &quot;Hello, ${FLAGS_name}!&quot;</pre><p>Now that we have accepted parsed all our flags, we can make use of the results. This snippet prints out Hello to the screen (&#x27;Hello, world!&#x27; in this case) as the <tt>FLAGS_name</tt> variable contained &#x27;world&#x27;. </p><p>Let&#x27;s give the script another go, this time passing &#x27;<tt>-n Kate</tt>&#x27; on the command-line. </p><pre class="prettyprint">$ ./hello_world.sh -n Kate
+Hello, Kate!</pre><p>This time around, the <tt>FLAGS_name</tt> variable was defined with the value &#x27;Kate&#x27; as we passed the <tt>-n</tt> flag, and &#x27;Hello, Kate!&#x27; was output. I bet you never thought accepting command-line arguments could be so easy! </p><p>What about spaces in the flag value? Give it a try! <i>(Note: this requires the enhanced version of <strong><tt>getopt</tt></strong> at this time)</i> </p><pre class="prettyprint">$ ./hello_world.sh --name &#x27;Kate Ward&#x27;
+Hello, Kate Ward!</pre><p>It works! </p><p>What happens if you can&#x27;t remember the command-line flags you have defined, and what to find that out? Try passing the <tt>-h</tt> flag (or <tt>--help</tt>). </p><pre class="prettyprint">$ ./hello_world.sh -h
+USAGE: ./hello_world.sh [flags] args
+flags:
+  -h  show this help
+  -n  name to say hello to</pre><p>There you have it. A list of all the command line options supported in a nice clean format. What could be easier? </p><h1><a name="Usage"/>Usage</h1><p>Until this section gets written, see the source code in <tt>src/shflags</tt> and the various unit tests. </p><h2><a name="Understanding_flag_parsing"/>Understanding flag parsing</h2><p>The actual flag parsing step looks deceptively simple, but at the same time confusing. </p><pre class="prettyprint">FLAGS &quot;$@&quot; || exit 1
+eval set -- &quot;${FLAGS_ARGV}&quot;</pre><p>The <tt>FLAGS &quot;$@&quot; || exit 1</tt> takes the command-line arguments <tt>$@</tt> in their unparsed form and passes them to the <tt>FLAGS</tt> function for processing. If <tt>$*</tt> had been used, any spaces in string arguments that were passed would be lost. The double-quotes surrounding the <tt>$@</tt> are also required to maintain the spaces in string arguments. If <tt>FLAGS</tt> returns with a failure (represented by ${FLAGS_ERROR}) the script is exited with an exit code of 1. </p><p>The <tt>eval set -- &quot;${FLAGS_ARGV}</tt> replaces the $1, $2, $@, etc. variables with the non-flag values so that your script can process them normally. This is typically useful when you want to pass some flags to your script to alter processing, but you still want to allow non-flag type options to be passed as well. </p><h2><a name="Supported_flag_types"/>Supported flag types</h2><p>shFlags supports the following flag types. As you may already know, shell does not natively support some of these types (e.g. float) so their actual implementation and usage will be a string. </p><h3><a name="boolean"/>boolean</h3><p>Boolean values are true/false values or conditions. A typical use might be to have support for some special functionality to be disabled, but a boolean flag could enable that functionality (e.g. enabling debug mode output). </p><p>Boolean flags do not take any arguments, and their value is either 1 (false) or 0 (true). For long flags, the false value is specified on the command line by prepending the word &#x27;no&#x27;. With short flags, the presense of the flag toggles the current value between true and false. Specifying a short boolean flag twice on the command results in returning the value back to the default value. </p><p>In your script, you can use the <tt>${FLAGS_TRUE}</tt> or <tt>${FLAGS_FALSE}</tt> constants to compare the value of your flag variable against the &quot;official&quot; true/false values. Don&#x27;t forget that in shell, true is 0 and false is 1 (quite the opposite of normal programming languages where true is 1 and false is 0). </p><p>A default value is required for boolean flags. </p><p>For example, lets say a Boolean flag was created whose long name was &#x27;update&#x27; and whose short name was &#x27;x&#x27;, and the default value was &#x27;false&#x27;. This flag could be explicitly set to &#x27;true&#x27; with &#x27;--update&#x27; or by &#x27;-x&#x27;, and it could be explicitly set to &#x27;false&#x27; with &#x27;--noupdate&#x27;. </p><h3><a name="float"/>float</h3><p>Float values are signed numbers that may or not contain a decimal point. </p><p>As shell does not support float values natively, they are represented internally as strings. As such, any comparisons must be done as string comparisons using the = and != operators – <tt>eq</tt>, <tt>ge</tt>, <tt>gt</tt>, <tt>le</tt>, <tt>lt</tt>, and <tt>ne</tt> will not work. </p><h3><a name="integer"/>integer</h3><p>Float values are signed numbers that do not contain a decimal point. </p><p>Shell supports integer values natively, so standard integer operators (<tt>eq</tt>, <tt>ge</tt>, <tt>gt</tt>, ...) may be used for comparisons. </p><h3><a name="string"/>string</h3><p>Strings are, well, strings. Treat them like you would any other string. </p><h2><a name="Automated_help"/>Automated help</h2><p>Unlike <tt>getopt</tt>, shFlags provides an automated means of generating help for the user. It has its limitations, but it is definitely better than nothing. </p><p>To get access to help, simply add the <tt>-h</tt> (or <tt>--help</tt>) flag to the command line, and you will get help for all of the defined flags. </p><p>If you want to make your usage line a bit more informative, perhaps even with a multiline string of text, simply define the <tt>FLAGS_HELP</tt> variable and shFlags will make use of it. </p><h1><a name="Examples"/>Examples</h1><p>Most scripts in this section are also provided in the <tt>examples</tt> directory. If you cannot find the script in the released version, please check the checked in source. </p><p><strong>NOTE:</strong> All scripts in this section expect that <tt>shflags</tt> exists in the current directory. If it doesn&#x27;t, the line sourcing the <tt>shflags</tt> library must be modified. </p><h2><a name="Debug_mode_output"/>Debug mode output</h2><p>This script sets up a <tt>debug</tt> flag that when specified will enable debug output to <tt>STDERR</tt>. If the flag is not specified (the default behavior), debug output is not enabled.  </p><p>Example: <tt>examples/debug_output.sh</tt> </p><pre class="prettyprint">#!/bin/sh
+
+# source shflags
+. ./shflags
+
+debug() { [ ${FLAGS_debug} -eq ${FLAGS_TRUE} ] &amp;&amp; echo &quot;DEBUG: $@&quot; &gt;&amp;2; }
+
+# define flags
+DEFINE_boolean &#x27;debug&#x27; false &#x27;enable debug mode&#x27; &#x27;d&#x27;
+
+# parse the command-line
+FLAGS &quot;$@&quot; || exit 1
+eval set -- &quot;${FLAGS_ARGV}&quot;
+
+debug &#x27;debug mode enabled&#x27;
+echo &#x27;something interesting&#x27;</pre><h2><a name="Accept_flags_and_options"/>Accept flags and options</h2><p>This script will try to write the current date to a filename given on the command-line. If the file already exists, the script will fail, but if a <tt>-f</tt> (or <tt>--force</tt>) flag is given, the existing file will be overwritten. </p><p>Example: <tt>examples/write_date.sh</tt> </p><pre class="prettyprint">#!/bin/sh
+
+# source shflags
+. ./shflags
+
+write_date() { date &gt;&quot;$1&quot;; }
+
+# configure shflags
+DEFINE_boolean &#x27;force&#x27; false &#x27;force overwriting&#x27; &#x27;f&#x27;
+FLAGS_HELP=&quot;USAGE: $0 [flags] filename&quot;
+
+# parse the command-line
+FLAGS &quot;$@&quot; || exit 1
+eval set -- &quot;${FLAGS_ARGV}&quot;
+
+# check for filename
+if [ $# -eq 0 ]; then
+  echo &#x27;error: filename missing&#x27; &gt;&amp;2
+  flags_help
+  exit 1
+fi
+filename=$1
+
+if [ ! -f &quot;${filename}&quot; ]; then
+  write_date &quot;${filename}&quot;
+else
+  if [ ${FLAGS_force} -eq ${FLAGS_TRUE} ]; then
+    write_date &quot;${filename}&quot;
+  else
+    echo &#x27;warning: filename exists; not overwriting&#x27; &gt;&amp;2
+    exit 2
+  fi
+fi</pre><p>A test without a filename should fail (notice the custom usage definition line). </p><pre class="prettyprint">$ ./write_date.sh
+error: filename missing
+USAGE: ./write_date.sh [flags] filename
+flags:
+  -h  show this help
+  -f  force overwriting
+$ echo $?
+1</pre><p>The first run should create the file just fine. </p><pre class="prettyprint">$ ./write_date.sh junk.dat
+$ cat junk.dat 
+Thu Jun 26 23:06:34 IST 2008</pre><p>The second run should fail with an error. </p><pre class="prettyprint">$ ./write_date.sh junk.dat
+warning: filename exists; not overwriting
+$ echo $?
+2</pre><p>The third run succeeds because we pass the <tt>-f</tt> flag. </p><pre class="prettyprint">$ ./write_date.sh -f junk.dat
+$ cat junk.dat 
+Thu Jun 26 23:10:02 IST 2008</pre><h1><a name="Known_Issues"/>Known Issues</h1><p>See the appropriate <tt>RELEASE_NOTES</tt> for the most up-to-date list of known issues. </p><p>The <tt>getopt</tt> version provided by default with all versions of Mac OS X (up to and including 10.5.6) and Solaris (up to and including Solaris 10 and OpenSolaris) is the standard version. </p>
+ </td> 
+ </tr>
+ </table>
+ </div>
+
+
+ 
+ <br>
+ <div id="commentlist">
+ 
+
+
+ 
+ 
+ 
+
+<div class="collapse">
+
+
+ 
+
+</div>
+
+ <script type="text/javascript">
+ function delComment(sequence_num, delete_mode) {
+ var f = document.forms["delcom"];
+ f.sequence_num.value = sequence_num;
+ f.mode.value = delete_mode;
+ f.submit();
+ return false;
+ }
+ </script>
+
+
+ </div>
+ 
+ 
+ 
+ 
+ <br>
+ <div class="artifactcomment">
+ <img src="http://www.gstatic.com/codesite/ph/images/triangle.gif"><a href="https://www.google.com/accounts/ServiceLogin?service=code&ltmpl=phosting&continue=http%3A%2F%2Fcode.google.com%2Fp%2Fshflags%2Fwiki%2FDocumentation10x&amp;followup=http%3A%2F%2Fcode.google.com%2Fp%2Fshflags%2Fwiki%2FDocumentation10x"
+ >Sign in</a> to add a comment
+ </div>
+ 
+ 
+
+<form name="delcom" action="../w/delComment.do" method="POST">
+ <input type="hidden" name="sequence_num" value="" >
+ <input type="hidden" name="mode" value="" >
+ <input type="hidden" name="pagename" value="Documentation10x" >
+ <input type="hidden" name="token" value="" >
+</form>
+
+
+
+<script src="http://www.gstatic.com/codesite/ph/14614399729835259589/js/prettify/prettify.js"></script>
+<script type="text/javascript">
+ prettyPrint();
+</script>
+<script type="text/javascript" src="http://www.gstatic.com/codesite/ph/14614399729835259589/js/dit_scripts_20081013.js"></script>
+
+
+
+  
+ <script type="text/javascript" src="http://www.gstatic.com/codesite/ph/14614399729835259589/js/core_scripts_20081103.js"></script>
+ <script type="text/javascript" src="/js/codesite_product_dictionary_ph.pack.04102009.js"></script>
+ 
+ 
+ 
+ 
+ 
+ </div>
+<div id="footer" dir="ltr">
+ 
+ <div class="text">
+ 
+ &copy;2009 Google -
+ <a href="/">Code Home</a> -
+ <a href="/projecthosting/terms.html">Terms of Service</a> -
+ <a href="http://www.google.com/privacy.html">Privacy Policy</a> -
+ <a href="/more/">Site Directory</a> -
+ <a href="/p/support/">Project Hosting Help</a>
+ 
+ </div>
+</div>
+<script type="text/javascript">
+/**
+ * Reports analytics.
+ * It checks for the analytics functionality (window._gat) every 100ms
+ * until the analytics script is fully loaded in order to invoke siteTracker.
+ */
+function _CS_reportAnalytics() {
+ window.setTimeout(function() {
+ if (window._gat) {
+ try {
+ siteTracker = _gat._getTracker(CS_ANALYTICS_ACCOUNT);
+ siteTracker._trackPageview();
+ } catch (e) {}
+ var projectTracker = _gat._getTracker("UA-287788-6");
+projectTracker._initData();
+projectTracker._trackPageview();
+ } else {
+ _CS_reportAnalytics();
+ }
+ }, 100);
+}
+</script>
+
+ 
+ 
+ <div class="hostedBy" style="margin-top: -20px;">
+ <span style="vertical-align: top;">Hosted by</span>
+ <a href="/hosting/">
+ <img src="http://www.gstatic.com/codesite/ph/images/google_code_tiny.png" width="107" height="24" alt="Google Code">
+ </a>
+ </div>
+ 
+ 
+ 
+ 
+
+
+ 
+ </body>
+</html>
+
+

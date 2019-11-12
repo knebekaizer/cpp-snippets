@@ -1,0 +1,5 @@
+        * md5-c-100.tar.gz - Professor Rivest's original implementation is included in the appendix of rfc1321 and is also available in a more easily extracted (tarred, gzipped) form.
+
+        * md5.tar.gz - L. Peter Deutsch's implementation, with a different license that he calls BSD-like: MD5 in C. The author says: "This implementation was written directly from the text of RFC 1321 (exclusive of the Appendices), does not incorporate any part of the RSA documentation or software, and therefore does not require any acknowledgement to RSA."
+
+		* md5-cc-102.tar.gz - C++

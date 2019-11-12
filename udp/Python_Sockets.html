@@ -1,0 +1,297 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+				<meta name="keywords" content="Python Sockets" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="search" type="application/opensearchdescription+xml" href="/wiki/opensearch_desc.php5" title="John's Cool Things (English)" />
+<link rel="alternate" type="application/rss+xml" title="John&#039;s Cool Things RSS Feed" href="http://www.ironalbatross.net/wiki/index.php5?title=Special:Recentchanges&amp;feed=rss" />
+<link rel="alternate" type="application/atom+xml" title="John&#039;s Cool Things Atom Feed" href="http://www.ironalbatross.net/wiki/index.php5?title=Special:Recentchanges&amp;feed=atom" />
+		<title>Python Sockets - John's Cool Things</title>
+		<style type="text/css" media="screen, projection">/*<![CDATA[*/
+			@import "/wiki/skins/common/shared.css?116";
+			@import "/wiki/skins/monobook/main.css?116";
+		/*]]>*/</style>
+		<link rel="stylesheet" type="text/css" media="print" href="/wiki/skins/common/commonPrint.css?116" />
+		<!--[if lt IE 5.5000]><style type="text/css">@import "/wiki/skins/monobook/IE50Fixes.css?116";</style><![endif]-->
+		<!--[if IE 5.5000]><style type="text/css">@import "/wiki/skins/monobook/IE55Fixes.css?116";</style><![endif]-->
+		<!--[if IE 6]><style type="text/css">@import "/wiki/skins/monobook/IE60Fixes.css?116";</style><![endif]-->
+		<!--[if IE 7]><style type="text/css">@import "/wiki/skins/monobook/IE70Fixes.css?116";</style><![endif]-->
+		<!--[if lt IE 7]><script type="text/javascript" src="/wiki/skins/common/IEFixes.js?116"></script>
+		<meta http-equiv="imagetoolbar" content="no" /><![endif]-->
+		
+		<script type= "text/javascript">/*<![CDATA[*/
+var skin = "monobook";
+var stylepath = "/wiki/skins";
+var wgArticlePath = "/wiki/index.php5/$1";
+var wgScriptPath = "/wiki";
+var wgScript = "/wiki/index.php5";
+var wgServer = "http://www.ironalbatross.net";
+var wgCanonicalNamespace = "";
+var wgCanonicalSpecialPageName = false;
+var wgNamespaceNumber = 0;
+var wgPageName = "Python_Sockets";
+var wgTitle = "Python Sockets";
+var wgAction = "view";
+var wgRestrictionEdit = [];
+var wgRestrictionMove = [];
+var wgArticleId = "8";
+var wgIsArticle = true;
+var wgUserName = null;
+var wgUserGroups = null;
+var wgUserLanguage = "en";
+var wgContentLanguage = "en";
+var wgBreakFrames = false;
+var wgCurRevisionId = "19";
+var wgVersion = "1.12.3";
+var wgEnableAPI = true;
+var wgEnableWriteAPI = false;
+/*]]>*/</script>
+                
+		<script type="text/javascript" src="/wiki/skins/common/wikibits.js?116"><!-- wikibits js --></script>
+		<!-- Head Scripts -->
+		<script type="text/javascript" src="/wiki/skins/common/ajax.js?116"></script>
+		<script type="text/javascript" src="/wiki/index.php5?title=-&amp;action=raw&amp;gen=js&amp;useskin=monobook"><!-- site js --></script>
+		<style type="text/css">/*<![CDATA[*/
+@import "/wiki/index.php5?title=MediaWiki:Common.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=18000";
+@import "/wiki/index.php5?title=MediaWiki:Monobook.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=18000";
+@import "/wiki/index.php5?title=-&action=raw&gen=css&maxage=18000&useskin=monobook";
+/*]]>*/</style>
+	</head>
+<body class="mediawiki ns-0 ltr page-Python_Sockets">
+	<div id="globalWrapper">
+		<div id="column-content">
+	<div id="content">
+		<a name="top" id="top"></a>
+				<h1 class="firstHeading">Python Sockets</h1>
+		<div id="bodyContent">
+			<h3 id="siteSub">From John's Cool Things</h3>
+			<div id="contentSub"></div>
+									<div id="jump-to-nav">Jump to: <a href="#column-one">navigation</a>, <a href="#searchInput">search</a></div>			<!-- start content -->
+			<table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class="toclevel-1"><a href="#Python_Sockets"><span class="tocnumber">1</span> <span class="toctext">Python Sockets</span></a>
+<ul>
+<li class="toclevel-2"><a href="#The_best_tool_for_debugging_network_programming"><span class="tocnumber">1.1</span> <span class="toctext">The best tool for debugging network programming</span></a></li>
+<li class="toclevel-2"><a href="#Getting_started_with_sockets"><span class="tocnumber">1.2</span> <span class="toctext">Getting started with sockets</span></a></li>
+<li class="toclevel-2"><a href="#Python_UDP_sockets"><span class="tocnumber">1.3</span> <span class="toctext">Python UDP sockets</span></a></li>
+</ul>
+</li>
+</ul>
+</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+<a name="Python_Sockets"></a><h1> <span class="mw-headline"> Python Sockets </span></h1>
+<p>Python has just about the easiest wrapper for basic BSD sockets of any language ever*.  The basic socket interface is contained in the socket module. 
+</p><p><small>* Python may not have the easiest wrapper for basic BSD sockets of any language ever.</small>
+</p>
+<a name="The_best_tool_for_debugging_network_programming"></a><h2> <span class="mw-headline"> The best tool for debugging network programming </span></h2>
+<p>However, before we learn python sockets, we want to learn another tool that will make our life a lot easier as we learn to program with sockets. This tool is called netcat (or "nc" for short).  Netcat is used to tie stdin and stdout to a socket, either a client or a server.  Lets try using netcat as a mock http client, and fetch www.google.com as a demo.  So, we know that the get command is:
+</p>
+<pre>GET / HTTP/1.0
+
+</pre>
+<p>So lets call netcat to do this
+My command:
+</p>
+<pre>jkenyon@prometheus:~$ <b>nc www.google.com 80</b>
+<b>GET / HTTP/1.0</b>
+</pre>
+<p>Google's response:
+</p>
+<pre>HTTP/1.0 200 OK
+Cache-Control: private
+Content-Type: text/html
+Set-Cookie: PREF=ID=008f0611b014ad8c:TM=1161064978:LM=1161064978:S=9A5MC_6UTLvjYtJN; expires=Sun, 17-Jan-2038 19:14:07 GMT; path=/; domain=.google.com
+Server: GWS/2.1
+Date: Tue, 17 Oct 2006 06:02:58 GMT
+Connection: Close
+
+&lt;html&gt;&lt;head&gt;&lt;meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"&gt;&lt;title&gt;Google&lt;/title&gt;&lt;style&gt;
+...
+</pre>
+<p>So that is an example of using netcat as a client, now lets try making a server and a client.
+</p><p>Start the server on port 1234:
+</p>
+<pre>jkenyon@prometheus:~$ nc -l -p 1234
+</pre>
+<p>Start the client, with an input stream of "hello"
+</p>
+<pre>jkenyon@prometheus:~$ echo hello | nc localhost 1234
+</pre>
+<p>And the server outputs:
+</p>
+<pre>hello
+</pre>
+<p>This resolves the age old paradox of, how can I test my client before I write my server, and how can I test my server before I write my client.
+</p>
+<a name="Getting_started_with_sockets"></a><h2> <span class="mw-headline"> Getting started with sockets </span></h2>
+<p>Ok, now we want to create a simple client, that will connect to a server (in this case, run by netcat) and send the message "hello".
+</p><p>I am running a netcat server on 1234 as follows:
+</p>
+<pre>nc -l -p 1234
+</pre>
+<p>Now, in my python interpreter:
+</p>
+<pre>&gt;&gt;&gt; import socket
+&gt;&gt;&gt; mysock = socket.socket()
+&gt;&gt;&gt; mysock.connect( ('localhost',1234) )
+&gt;&gt;&gt; mysock.send("hello\n")
+5
+&gt;&gt;&gt; mysock.close()
+&gt;&gt;&gt; 
+</pre>
+<p>So I imported the socket package, and created a socket object from it.  I told my new socket to connect to the <i>socket pair</i> ('localhost',1234), which is a tuple passed as a single parameter.  If everything is going according to plan, then we can communicate with the server by calling send and recv to our hearts content. And when we are done, we can clean up with a simple call to "close".
+</p><p>Now its time to create a simple server with python sockets.  However, server sockets work a little differently.  We will never do a send or recv with the server socket, we will use it to spawn off new sockets, one for each incoming connection.  So lets create a server that waits for someone to open a connection, and then sends them the string "hello\n"
+</p>
+<pre>&gt;&gt;&gt; import socket
+&gt;&gt;&gt; serv = socket.socket()
+&gt;&gt;&gt; serv.bind(('localhost',1234))
+&gt;&gt;&gt; serv.listen(5)
+&gt;&gt;&gt; (mysock,youraddr) = serv.accept()
+# At this point, python blocks until a connection is made
+&gt;&gt;&gt; print youraddr
+('127.0.0.1', 45479)
+&gt;&gt;&gt; mysock.send("hello\n")
+6
+&gt;&gt;&gt; mysock.close()
+&gt;&gt;&gt; serv.close()
+&gt;&gt;&gt;
+</pre>
+<a name="Python_UDP_sockets"></a><h2> <span class="mw-headline"> Python UDP sockets </span></h2>
+<p>Now we want to play with the UDP protocol.  UDP is a different paradigm than TCP. TCP behaves like a normal Unix Pipe, two ends and sequential data transfer.  UDP is much more freeform, it has no connections, it has no garantee of a recipient, it allows broadcast, it is totally abstract. This makes means fewer statements to use, but harder to debug.
+</p><p>First, we want to use our netcat listener (UDP doesn't really have servers, per say):
+</p>
+<pre>nc -l localhost -p 1235 -u
+</pre>
+<p>This will listen on port 1235, the -u signifies that it is listening on UDP.
+</p><p>Now, we need to go back to python and create a new socket, this time a UDP socket.
+</p>
+<pre>s = socket.socket(family=socket.AF_INET,type=socket.SOCK_DGRAM)
+</pre>
+<p>Now, we can immediatly begin sending UDP packets out:
+</p>
+<pre>s.sendto("go! go! go!\n",('localhost',1235))
+</pre>
+<p>The format is:
+</p>
+<pre>data,(destination IP, destination port)
+</pre>
+<p>These messages should show up on the far end.
+</p><p>If we want to recieve messages, we do have to bind to a port first:
+</p>
+<pre>&gt;&gt;&gt; import socket
+&gt;&gt;&gt; s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+&gt;&gt;&gt; s.bind(('localhost',1236))
+&gt;&gt;&gt; data,addr = s.recvfrom(16)
+#At this point it blocks until we send a message
+&gt;&gt;&gt; print data
+1234567890123456
+&gt;&gt;&gt; print addr
+('127.0.0.1', 32792)
+&gt;&gt;&gt; 
+</pre>
+<pre>echo '1234567890123456' | nc -u localhost 1236
+</pre>
+<p>In this server example, it was restricted to the local machine.  
+</p>
+<pre>&gt;&gt;&gt; import socket
+&gt;&gt;&gt; s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+&gt;&gt;&gt; s.bind((<b>socket.gethostname()</b>,1236))
+&gt;&gt;&gt; data,addr = s.recvfrom(16)
+#At this point it blocks until we send a message
+&gt;&gt;&gt; print data
+1234567890123456
+&gt;&gt;&gt; print addr
+('127.0.0.1', 32792)
+&gt;&gt;&gt;
+</pre>
+<!-- 
+NewPP limit report
+Preprocessor node count: 14/1000000
+Post-expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+-->
+
+<!-- Saved in parser cache with key jlkenyon_jctwiki-jct_:pcache:idhash:8-0!1!0!!en!2!edit=0 and timestamp 20091110170800 -->
+<div class="printfooter">
+Retrieved from "<a href="http://www.ironalbatross.net/wiki/index.php5/Python_Sockets">http://www.ironalbatross.net/wiki/index.php5/Python_Sockets</a>"</div>
+						<!-- end content -->
+			<div class="visualClear"></div>
+		</div>
+	</div>
+		</div>
+		<div id="column-one">
+	<div id="p-cactions" class="portlet">
+		<h5>Views</h5>
+		<div class="pBody">
+			<ul>
+					 <li id="ca-nstab-main" class="selected"><a href="/wiki/index.php5/Python_Sockets" title="View the content page [c]" accesskey="c">Page</a></li>
+					 <li id="ca-talk" class="new"><a href="/wiki/index.php5?title=Talk:Python_Sockets&amp;action=edit" title="Discussion about the content page [t]" accesskey="t">Discussion</a></li>
+					 <li id="ca-viewsource"><a href="/wiki/index.php5?title=Python_Sockets&amp;action=edit" title="This page is protected. You can view its source. [e]" accesskey="e">View source</a></li>
+					 <li id="ca-history"><a href="/wiki/index.php5?title=Python_Sockets&amp;action=history" title="Past versions of this page. [h]" accesskey="h">History</a></li>
+				</ul>
+		</div>
+	</div>
+	<div class="portlet" id="p-personal">
+		<h5>Personal tools</h5>
+		<div class="pBody">
+			<ul>
+				<li id="pt-login"><a href="/wiki/index.php5?title=Special:Userlogin&amp;returnto=Python_Sockets" title="You are encouraged to log in, it is not mandatory however. [o]" accesskey="o">Log in / create account</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="portlet" id="p-logo">
+		<a style="background-image: url(http://www.ironalbatross.net/wiki/logo.png);" href="/wiki/index.php5/Main_Page" title="Visit the Main Page [z]" accesskey="z"></a>
+	</div>
+	<script type="text/javascript"> if (window.isMSIE55) fixalpha(); </script>
+		<div class='portlet' id='p-navigation'>
+		<h5>Navigation</h5>
+		<div class='pBody'>
+			<ul>
+				<li id="n-mainpage"><a href="/wiki/index.php5/Main_Page" title="Visit the Main Page [z]" accesskey="z">Main Page</a></li>
+				<li id="n-portal"><a href="/wiki/index.php5/John%27s_Cool_Things:Community_Portal" title="About the project, what you can do, where to find things">Community portal</a></li>
+				<li id="n-currentevents"><a href="/wiki/index.php5/John%27s_Cool_Things:Current_events" title="Find background information on current events">Current events</a></li>
+				<li id="n-recentchanges"><a href="/wiki/index.php5/Special:Recentchanges" title="The list of recent changes in the wiki. [r]" accesskey="r">Recent changes</a></li>
+				<li id="n-randompage"><a href="/wiki/index.php5/Special:Random" title="Load a random page [x]" accesskey="x">Random page</a></li>
+				<li id="n-help"><a href="/wiki/index.php5/Help:Contents" title="The place to find out.">Help</a></li>
+				<li id="n-sitesupport"><a href="/wiki/index.php5/John%27s_Cool_Things:Site_support" title="Support us">Donations</a></li>
+			</ul>
+		</div>
+	</div>
+		<div id="p-search" class="portlet">
+		<h5><label for="searchInput">Search</label></h5>
+		<div id="searchBody" class="pBody">
+			<form action="/wiki/index.php5/Special:Search" id="searchform"><div>
+				<input id="searchInput" name="search" type="text" title="Search John's Cool Things [f]" accesskey="f" value="" />
+				<input type='submit' name="go" class="searchButton" id="searchGoButton"	value="Go" title="Go to a page with this exact name if exists" />&nbsp;
+				<input type='submit' name="fulltext" class="searchButton" id="mw-searchButton" value="Search" title="Search the pages for this text" />
+			</div></form>
+		</div>
+	</div>
+	<div class="portlet" id="p-tb">
+		<h5>Toolbox</h5>
+		<div class="pBody">
+			<ul>
+				<li id="t-whatlinkshere"><a href="/wiki/index.php5/Special:Whatlinkshere/Python_Sockets" title="List of all wiki pages that link here [j]" accesskey="j">What links here</a></li>
+				<li id="t-recentchangeslinked"><a href="/wiki/index.php5/Special:Recentchangeslinked/Python_Sockets" title="Recent changes in pages linked from this page [k]" accesskey="k">Related changes</a></li>
+<li id="t-upload"><a href="/wiki/index.php5/Special:Upload" title="Upload files [u]" accesskey="u">Upload file</a></li>
+<li id="t-specialpages"><a href="/wiki/index.php5/Special:Specialpages" title="List of all special pages [q]" accesskey="q">Special pages</a></li>
+				<li id="t-print"><a href="/wiki/index.php5?title=Python_Sockets&amp;printable=yes" title="Printable version of this page [p]" accesskey="p">Printable version</a></li>				<li id="t-permalink"><a href="/wiki/index.php5?title=Python_Sockets&amp;oldid=19" title="Permanent link to this version of the page">Permanent link</a></li>			</ul>
+		</div>
+	</div>
+		</div><!-- end of the left (by default at least) column -->
+			<div class="visualClear"></div>
+			<div id="footer">
+				<div id="f-poweredbyico"><a href="http://www.mediawiki.org/"><img src="/wiki/skins/common/images/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" /></a></div>
+			<ul id="f-list">
+				<li id="lastmod"> This page was last modified 06:22, 24 July 2008.</li>
+				<li id="viewcount">This page has been accessed 76 times.</li>
+				<li id="privacy"><a href="/wiki/index.php5/John%27s_Cool_Things:Privacy_policy" title="John's Cool Things:Privacy policy">Privacy policy</a></li>
+				<li id="about"><a href="/wiki/index.php5/John%27s_Cool_Things:About" title="John's Cool Things:About">About John's Cool Things</a></li>
+				<li id="disclaimer"><a href="/wiki/index.php5/John%27s_Cool_Things:General_disclaimer" title="John's Cool Things:General disclaimer">Disclaimers</a></li>
+			</ul>
+		</div>
+		
+	
+		<script type="text/javascript">if (window.runOnloadHook) runOnloadHook();</script>
+</div>
+<!-- Served in 0.371 secs. --></body></html>

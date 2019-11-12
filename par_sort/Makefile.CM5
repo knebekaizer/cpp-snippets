@@ -1,0 +1,51 @@
+.KEEP_STATE:
+
+CC = gcc
+
+SHARED_SRCS = main.c par_sort.c
+CP_SRCS		= 
+PN_SRCS		= 
+TARGET		= sort_test
+
+W_FLAGS		= -Wall -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings
+SHARED_FLAGS	= -DCM5 -DDOUBLE=1 $(W_FLAGS) -DINTEGER=0 -DSTATS=1 -O2
+
+CP_CFLAGS	= $(SHARED_FLAGS)
+PN_CFLAGS	= $(SHARED_FLAGS)
+
+INCDIRS		= 
+HOST_LIBDIRS	=
+NODE_LIBDIRS	=
+HOST_LIBS	=
+NODE_LIBS	= 
+
+all: sort_test
+
+NODE_SRCS = $(PN_SRCS) $(SHARED_SRCS)
+HOST_SRCS = $(CP_SRCS) $(SHARED_SRCS)
+
+NODE_OBJS	= $(NODE_SRCS:%.c=%.pn.o)
+HOST_OBJS	= $(HOST_SRCS:%.c=%.cp.o)
+
+%.cp.o:	%.c
+	$(CC) -DCP_CODE $(CP_CFLAGS) $(INCDIRS:%=-I%) -c $< -o $*.cp.o
+
+%.pn.o:	%.c
+	$(CC) $(PN_CFLAGS) $(INCDIRS:%=-I%) -c $< -o $*.pn.o
+
+$(TARGET):	$(NODE_OBJS) $(HOST_OBJS)
+	cmmd-ld \
+	-comp $(CC) -v -o $(TARGET) \
+	-node $(NODE_OBJS) $(NODE_LIBDIRS:%=-L%) $(NODE_LIBS:%=-l%) \
+	-host $(HOST_OBJS) $(HOST_LIBDIRS:%=-L%) $(HOST_LIBS:%=-l%)
+
+
+clean:
+	rm -f $(TARGET) $(NODE_OBJS) $(HOST_OBJS) *~
+
+
+
+
+
+
+
