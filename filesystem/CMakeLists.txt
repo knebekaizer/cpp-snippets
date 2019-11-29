@@ -11,6 +11,7 @@ message(STATUS "Boost library path: ${Boost_LIBRARY_DIRS}")
 message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
 
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/../include)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(filesystem main.cpp)
