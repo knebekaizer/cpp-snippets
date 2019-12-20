@@ -3,8 +3,6 @@
 
 #include <type_traits>
 
-class Any;
-//constexpr auto numbits = 2;
 
 template<typename T, int numbits>
 class PointerExt {
@@ -14,21 +12,16 @@ public:
 	static constexpr uintptr_t bitmask = (1 << numbits) -1;
 	static_assert(std::alignment_of<T>() + 2 >= numbits, "Required extension bits extends the maximum for this pointer type");
 
-#ifdef NDEBUG
-	PointerExt(Any* ptr, uintptr_t bits = 0)
-		: ptr_(reinterpret_cast<uintptr_t>(ptr) | bits) {}
-#else
 	PointerExt(T* ptr, uintptr_t bits = 0) : ptr_(reinterpret_cast<uintptr_t>(ptr)) {
 		assert(bits <= bitmask);
 		ptr_ |= bits;
 		TraceX((void*)ptr_);
 	}
-#endif
 
 	uintptr_t bits() const { return ptr_ & bitmask; }
 
 	// should it be explicit?
-	operator T*() const { return reinterpret_cast<Any*>(ptr_ & ~bitmask); }
+	operator T*() const { return reinterpret_cast<T*>(ptr_ & ~bitmask); }
 };
 
 struct Any { double f; };

@@ -8,6 +8,7 @@
 void functional();
 void structural();
 void spanning();
+void scoped();
 
 
 #endif //FUNCTIONAL_FEATURES_H

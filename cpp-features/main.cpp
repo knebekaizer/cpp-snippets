@@ -11,6 +11,7 @@ int main() {
 	functional();
 	structural();
 	spanning();
+	scoped();
 
 	return 0;
 }

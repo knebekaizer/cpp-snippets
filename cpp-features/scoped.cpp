@@ -1,28 +1,7 @@
 #include <exception>
+#include <cassert>
 #include "trace.h"
 
-//! C++11
-template <class Lambda> class AtScopeExit {
-  Lambda& m_lambda;
-public:
-  AtScopeExit(Lambda& action) : m_lambda(action) {}
-  ~AtScopeExit() { m_lambda(); }
-};
-
-#define TOKEN_PASTEx(x, y) x ## y
-#define TOKEN_PASTE(x, y) TOKEN_PASTEx(x, y)
-
-#define Auto_INTERNAL1(lname, aname, ...) \
-    auto lname = [&]() { __VA_ARGS__; }; \
-    AtScopeExit<decltype(lname)> aname(lname);
-
-#define Auto_INTERNAL2(ctr, ...) \
-    Auto_INTERNAL1(TOKEN_PASTE(Auto_func_, ctr), \
-                   TOKEN_PASTE(Auto_instance_, ctr), __VA_ARGS__)
-
-#define Auto(...) Auto_INTERNAL2(__COUNTER__, __VA_ARGS__)
-
-//! C++17 ???
 
 template <class Exit, class Enter = Exit > class Scoped {
 	const Exit atExit_;
@@ -43,7 +22,7 @@ template <class F1, class F2> Scoped(F1, F2) -> Scoped<F2, F1>;
 
 using namespace std;
 
-bool lock(int& x) { TraceF; return (++x); }
+bool lock(int& x) { TraceF; return ++x; }
 void unlock(int& x) { TraceF; --x; }
 void unlock0() { TraceF; }
 
@@ -52,17 +31,14 @@ void foo() {
 	throw runtime_error("Test exception");
 }
 
+void lock() { log_trace << __func__;  }
+
 void test(int& x) {
-//	Auto(unlock(x)); // ok
-//	lock(x);
 
 	auto guard = Scoped {
-//	Scoped guard {
 		[&]() { lock(x); },
 		[&]() { unlock(x); }
 	};
-
-	auto fail = guard;
 
 	Scoped nested { []() { log_trace << "Tear down: this should happen before unlock!"; }};
 
@@ -72,8 +48,8 @@ void test(int& x) {
 	TraceX(x);
 }
 
-int main() {
-	log_info << "Start";
+void scoped() {
+	log_info << "Scoped lock test started";
 	auto x = 0;
 	TraceX(x);
 
@@ -84,4 +60,5 @@ int main() {
 		log_info << "Caught: " << e.what();
 	}
 	TraceX(x);
+	assert(x == 0);
 }
