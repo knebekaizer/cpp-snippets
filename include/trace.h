@@ -63,7 +63,7 @@ inline std::string hexdump(const void* const buf, size_t len)
 //#define err_stream  utils::err_stream_helper().get()
 //#else
 #define tr_stream   utils::tr_stream_helper().get() << __func__ << "> "
-#define err_stream  utils::tr_stream_helper().get() <<__FILE__<<"#"<<__LINE__<<":"<<__func__<<"> " << "[ERROR] "
+#define err_stream  utils::err_stream_helper().get() <<__FILE__<<"#"<<__LINE__<<":"<<__func__<<"> " << "[ERROR] "
 //#endif // NDEBUG
 
 namespace LOG_LEVEL {
