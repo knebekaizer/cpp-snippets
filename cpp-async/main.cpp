@@ -131,6 +131,7 @@ void setTerminateHandler() {
 #pragma mark ----
 
 namespace {
+
 class TerminateHandler2 {
 	/**
 	 * 10 seconds is the timeout for concurrent (second) terminate to give a chance the first one to finish.
