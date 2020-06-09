@@ -2,7 +2,7 @@
 #include <cassert>
 #include "trace.h"
 
-
+/// Scope-based init / teardown
 template <class Exit, class Enter = Exit > class Scoped {
 	const Exit atExit_;
 	Scoped(const Scoped&) = delete;
@@ -17,6 +17,38 @@ public:
 
 template <class F2> Scoped(F2) -> Scoped<F2, F2>;
 template <class F1, class F2> Scoped(F1, F2) -> Scoped<F2, F1>;
+
+
+#pragma mark ----
+
+struct Dummy {
+	void lock() { log_trace << "Dummy instance " << this << " locked"; }
+	void unlock() { log_trace << "Dummy instance " << this << " unlocked"; }
+};
+
+template <typename RunMe>
+class Sync2 {
+	const RunMe run_;
+	static Dummy dummy_;
+public:
+	explicit Sync2(RunMe&& run) : run_(run) {}
+	void operator()() {
+		Scoped guard {
+			[]() { dummy_.lock(); },
+			[]() { dummy_.unlock(); }
+		};
+		run_();
+	}
+};
+
+class SyncAt {
+//	const RunMe run_;
+public:
+	explicit SyncAt() { TraceF; }
+	~SyncAt() { TraceF; }
+	template <typename RunMe>
+	void operator()(RunMe&& block) { block(); }
+};
 
 /// ^^^^^^^^^^^^^^^^^^^^^
 
@@ -35,6 +67,7 @@ void lock() { log_trace << __func__;  }
 
 void test(int& x) {
 
+	log_trace << "Running " << __func__ << " at " << __FILE__;
 	auto guard = Scoped {
 		[&]() { lock(x); },
 		[&]() { unlock(x); }
@@ -61,4 +94,8 @@ void scoped() {
 	}
 	TraceX(x);
 	assert(x == 0);
+
+	SyncAt() ( []() {
+		log_trace << "This is a block!";
+	});
 }

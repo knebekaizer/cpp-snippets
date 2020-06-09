@@ -132,17 +132,33 @@ void setTerminateHandler() {
 
 namespace {
 
-class TerminateHandler2 {
+class {
 	/**
-	 * 10 seconds is the timeout for concurrent (second) terminate to give a chance the first one to finish.
-	 * After the timeout the abnormal _Exit will be invoked.
+	 * Timeout 5 sec for concurrent (second) terminate attempt to give a chance the first one to finish.
+	 * If the terminate handler hangs for 5 sec it is probably fatally broken, so let's do abnormal _Exit in that case.
 	 */
-	static const int timeout = 5; ///< 10 seconds is the timeout for concurrent (second) terminate before abnormal _Exit will be invoked.
+	unsigned int timeout = 5;
+	std::atomic_flag terminatingFlag = ATOMIC_FLAG_INIT;
+public:
+	template<class Fun>
+	[[noreturn]] void operator()(Fun block) {
+		if (!terminatingFlag.test_and_set()) {
+			block();
+			// block() is supposed to be NORETURN, otherwise go to normal abort()
+			std::abort();
+		} else {
+			sleep(timeout);
+			// We come here when another terminate handler hangs for 5 sec, that looks fatally broken. Go to forced exit now.
+		}
+		_Exit(EXIT_FAILURE); // force exit
+	}
+} concurrentTerminateWrapper;
 
-	typedef __attribute__((noreturn)) void (*QH)();
+
+class TerminateHandler2 {
+//	typedef __attribute__((noreturn)) void (*QH)();
+	using QH = __attribute__((noreturn)) void(*)();
 	QH queuedHandler_;
-
-
 
 	TerminateHandler2()
 		: queuedHandler_((QH)std::set_terminate(my_handler))  // set_terminate does not respect NORETURN so cast is needed
@@ -151,24 +167,19 @@ class TerminateHandler2 {
 	}
 
 	static TerminateHandler2 *instance() {
-		static TerminateHandler2 *singleton = new TerminateHandler2();
+		static TerminateHandler2 *singleton [[clang::no_destroy]] = new TerminateHandler2();
 		return singleton;
 	}
 
 	// In fact, it's safe to call my_handler directly from outside: it will do the job and then invoke original handler,
 	// even if it has not been initialized yet. So one may want to make it public and/or not the class member
 	__attribute__((noreturn)) static void my_handler() {
-		static std::atomic<int> flag = 0;  // Note: compiler does not use ___cxa_guard_* stuff for primitive type
-		if (flag++ == 0) {     // atomic post-increment has an effect of test_and_set but simpler
+		concurrentTerminateWrapper([](){
 			TraceF;
 			print_bt(cout);
 			sleep(10);  // for testing
 			instance()->queuedHandler_();
-		} else {
-			sleep(timeout);
-//			log_trace << "Go to _Exit now!";
-			_Exit(EXIT_FAILURE); // force exit
-		}
+		});
 	}
 
 	// Copy, move and assign would be safe, but not much useful, so let's delete all (rule of 5)

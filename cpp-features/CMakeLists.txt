@@ -7,6 +7,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/../include)
 
 add_executable(cpp-features
+        policy.cpp
         spanning.cpp
         structural.cpp
         functional.cpp
