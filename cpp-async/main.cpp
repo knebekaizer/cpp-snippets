@@ -83,7 +83,7 @@ void my_terminate_2() {
 	std::abort();
 }
 
-void setTerminateHandler();
+void setTerminateHandler0();
 
 namespace {
 //static void my_handler();
@@ -93,10 +93,10 @@ namespace {
  * the old one in thread-safe manner.
  * The saved handler is not intended to be invoked from any caller
  * but my_handler() (even in this source file so anon namespace is not good enough)
- * and occasionally setTerminateHandler() also need to access queuedHandler() for setup.
+ * and occasionally setTerminateHandler0() also need to access queuedHandler() for setup.
  * To enforce this restriction it is impleneted as a private operator() with two friends only.
  */
-class TerminateHandler {
+class TerminateHandler0{
 	void operator()(bool install_only = false) const {
 		auto init = []() {
 			log_trace << "TerminateHandler init invoked";
@@ -111,20 +111,20 @@ public:
 	static void install();
 } queuedHandler;
 
-void TerminateHandler::my_handler() {
+void TerminateHandler0::my_handler() {
 	TraceF;
 	print_bt(cout);
 	queuedHandler();
 }
 
-void TerminateHandler::install() {
+void TerminateHandler0::install() {
 	queuedHandler(true);
 }
 
 } // namespace
 
-void setTerminateHandler() {
-	TerminateHandler::install();
+void setTerminateHandler0() {
+	TerminateHandler0::install();
 }
 
 
@@ -156,18 +156,18 @@ public:
 } concurrentTerminateWrapper;
 
 
-class TerminateHandler2 {
+class TerminateHandler {
 	using QH = __attribute__((noreturn)) void(*)();
 	QH queuedHandler_;
 
-	TerminateHandler2()
+	TerminateHandler()
 		: queuedHandler_((QH)std::set_terminate(my_handler))  // set_terminate does not respect NORETURN so cast is needed
 	{
 		log_trace << "TerminateHandler init invoked";
 	}
 
-	static TerminateHandler2& instance() {
-		static TerminateHandler2 singleton [[clang::no_destroy]];
+	static TerminateHandler& instance() {
+		static TerminateHandler singleton [[clang::no_destroy]];
 		return singleton;
 	}
 
@@ -184,13 +184,13 @@ class TerminateHandler2 {
 	}
 
 	// Copy, move and assign would be safe, but not much useful, so let's delete all (rule of 5)
-	TerminateHandler2(const TerminateHandler2 &) = delete;
-	TerminateHandler2(TerminateHandler2 &&) = delete;
-	TerminateHandler2 &operator=(const TerminateHandler2 &) = delete;
-	TerminateHandler2 &operator=(TerminateHandler2 &&) = delete;
+	TerminateHandler(const TerminateHandler &) = delete;
+	TerminateHandler(TerminateHandler &&) = delete;
+	TerminateHandler &operator=(const TerminateHandler &) = delete;
+	TerminateHandler &operator=(TerminateHandler &&) = delete;
 	// Dtor might be in use to restore original handler. However, consequent install
 	// will not reconstruct handler anyway, so let's keep dtor deleted to avoid confusion.
-	~TerminateHandler2() = delete;
+	~TerminateHandler() = delete;
 public:
 	/// First call will do the job, all consecuent will do nothing.
 	static void install() {
@@ -200,8 +200,8 @@ public:
 } // anon namespace
 
 // Use one public funuction to limit access to the class declaration
-void setTerminateHandler2() {
-	TerminateHandler2::install();
+void setTerminateHandler() {
+	TerminateHandler::install();
 }
 
 
@@ -217,12 +217,28 @@ int test_ConcurrentTerminate() {
         , 1000));
     }
 
-    for (auto &future : futures) {
+//    for (auto &future : futures) {
 //	    future.get();
-    }
-//	TraceX(value);
+//    }
+
     log_trace << "Mål";
     return 0;
+}
+
+void test_TerminateHandler0() {
+	set_abort_handler();
+	set_terminate([](){
+		log_trace << "This is the original terminate handler";
+		std::abort();
+	});
+
+	log_trace << "Try to setup (expecting init):";
+    setTerminateHandler0();
+	log_trace << "Try to setup twice (expecting nothing):";
+    setTerminateHandler0();
+	TerminateHandler0 compilerErrorExpected;
+
+//	queuedHandler();  // this is not compilable - as expected
 }
 
 void test_TerminateHandler() {
@@ -233,38 +249,21 @@ void test_TerminateHandler() {
 	});
 
 	log_trace << "Try to setup (expecting init):";
-	setTerminateHandler();
+    setTerminateHandler();
 	log_trace << "Try to setup twice (expecting nothing):";
-	setTerminateHandler();
-	TerminateHandler compilerErrorExpected;
-
-//	queuedHandler();  // this is not compilable - as expected
-}
-
-void test_TerminateHandler2() {
-	set_abort_handler();
-	set_terminate([](){
-		log_trace << "This is the original terminate handler";
-		std::abort();
-	});
-
-	log_trace << "Try to setup (expecting init):";
-	setTerminateHandler2();
-	log_trace << "Try to setup twice (expecting nothing):";
-	setTerminateHandler2();
+    setTerminateHandler();
 //	TerminateHandler2 compilerErrorExpected;
 //	queuedHandler();  // this is not compilable - as expected
 }
 
 int main() {
 //	test1();
-//	test_TerminateHandler();
-	test_TerminateHandler2();
+//	test_TerminateHandler0();
+    test_TerminateHandler();
 
 	log_trace << "Gonna terminate now";
-//	terminate();
 	test_ConcurrentTerminate();
-
+	log_trace << "test_ConcurrentTerminate returns (this should not happen)";
 	return 0;
 }
 
