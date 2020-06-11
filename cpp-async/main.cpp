@@ -147,6 +147,7 @@ public:
 			// block() is supposed to be NORETURN, otherwise go to normal abort()
 			std::abort();
 		} else {
+//		    log_trace << "Terminate handler blocked, wait for" << timeout << " sec then exit";
 			sleep(timeout);
 			// We come here when another terminate handler hangs for 5 sec, that looks fatally broken. Go to forced exit now.
 		}
@@ -156,7 +157,6 @@ public:
 
 
 class TerminateHandler2 {
-//	typedef __attribute__((noreturn)) void (*QH)();
 	using QH = __attribute__((noreturn)) void(*)();
 	QH queuedHandler_;
 
@@ -166,8 +166,8 @@ class TerminateHandler2 {
 		log_trace << "TerminateHandler init invoked";
 	}
 
-	static TerminateHandler2 *instance() {
-		static TerminateHandler2 *singleton [[clang::no_destroy]] = new TerminateHandler2();
+	static TerminateHandler2& instance() {
+		static TerminateHandler2 singleton [[clang::no_destroy]];
 		return singleton;
 	}
 
@@ -175,10 +175,11 @@ class TerminateHandler2 {
 	// even if it has not been initialized yet. So one may want to make it public and/or not the class member
 	__attribute__((noreturn)) static void my_handler() {
 		concurrentTerminateWrapper([](){
-			TraceF;
+			log_trace << "This is a lambda at my_handler via concurrentTerminateWrapper";
+            sleep(2);  // for testing
 			print_bt(cout);
-			sleep(10);  // for testing
-			instance()->queuedHandler_();
+			sleep(8);  // for testing
+			instance().queuedHandler_();
 		});
 	}
 
@@ -217,10 +218,10 @@ int test_ConcurrentTerminate() {
     }
 
     for (auto &future : futures) {
-//      std::cout << future.get() << std::endl;
-	    future.get();
+//	    future.get();
     }
-	TraceX(value);
+//	TraceX(value);
+    log_trace << "Mål";
     return 0;
 }
 
