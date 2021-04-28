@@ -6,7 +6,6 @@ exec 11<array.sh
 let count=0
 
 while read LINE <&11; do
-
     ARRAY[$count]=$LINE
     ((count++))
 done
