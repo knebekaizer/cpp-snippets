@@ -106,7 +106,16 @@ extern LOG_LEVEL::LOG_LEVEL gLogLevel;
 // Variadic tricks
 #if defined(__GNUC__) || defined(__clang__)
 #define _TRACE_GET_MACRO(_0,_1,_2,_3,_4,NAME,...) NAME
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+#endif // clang diagnostic
 #define TraceX(...) _TRACE_GET_MACRO(_0, ##__VA_ARGS__, Trace4, Trace3, Trace2, Trace1, Trace0)(__VA_ARGS__)
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif // clang diagnostic
+
 #else
 #define _TRACE_GET_MACRO(_1,_2,_3,_4,NAME,...) NAME
 #define TraceX(...) _TRACE_GET_MACRO(__VA_ARGS__, Trace4, Trace3, Trace2, Trace1)(__VA_ARGS__)
