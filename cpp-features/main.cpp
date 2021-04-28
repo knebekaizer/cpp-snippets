@@ -17,18 +17,26 @@ std::function<bool (bool)> onErrorDefault = [](bool ok) { return ok; };
 int main() {
 	log_info << "Start";
 
+    cout << endl;
 	functional();
+
+    cout << endl;
     structured();
+
+    cout << endl;
 	spanning();
+
+    cout << endl;
 	scoped();
     outer::nested::nestedNamespaceSample();
+
+    cout << endl;
+    async();
 
 //    terminatePolicy();
 
 //    void testPolicy();
 //    testPolicy();
-
-    bool x = onErrorDefault(true);
-    TraceX(x);
+//    TraceX(onErrorDefault(true)); // see policy.cpp
 	return 0;
 }

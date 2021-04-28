@@ -10,6 +10,7 @@ using gsl::span;
 using gsl::make_span;
 
 void spanning() {
+    TraceF;
 	class Foo {
 	public:
 	//	auto buf() { return span<std::remove_pointer<decltype(buf_)>::type>(buf_, count_); }
@@ -33,6 +34,7 @@ void spanning() {
 
 	Foo foo(8);
 	for (auto x : foo.buf()) cout << x << " "; cout << endl;
+	for (auto x : foo.buf()) cout << x << " "; cout << endl; // unique_ptr is not destroyed by make_span
 	for (auto x : foo.cbuf()) cout << x << " "; cout << endl;
 //	for (auto& x : foo.cbuf()) x = 0; // this should fail
 }

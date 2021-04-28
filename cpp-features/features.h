@@ -9,6 +9,6 @@ void functional();
 void structured();
 void spanning();
 void scoped();
-
+void async();
 
 #endif //FUNCTIONAL_FEATURES_H

@@ -9,13 +9,25 @@ include_directories(${CMAKE_SOURCE_DIR}/../include)
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Werror -Wall")
 
 add_executable(cpp-features
+        main.cpp
         spanning.cpp
         structured.cpp
         functional.cpp
         scoped.cpp
-        main.cpp
-    )
+        async.cpp lookup.cpp)
 
 add_executable(testPolicy
         policy.cpp
+    )
+
+add_executable(testShared
+        shared_ptr.cpp
+    )
+
+add_executable(testRandom
+        random.cpp
+    )
+
+add_executable(lookup
+        lookup.cpp
     )
