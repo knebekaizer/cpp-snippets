@@ -44,11 +44,11 @@ __int128 atoi128(const char *s)
 }
 
 
-int main(int argc, char **argv)
-{
-    if (argc > 1)
-    {
-        __int128 x = atoi128(argv[1]);
-        printf("%" PRIi64 "\n", (int64_t)x); // just for demo with smaller numbers
-    }
-}
+//int main(int argc, char **argv)
+//{
+//    if (argc > 1)
+//    {
+//        __int128 x = atoi128(argv[1]);
+//        printf("%" PRIi64 "\n", (int64_t)x); // just for demo with smaller numbers
+//    }
+//}

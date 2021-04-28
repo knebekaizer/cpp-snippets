@@ -18,6 +18,7 @@ add_executable(test
 
 add_executable(md5_log
         src/md5_log.cpp
+        src/atoi128.c
 )
 
 add_executable(testMaxOf

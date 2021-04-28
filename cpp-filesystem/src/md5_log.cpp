@@ -6,7 +6,6 @@
 // Created by Vladimir Ivanov on 22/10/2019.
 //
 
-#include "files.h"
 
 //#include <filesystem>
 #include "ghc/filesystem.hpp"
@@ -14,10 +13,15 @@ namespace fs = ghc::filesystem;
 //namespace fs = std::__fs::filesystem;
 //namespace fs = std::filesystem;
 
+#include <exception>
 #include <string>
 #include <cassert>
-#include <iostream>
 #include <vector>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 
 #include <cstdint>
 using int128_t = __int128;
@@ -72,6 +76,42 @@ operator<<( std::ostream& out, __int128_t value )
     return out;
 }
 
+extern "C" __int128 atoi128(const char *s);
+
+uint128_t x2u128(string_view s) {
+    uint64_t high = 0, low;
+    if (s.size() > 16) {
+        istringstream(string(s.substr(0, s.size() - 16))) >> hex >> high;
+    }
+    istringstream( string(s.substr(max(0, (int)s.size() - 16))) ) >> hex >> low;
+//    cout << s << endl;
+//    cout << hex << high << low << dec << "\n";
+    return ((uint128_t)high << 64) + (uint128_t)low;
+}
+
+string u128x(uint128_t x) {
+    ostringstream s;
+    s << std::hex << (uint64_t)(x >> 64) << (uint64_t)(x & 0xffffffffffffffff);
+    return s.str();
+}
+
+std::istream&
+operator>>(std::istream& inp, uint128_t& v) {
+    string s;
+    if (inp >> s)
+        v = x2u128(s);
+    return inp;
+}
+
+std::istream&
+operator>>(std::istream& inp, __int128_t& v) {
+    string s;
+    if (inp >> s) {
+        v = atoi128(s.c_str());
+    }
+    return inp;
+}
+
 //constexpr string_view trim(string_view v, char c = '"') {
 //    v.remove_prefix(std::min(v.find_first_not_of("\""), v.size()));
 //    return v;
@@ -102,6 +142,15 @@ void options(const Args& args) {
     vector<string> s = {"a", "b"};
 }
 
+void load(istream& inp) {
+    uint128_t md5;
+    string fname;
+    while (inp >> md5 && inp.ignore(2)
+            && getline(inp, fname)) {
+        cout << u128x(md5) << " -> " << fname << endl << flush;
+    }
+}
+
 
 int main(int argc, char const **argv) {
     TraceX(__clang_version__);
@@ -112,19 +161,28 @@ int main(int argc, char const **argv) {
     auto args = gsl::make_span(argv, argc);
     options(args);
 
-    TraceX(sizeof(intmax_t));
-    TraceX(sizeof(uint128_t));
-    TraceX(std::numeric_limits<uint64_t>::max());
-    cout << (int128_t)-1 << endl;
-    TraceX(std::numeric_limits<uint128_t>::max());
-    TraceX(std::numeric_limits<uint128_t>::min());
-    TraceX(std::numeric_limits<int128_t>::max());
-    TraceX(std::numeric_limits<int128_t>::min());
-//    using Args = decltype(args);
-//    for (auto& x : args) { TraceX(x); }
+//    TraceX(sizeof(intmax_t));
+//    TraceX(sizeof(uint128_t));
+//    TraceX(std::numeric_limits<uint64_t>::max());
+//    cout << (int128_t)-1 << endl;
+//    TraceX(std::numeric_limits<uint128_t>::max());
+//    TraceX(std::numeric_limits<uint128_t>::min());
+//    TraceX(std::numeric_limits<int128_t>::max());
+//    TraceX(std::numeric_limits<int128_t>::min());
 
-    if (args.size() > 1) {
-        parseDir(args[1]);
+    try {
+        if (args.size() > 1) {
+            ifstream inp(args[1]);
+            if (!inp) log_error << "Can't open " << args[1];
+            load(inp);
+        } else {
+            load(cin);
+        }
+    }
+    catch (std::exception& e) {
+        log_error << e.what();
     }
 
+
+    return 0;
 }
