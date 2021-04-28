@@ -1,0 +1,5 @@
+# Project files
+###############
+**/cmake-build-debug/
+**/_build/
+**/build/

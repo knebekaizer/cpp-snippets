@@ -6,7 +6,7 @@
 #define FUNCTIONAL_FEATURES_H
 
 void functional();
-void structural();
+void structured();
 void spanning();
 void scoped();
 

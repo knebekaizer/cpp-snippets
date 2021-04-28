@@ -1,11 +1,11 @@
-//! @file ## Structural
+//! @file Structured binding - since C++17
 
 #include "trace.h"
 #include <unordered_set>
 
 using namespace std;
 
-void structural() {
+void structured() {
 	static unordered_set<int> set;
 	{
 		auto[it, inserted] = set.insert(42);
