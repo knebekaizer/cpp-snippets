@@ -1,9 +1,9 @@
-//! @fiile ### Span from unique_ptr, with optional constness and initializer
+//! @file ### Span from unique_ptr, with optional constness and initializer
 #include "trace.h"
 
 #include <memory>
 #include <algorithm>
-#include "gsl-lite.h"
+#include "gsl-lite.hpp"
 
 using namespace std;
 using gsl::span;
@@ -37,4 +37,9 @@ void spanning() {
 	for (auto x : foo.buf()) cout << x << " "; cout << endl; // unique_ptr is not destroyed by make_span
 	for (auto x : foo.cbuf()) cout << x << " "; cout << endl;
 //	for (auto& x : foo.cbuf()) x = 0; // this should fail
+}
+
+int main() {
+    spanning();
+    return 0;
 }

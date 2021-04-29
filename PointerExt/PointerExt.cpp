@@ -1,3 +1,5 @@
+//! @file Use lower bits of the pointer
+
 #include <iostream>
 #include "../include/trace.h"
 

@@ -24,9 +24,6 @@ int main() {
     structured();
 
     cout << endl;
-	spanning();
-
-    cout << endl;
 	scoped();
     outer::nested::nestedNamespaceSample();
 

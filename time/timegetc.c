@@ -1,4 +1,7 @@
-/* ** TIMEGETC.C - waits for a given number of seconds for the user to press ** a key. Returns the key pressed, or EOF if time expires ** ** by Bob Jarvis */
+/**
+** TIMEGETC.C - waits for a given number of seconds for the user to press a key.
+** Returns the key pressed, or EOF if time expires ** ** by Bob Jarvis 
+*/
 
 #include <stdio.h> #include <time.h> #include <conio.h>
 

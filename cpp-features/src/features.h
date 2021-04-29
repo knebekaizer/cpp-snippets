@@ -7,7 +7,7 @@
 
 void functional();
 void structured();
-void spanning();
+//void spanning();
 void scoped();
 void async();
 
