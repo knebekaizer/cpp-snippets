@@ -17,6 +17,8 @@ namespace fs = ghc::filesystem;
 #include <string>
 #include <cassert>
 #include <vector>
+#include <deque>
+#include <algorithm>
 
 #include <iostream>
 #include <fstream>
@@ -34,6 +36,7 @@ using uint128_t = unsigned __int128;
 
 #include "gsl-lite.hpp"
 
+#include "timing.hpp"
 #include "trace.h"
 
 using namespace std;
@@ -77,15 +80,62 @@ operator<<( std::ostream& out, __int128_t value )
 }
 
 extern "C" __int128 atoi128(const char *s);
+#include "gsl-lite.hpp"
 
 uint128_t x2u128(string_view s) {
+    static array<gsl::czstring, 160> fmt = []() {
+        CTime gen;
+        static string buf[160];
+        generate(begin(buf), end(buf), [k = 0] () mutable {
+            return string("%") + to_string(++k) + "xll";
+        });
+        array<gsl::czstring, fmt.size()> fmt;
+        transform(begin(buf), end(buf), begin(fmt), [] (auto& it) {
+            return it.c_str();
+        });
+        auto stop = gen();
+        return fmt;
+    }();
+
+    using fmt_t = char[8];
+    static fmt_t* fmt2 = []() {
+        CTime gen;
+        static fmt_t buf[160];
+        for_each(begin(buf), end(buf), [k = 0] (auto p) mutable {
+            snprintf(p, 8, "%%%dxll", ++k);
+        });
+        auto stop = gen();
+        TraceX(stop, gen);
+        return buf;
+    }();
+    static struct printme {
+        printme() {
+            for (auto x : gsl::make_span(fmt2, 16)) TraceX(x);
+        }
+    } _;
+
     uint64_t high = 0, low;
-    if (s.size() > 16) {
-        istringstream(string(s.substr(0, s.size() - 16))) >> hex >> high;
-    }
-    istringstream( string(s.substr(max(0, (int)s.size() - 16))) ) >> hex >> low;
+//    if (s.size() > 16) {
+//        istringstream(string(s.substr(0, s.size() - 16))) >> hex >> high;
+//    }
+//    istringstream( string(s.substr(max(0, (int)s.size() - 16))) ) >> hex >> low;
 //    cout << s << endl;
 //    cout << hex << high << low << dec << "\n";
+
+    int half = max(0, (int)s.size() - 16);
+    if (half > 0) {
+//        ostringstream fmt;
+//        fmt << "%" << half << "xll";
+//        TraceX(fmt.str());
+        sscanf(&s[0], fmt[half], &high);
+    } else {
+        high = 0;
+    }
+//    ostringstream fmt;
+//    fmt << "%" << (32 - half) << "xll";
+    sscanf(&s[half], fmt[half], &low);
+//    cout << hex << high << low << dec << "\n\n";
+
     return ((uint128_t)high << 64) + (uint128_t)low;
 }
 
@@ -112,28 +162,6 @@ operator>>(std::istream& inp, __int128_t& v) {
     return inp;
 }
 
-//constexpr string_view trim(string_view v, char c = '"') {
-//    v.remove_prefix(std::min(v.find_first_not_of("\""), v.size()));
-//    return v;
-//}
-
-void printTree(fs::path f, string indent = "") {
-    cout << indent << f.filename().string() << (fs::is_directory(f) ? "/" : "") << endl;
-    if (fs::is_directory(f))
-        for (auto& child : fs::directory_iterator(f))
-            printTree(child, indent + "    ");
-}
-
-void parseDir(const string& dirname)
-{
-	fs::path dir(dirname);
-	assert(fs::is_directory(dir));
-	fs::create_directories("sandbox/a/b");
-	std::ofstream("sandbox/a/file1.txt");
-	std::ofstream("sandbox/file1.txt");
-	std::ofstream("sandbox/file2.txt");
-    printTree("sandbox");
-}
 
 using Args = gsl::span<char const*>;
 
@@ -142,13 +170,38 @@ void options(const Args& args) {
     vector<string> s = {"a", "b"};
 }
 
-void load(istream& inp) {
+std::ostream& operator<<(std::ostream& out, const std::chrono::duration<double>& t) {
+    return out << to_string(t.count()) << "s";
+}
+
+std::ostream& operator<<(std::ostream& out, const std::chrono::nanoseconds& t) {
+    return out << to_string(t.count()) << "ns";
+}
+
+std::ostream& operator<<(std::ostream& out, const CTime& t) {
+    return out << to_string(t.nsec().count()) << "ns";
+}
+
+struct File {
     uint128_t md5;
     string fname;
+};
+
+//using FList = vector<File>;
+using FList = deque<File>;
+
+void load(istream& inp) {
+    CTime t;
+    uint128_t md5;
+    string fname;
+    log_trace << "Using deque";
+    FList flist;
     while (inp >> md5 && inp.ignore(2)
             && getline(inp, fname)) {
-        cout << u128x(md5) << " -> " << fname << endl << flush;
+        flist.push_back({md5, fname});
+//        cout << u128x(md5) << " -> " << fname << endl << flush;
     }
+    TraceX(t.nsec(), t.sec());
 }
 
 
@@ -161,14 +214,6 @@ int main(int argc, char const **argv) {
     auto args = gsl::make_span(argv, argc);
     options(args);
 
-//    TraceX(sizeof(intmax_t));
-//    TraceX(sizeof(uint128_t));
-//    TraceX(std::numeric_limits<uint64_t>::max());
-//    cout << (int128_t)-1 << endl;
-//    TraceX(std::numeric_limits<uint128_t>::max());
-//    TraceX(std::numeric_limits<uint128_t>::min());
-//    TraceX(std::numeric_limits<int128_t>::max());
-//    TraceX(std::numeric_limits<int128_t>::min());
 
     try {
         if (args.size() > 1) {
