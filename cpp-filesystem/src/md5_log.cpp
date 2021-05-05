@@ -82,6 +82,23 @@ operator<<( std::ostream& out, __int128_t value )
 extern "C" __int128 atoi128(const char *s);
 #include "gsl-lite.hpp"
 
+template <typename Func>
+void once(Func f) {
+    [[maybe_unused]] static auto _ = [&]() { f(); return '\0xff'; }();
+//    static struct _{
+//        _(Func f) { f(); }
+//    }_(f);
+}
+
+void test_once() {
+    auto lambda = [](){ cout << "Supposed to run only once\n"; };
+    TraceX(sizeof(lambda));
+    for (int k=0; k<4; ++k) {
+        TraceX(k);
+        once([](){ cout << "Supposed to run only once\n"; });
+    }
+}
+
 uint128_t x2u128(string_view s) {
     static auto fmt = []() {
         CTime gen;
@@ -90,52 +107,37 @@ uint128_t x2u128(string_view s) {
             return string("%") + to_string(++k) + "llx";
         });
         array<gsl::czstring, buf.size() + 1> f = {""}; // make the array index 1-based
-        for (int k=0; k!=16; ++k) f[k] = buf[k].c_str();
         transform(begin(buf), end(buf), begin(f) + 1, [] (auto& it) { return it.c_str(); });
         auto stop = gen();
         TraceX(stop);
         return f;
     }();
-
-//    using fmt_t = char[8];
-//    static fmt_t* fmt2 = []() {
-//        CTime gen;
-//        static fmt_t buf[160];
-//        for_each(begin(buf), end(buf), [k = 0] (auto p) mutable {
-//            snprintf(p, 8, "%%%dxll", ++k);
-//        });
-//        auto stop = gen();
-//        TraceX(stop, gen);
-//        return buf;
-//    }();
-//    static struct printme {
 //        printme() {
 ////            for (auto x : gsl::make_span(fmt2, 16)) TraceX(x);
 //            for (auto x : fmt) TraceX(x);
 //        }
 //    } _;
 
-    uint64_t high = 0, low;
-//    if (s.size() > 16) {
-//        istringstream(string(s.substr(0, s.size() - 16))) >> hex >> high;
-//    }
-//    istringstream( string(s.substr(max(0, (int)s.size() - 16))) ) >> hex >> low;
-    cout << s << endl;
+//    cout << s << endl;
 
-    auto len = min((int)s.size(), 32);
+    [[maybe_unused]]
+    int dummy = []() { cout << " static decl is supposed to have a side effect" << endl; return 0; }();
+
+    struct guard {
+        guard() { /*cout << "Have side effect\n";*/ }
+    } _ ;
+
+
+    uint64_t high = 0, low;
+    int len = min((int)s.size(), 32);
     int half = max(0, len - 16);
     if (half > 0) {
-//        ostringstream fmt;
-//        fmt << "%" << half << "xll";
         sscanf(&s[0], fmt[half], &high);
     } else {
         high = 0;
     }
-//    ostringstream fmt;
-//    fmt << "%" << (32 - half) << "xll";
-
     sscanf(&s[half], fmt[len-half], &low);
-    cout << hex << high << low << dec << "\n\n";
+//    cout << hex << high << low << dec << "\n\n";
 
     return ((uint128_t)high << 64) + (uint128_t)low;
 }
@@ -208,6 +210,9 @@ void load(istream& inp) {
 
 int main(int argc, char const **argv) {
     TraceX(__clang_version__);
+
+    test_once();
+    exit(0);
 
 //    using Args = invoke_result(decltype( gsl::make_span(argv, argc)))::type;  //vector<string>;
 //    using Args = result_of<decltype(gsl::make_span(argv, argc))>::type;  //vector<string>;

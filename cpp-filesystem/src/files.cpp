@@ -108,17 +108,6 @@ int main(int argc, char const **argv) {
     auto args = gsl::make_span(argv, argc);
     options(args);
 
-    TraceX(sizeof(intmax_t));
-    TraceX(sizeof(uint128_t));
-    TraceX(std::numeric_limits<uint64_t>::max());
-    cout << (int128_t)-1 << endl;
-    TraceX(std::numeric_limits<uint128_t>::max());
-    TraceX(std::numeric_limits<uint128_t>::min());
-    TraceX(std::numeric_limits<int128_t>::max());
-    TraceX(std::numeric_limits<int128_t>::min());
-//    using Args = decltype(args);
-//    for (auto& x : args) { TraceX(x); }
-
     if (args.size() > 1) {
         parseDir(args[1]);
     }
