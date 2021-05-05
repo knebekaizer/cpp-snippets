@@ -12,7 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR}/../include)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 
-add_executable(test
+add_executable(files
         src/files.cpp
 )
 

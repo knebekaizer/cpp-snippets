@@ -1,10 +1,14 @@
+//
+// Created by Vladimir Ivanov on 01.05.2021.
+//
+
+#ifndef CPP_FEATURES_TRACE_HPP
+#define CPP_FEATURES_TRACE_HPP
+
 /**
  * \file
  * Trace and log functions and macros
  */
-
-#ifndef TRACE_H_
-#define TRACE_H_
 
 #include <stdexcept>
 #include <string>
@@ -96,33 +100,30 @@ extern LOG_LEVEL::LOG_LEVEL gLogLevel;
 #define log_error   (LOG_LEVEL_ >= LOG_LEVEL::error) && err_stream
 #define log_fatal   (LOG_LEVEL_ >= LOG_LEVEL::error) && err_stream << "[FATAL] "
 
+
 #define TraceF      log_trace
 #define Trace0()    TraceF
 #define Trace1(a)   log_trace << #a << " = " << (a)
 #define Trace2(a,b)   Trace1(a) <<"; " << #b << " = " << (b)
 #define Trace3(a,b,c)   Trace2(a,b) <<"; " << #c << " = " << (c)
 #define Trace4(a,b,c,d)   Trace3(a,b,c) <<"; " << #d << " = " << (d)
-#define Trace5(a1,a2,a3,a4,a5)   Trace4(a1,a2,a3,a4) <<"; " << #a5 << " = " << (a5)
-
 
 #define tr_stream1(name)  utils::tr_stream_helper().get() << #name << "> "
 #define log_trace1(name)   (LOG_LEVEL_ >= LOG_LEVEL::trace) && tr_stream1(name)
 
+
 // Variadic tricks
 #if defined(__GNUC__) || defined(__clang__)
-#define _TRACE_GET_MACRO(_0,_1,_2,_3,_4,_5,NAME,...) NAME
+#define _TRACE_GET_MACRO(_0,_1,_2,_3,_4,NAME,...) NAME
 #define _TRACE_GET_MACRO1(_0,_1,NAME,...) NAME
 
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #endif // clang diagnostic
-#define TraceX(...) _TRACE_GET_MACRO(_0, ##__VA_ARGS__, Trace5, Trace4, Trace3, Trace2, Trace1, Trace0)(__VA_ARGS__)
-
-// Use parameter instead of __func__. TODO: fix naming
+#define TraceX(...) _TRACE_GET_MACRO(_0, ##__VA_ARGS__, Trace4, Trace3, Trace2, Trace1, Trace0)(__VA_ARGS__)
 #define tr_stream_(...) _TRACE_GET_MACRO1(_0, ##__VA_ARGS__, tr_stream1, tr_stream)(__VA_ARGS__)
 #define log_trace_(...) _TRACE_GET_MACRO1(_0, ##__VA_ARGS__, log_trace1, log_trace)(__VA_ARGS__)
-
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif // clang diagnostic
@@ -178,4 +179,4 @@ extern log4cxx::LoggerPtr logger;
 #endif
 
 
-#endif
+#endif //CPP_FEATURES_TRACE_HPP

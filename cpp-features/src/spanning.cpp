@@ -10,7 +10,7 @@ using gsl::span;
 using gsl::make_span;
 
 void spanning() {
-    TraceF;
+	TraceF;
 	class Foo {
 	public:
 	//	auto buf() { return span<std::remove_pointer<decltype(buf_)>::type>(buf_, count_); }
@@ -27,7 +27,7 @@ void spanning() {
 		}
 	private:
 		int32_t count_;
-	//	int64_t* buf_;  // works
+	//	int64_t* buf_;	// works
 		unique_ptr<int64_t> buf_;
 		unique_ptr<int64_t const> cbuf_;
 	};
@@ -40,6 +40,6 @@ void spanning() {
 }
 
 int main() {
-    spanning();
-    return 0;
+	spanning();
+	return 0;
 }

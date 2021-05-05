@@ -6,7 +6,7 @@ add_executable(
     functional.cpp
     scoped.cpp
     async.cpp
-        ../include/trace.hpp concept.cpp)
+)
 
 add_executable(ranges
     ranges.cpp

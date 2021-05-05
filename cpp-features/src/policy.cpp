@@ -13,12 +13,12 @@ template <typename F>
 // TODO: Use invoke_result without && when compiled with C++17
 auto tryOrTerminate(F&& tryClause) -> typename std::result_of<F&&()>::type {
   try {
-    return tryClause();
+	return tryClause();
   } catch (...) {
-    // A trick to terminate with unhandled exception. This will print a stack trace
-    // and write to iOS crash log.
-    log_trace << "Handling exception from tryClause";
-    std::terminate();
+	// A trick to terminate with unhandled exception. This will print a stack trace
+	// and write to iOS crash log.
+	log_trace << "Handling exception from tryClause";
+	std::terminate();
   }
 }
 
@@ -41,8 +41,8 @@ void terminatePolicy() {
 enum class ErrorAction { kBad, kGood, kThrow, kTerminate };
 
 ostream& operator << (ostream& os, ErrorAction const& x) {
-    static const char* names[] = {"kBad", "kGood", "kThrow", "kTerminate"};
-    return os << names[(int)x];
+	static const char* names[] = {"kBad", "kGood", "kThrow", "kTerminate"};
+	return os << names[(int)x];
 }
 template <ErrorAction> struct ErrorPolicy { operator bool() const { return false; } };
 
@@ -52,49 +52,49 @@ template <> ErrorPolicy<ErrorAction::kTerminate>::operator bool() const { termin
 
 template <ErrorAction action>
 bool doSmth() {
-    TraceX(action);
-    return ErrorPolicy<action>();
+	TraceX(action);
+	return ErrorPolicy<action>();
 }
 
-template <ErrorAction action> bool doSpec(bool x) {  TraceX(x); return true; };
+template <ErrorAction action> bool doSpec(bool x) {	 TraceX(x); return true; };
 template <> bool doSpec<ErrorAction::kTerminate>(bool x) { TraceX(x); if (x) return x; else terminate(); };
 
 
 void testPolicy() {
 
-    bool ret = doSmth<ErrorAction::kGood>();
-    TraceX(ErrorAction::kGood, ret);
+	bool ret = doSmth<ErrorAction::kGood>();
+	TraceX(ErrorAction::kGood, ret);
 
-    ret = doSmth<ErrorAction::kBad>();
-    TraceX(ErrorAction::kBad, ret);
+	ret = doSmth<ErrorAction::kBad>();
+	TraceX(ErrorAction::kBad, ret);
 
-    try {
-        ret = doSmth<ErrorAction::kThrow>();
-        TraceX(ErrorAction::kThrow, ret);
-    } catch (exception& e) {
-        TraceX(e.what());
-    }
+	try {
+		ret = doSmth<ErrorAction::kThrow>();
+		TraceX(ErrorAction::kThrow, ret);
+	} catch (exception& e) {
+		TraceX(e.what());
+	}
 
-    doSpec<ErrorAction::kTerminate>(true);
-    doSpec<ErrorAction::kTerminate>(false);
+	doSpec<ErrorAction::kTerminate>(true);
+	doSpec<ErrorAction::kTerminate>(false);
 
 
-    try {
-        ret = doSmth<ErrorAction::kTerminate>();
-        TraceX(ErrorAction::kTerminate, ret);
-    } catch (exception& e) {
-        TraceX(e.what());
-    }
-    log_trace << "Should not com here";
+	try {
+		ret = doSmth<ErrorAction::kTerminate>();
+		TraceX(ErrorAction::kTerminate, ret);
+	} catch (exception& e) {
+		TraceX(e.what());
+	}
+	log_trace << "Should not com here";
 }
 
 
 int main() {
 	log_info << "Start";
 
-//    terminatePolicy();
+//	  terminatePolicy();
 
-    testPolicy();
+	testPolicy();
 
 	return 0;
 }

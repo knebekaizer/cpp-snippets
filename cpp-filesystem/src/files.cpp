@@ -2,8 +2,6 @@
 // Created by Vladimir Ivanov on 22/10/2019.
 //
 
-#include "files.h"
-
 //#include <filesystem>
 #include "ghc/filesystem.hpp"
 namespace fs = ghc::filesystem;
@@ -35,6 +33,7 @@ using namespace std;
 123456789 123456789 123456789 12
 18446744073709551615 // std::numeric_limits<uint64_t>::max()
  */
+/*
 static string testStr = "5e1463677a8246bf2f99ea81f6baf1a6  Music/BG/Okudjava/15_track.mp3";
 
 std::ostream&
@@ -67,6 +66,7 @@ operator<<( std::ostream& out, __int128_t value )
     }
     return out;
 }
+*/
 
 //constexpr string_view trim(string_view v, char c = '"') {
 //    v.remove_prefix(std::min(v.find_first_not_of("\""), v.size()));
@@ -80,15 +80,26 @@ void printTree(fs::path f, string indent = "") {
             printTree(child, indent + "    ");
 }
 
+void printTreeRec(fs::path f) {
+    cout << f.filename().string() << (fs::is_directory(f) ? "/" : "") << endl;
+    if (fs::is_directory(f))
+        for (auto& child : fs::recursive_directory_iterator(f))
+            cout << child.path().string() << '\n';
+}
+
 void parseDir(const string& dirname)
 {
 	fs::path dir(dirname);
 	assert(fs::is_directory(dir));
-	fs::create_directories("sandbox/a/b");
+	auto fs_create_directories_rc = fs::create_directories("sandbox/a/b");
+	TraceX(fs_create_directories_rc);
+    fs::create_directory("sandbox/dir with spaces:");
 	std::ofstream("sandbox/a/file1.txt");
 	std::ofstream("sandbox/file1.txt");
 	std::ofstream("sandbox/file2.txt");
     printTree("sandbox");
+    TraceF;
+    printTreeRec("sandbox");
 }
 
 using Args = gsl::span<char const*>;
@@ -108,8 +119,15 @@ int main(int argc, char const **argv) {
     auto args = gsl::make_span(argv, argc);
     options(args);
 
-    if (args.size() > 1) {
-        parseDir(args[1]);
-    }
+    TraceX((3 * 3u) / (-3));
 
+    try {
+        if (args.size() > 1) {
+            parseDir(args[1]);
+        }
+    } catch (exception& e) {
+        log_fatal << e.what();
+        return -1;
+    }
+    return 0;
 }

@@ -65,7 +65,7 @@ void foo() {
 	throw runtime_error("Test exception");
 }
 
-//void lock() { log_trace << __func__;  }
+//void lock() { log_trace << __func__;	}
 
 void test(int& x) {
 
@@ -78,8 +78,8 @@ void test(int& x) {
 	Scoped nested { []() { log_trace << "Tear down: this should happen before unlock!"; }};
 
 	TraceX(x);
-	foo();        // this will throw eexception
-	unlock(x);    // so this is unreachable
+	foo();		  // this will throw eexception
+	unlock(x);	  // so this is unreachable
 	TraceX(x);
 	// Expecting 2 scoped dtors
 }
