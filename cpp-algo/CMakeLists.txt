@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(cpp_alg)
+project(cpp_algo)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -15,3 +15,4 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 add_executable(cpp_alg main.cpp test_std.cpp)
 add_executable(moveZeroes MoveZeroes.cpp)
 add_executable(domino Domino.cpp)
+add_executable(prefixNotation PrefixNotation.cpp)
