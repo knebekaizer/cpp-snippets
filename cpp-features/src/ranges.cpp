@@ -369,8 +369,8 @@ void ex_71() {
 void ex_8() {
 	std::string input = " 1a2/**/a3Z4b5Z6cz ";
 	std::string result =
-//			  input // OK
-			vs::c_str(" 1A2a3Z4b5Z6cz ")
+			input // OK
+//			vs::c_str(" 1A2a3Z4b5Z6cz ") // ok
 			| vs::filter(::isalpha)
 			| vs::transform(::tolower)
 			| to<std::string>
@@ -388,9 +388,9 @@ int main() {
 	ex_slice();
 
 	auto fmt = formatStr(16);
-	log_trace << fmt;
+//	log_trace << fmt;
 
-	for (auto k : {0,1,2,3}) {	test_gen2(); TraceX(k); }
+//	for (auto k : {0,1,2,3}) {	test_gen2(); TraceX(k); }
 
 	for (const auto& x : test_gen2()) cout << x << ", "; cout << endl;
 
@@ -408,7 +408,7 @@ int main() {
 //	ex6();
 //	ex7();
 //	ex_71();
-//	ex_8();
+	ex_8();
 
 	return 0;
 }

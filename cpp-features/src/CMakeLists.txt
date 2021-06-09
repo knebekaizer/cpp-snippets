@@ -16,7 +16,7 @@ add_executable(ranges
 set(USER_HOME $ENV{HOME})
 set(RANGES_INCLUDE "${USER_HOME}/work/lib/range-v3/include")
 target_include_directories(ranges PUBLIC ${RANGES_INCLUDE})
-target_include_directories(ranges PUBLIC "${RANGES_INCLUDE}/range/v3")
+#target_include_directories(ranges PUBLIC "${RANGES_INCLUDE}/range/v3")
 
 add_executable(concept
     concept.cpp
