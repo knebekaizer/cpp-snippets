@@ -90,9 +90,11 @@ void test_foreach() {
 	vector<int> vi = {1,2,3,4,5,6,7,8};
 	auto const s = "abcdefgh"s ;
 
-	auto s2 = s| vs::for_each([](auto k) { return vs::single((char )(k+1)); });
-	TraceX(s, s2 | to<string>);
-	auto v2 = vi | vs::for_each([](auto k) { return vs::single(k+1); });
+	auto s2i  = s | vs::for_each([](char k) { return vs::single(k+1); }); // list of ints
+	auto s2c  = s | vs::for_each([](char k) { return vs::single((char)(k+1)); }); // list of chars
+	TraceX(s, s2i | to<string>);    // s = abcdefgh; s2i | to<string> = bcdefghi
+	TraceX(s2i, s2c);               // s2i = [98,99,100,101,102,103,104,105]; s2c = [b,c,d,e,f,g,h,i]
+	auto v2 = vi | vs::for_each([](auto k) { return vs::single(k+1); });    // vi = {1, 2, 3, 4, 5, 6, 7, 8}; v2 = [2,3,4,5,6,7,8,9]
 	TraceX(vi, v2);
 }
 
@@ -379,6 +381,38 @@ void ex_8() {
 	TraceX(result);
 }
 
+extern "C" void print_plainCStr(int argc, const char** argv) {
+	for (int k=0; k<argc; ++k) {
+		printf("print_plainCStr> %d: %s\n", k, argv[k]);
+	}
+}
+
+// convert vector<string> to const char**
+void test_cstr_array() {
+	vector<string> args = {"one", "two", "three"};
+//	auto argv = args | vs::transform([](const string& s){ return s.c_str(); }) | to_vector;
+	auto argv = args | vs::transform(&string::c_str) | to_vector;
+	print_plainCStr(argv.size(), &argv[0]);
+}
+
+using index_t = unsigned int;
+using value_t = int;
+extern "C" value_t partial_sum(index_t n) {
+	auto s = (value_t)0;
+	for (auto k = 0u; k <= n; ++k) { s += k; }
+	return s;
+}
+extern "C" value_t fibonacci(index_t n)
+{
+	return n <= 1 ? (value_t)n
+		: fibonacci(n-1) + fibonacci(n-2);
+}
+extern "C" index_t get_num() { return 8; }
+void test_c_accessor(index_t (get_num)(), value_t (get_value)(index_t)) {
+	auto v = vs::iota(0u, get_num()) | vs::transform([f = get_value](auto k) { return f(k); });
+	TraceX(v.size(), v | vs::reverse);
+}
+
 int main() {
 	auto _ = Scoped {
 		[](){ log_trace_(main) << "Starting..."; },
@@ -409,6 +443,9 @@ int main() {
 //	ex7();
 //	ex_71();
 	ex_8();
+
+	test_cstr_array();
+	test_c_accessor([]{return 8u;}, fibonacci);
 
 	return 0;
 }

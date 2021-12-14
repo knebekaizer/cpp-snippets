@@ -41,3 +41,7 @@ add_executable(testRandom
 add_executable(lookup
     lookup.cpp
 )
+
+add_executable(exception
+    ExceptionSafety.cpp
+)
