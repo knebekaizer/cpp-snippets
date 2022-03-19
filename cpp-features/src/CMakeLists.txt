@@ -14,7 +14,7 @@ add_executable(ranges
 
 
 set(USER_HOME $ENV{HOME})
-set(RANGES_INCLUDE "${USER_HOME}/work/lib/range-v3/include")
+set(RANGES_INCLUDE "${USER_HOME}/work/3d/range-v3/include")
 target_include_directories(ranges PUBLIC ${RANGES_INCLUDE})
 #target_include_directories(ranges PUBLIC "${RANGES_INCLUDE}/range/v3")
 

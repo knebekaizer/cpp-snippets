@@ -237,6 +237,16 @@ void test_temporary() {
 
 }
 
+void ex_fibonacci(int n) {
+    auto gen = vs::generate([a=0, b=1]() mutable{
+        auto t = a;
+        a = b;
+        b += t;
+        return b;
+    });
+    TraceX(gen | vs::take(n));
+}
+
 void ex3()
 {
 	auto vi = views::for_each(views::ints(1, 6),
@@ -435,6 +445,8 @@ int main() {
 	test_shuffle();
 	test_transform();
 	test_temporary();
+
+    ex_fibonacci(10);
 
 //	ex3();
 //	ex4();
