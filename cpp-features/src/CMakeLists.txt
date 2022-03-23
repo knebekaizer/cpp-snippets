@@ -45,3 +45,7 @@ add_executable(lookup
 add_executable(exception
     ExceptionSafety.cpp
 )
+
+add_executable(misc
+    misc.cpp
+)
