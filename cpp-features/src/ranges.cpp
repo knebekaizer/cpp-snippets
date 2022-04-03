@@ -92,8 +92,8 @@ void test_foreach() {
 
 	auto s2i  = s | vs::for_each([](char k) { return vs::single(k+1); }); // list of ints
 	auto s2c  = s | vs::for_each([](char k) { return vs::single((char)(k+1)); }); // list of chars
+	TraceX(s, s2i, s2c);               // s2i = [98,99,100,101,102,103,104,105]; s2c = [b,c,d,e,f,g,h,i]
 	TraceX(s, s2i | to<string>);    // s = abcdefgh; s2i | to<string> = bcdefghi
-	TraceX(s2i, s2c);               // s2i = [98,99,100,101,102,103,104,105]; s2c = [b,c,d,e,f,g,h,i]
 	auto v2 = vi | vs::for_each([](auto k) { return vs::single(k+1); });    // vi = {1, 2, 3, 4, 5, 6, 7, 8}; v2 = [2,3,4,5,6,7,8,9]
 	TraceX(vi, v2);
 }
@@ -237,24 +237,26 @@ void test_temporary() {
 
 }
 
-void ex_fibonacci(int n) {
-    auto gen = vs::generate([a=0, b=1]() mutable{
+void ex_generate(int n) {
+    auto fast_Fibonacci = vs::generate([a=0, b=1]() mutable{
         auto t = a;
         a = b;
         b += t;
         return b;
     });
-    TraceX(gen | vs::take(n));
+    TraceX(fast_Fibonacci | vs::take(n));
 }
 
-void ex3()
+void ex_foreach()
 {
-	auto vi = views::for_each(views::ints(1, 6),
+	auto foreach_pipe = vs::ints(1, 6) | views::for_each([](int i) { return yield_from(views::repeat_n(i, i)); });
+	auto foreach_expr = views::for_each(views::ints(1, 6),
 							  [](int i) { return yield_from(views::repeat_n(i, i)); }) |
 			  to<std::vector>();
 	// prints: [1,2,2,3,3,3,4,4,4,4,5,5,5,5,5]
-	TraceX(vi);
-	TraceX(views::all(vi));
+	TraceX(foreach_pipe);
+	TraceX(foreach_expr);
+	TraceX(views::all(foreach_expr));
 }
 
 
@@ -262,7 +264,7 @@ auto stream_view(std::istream&& is) {
 	return rng::istream<string>(is);
 }
 
-void ex4() {
+void ex_istream_view() {
 
 	constexpr static auto input = "Niebloid comes from Eric Niebler's name. In simple words, they are function objects"
 								  " that disable ADL (argument-dependent lookup)";
@@ -412,13 +414,15 @@ extern "C" value_t partial_sum(index_t n) {
 	for (auto k = 0u; k <= n; ++k) { s += k; }
 	return s;
 }
+
 extern "C" value_t fibonacci(index_t n)
 {
 	return n <= 1 ? (value_t)n
 		: fibonacci(n-1) + fibonacci(n-2);
 }
-extern "C" index_t get_num() { return 8; }
-void test_c_accessor(index_t (get_num)(), value_t (get_value)(index_t)) {
+
+extern "C" index_t get_plainC() { return 8; }
+void test_C_accessor(index_t (get_num)(), value_t (get_value)(index_t)) {
 	auto v = vs::iota(0u, get_num()) | vs::transform([f = get_value](auto k) { return f(k); });
 	TraceX(v.size(), v | vs::reverse);
 }
@@ -446,10 +450,10 @@ int main() {
 	test_transform();
 	test_temporary();
 
-    ex_fibonacci(10);
+	ex_generate(10);
 
-//	ex3();
-//	ex4();
+	ex_foreach();
+	ex_istream_view();
 //	ex5();
 //	ex6();
 //	ex7();
@@ -457,7 +461,8 @@ int main() {
 	ex_8();
 
 	test_cstr_array();
-	test_c_accessor([]{return 8u;}, fibonacci);
+	test_C_accessor([]{return 8u;}, fibonacci);
+	test_C_accessor(get_plainC, fibonacci);
 
 	return 0;
 }
