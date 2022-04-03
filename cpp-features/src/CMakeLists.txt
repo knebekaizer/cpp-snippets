@@ -49,3 +49,7 @@ add_executable(exception
 add_executable(misc
     misc.cpp
 )
+
+add_executable(bitset
+    bitset.cpp
+)
