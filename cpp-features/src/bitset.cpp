@@ -1,4 +1,3 @@
-#include <bitset>
 #include <iostream>
 
 #include "trace.hpp"

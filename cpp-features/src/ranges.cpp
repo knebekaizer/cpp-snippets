@@ -251,7 +251,7 @@ void ex_generate(int n) {
     TraceX(fast_Fibonacci | vs::take(n));
 }
 
-void ex_foreach()git add
+void ex_foreach()
 {
 	auto foreach_pipe = vs::ints(1, 6) | views::for_each([](int i) { return yield_from(views::repeat_n(i, i)); });
 	auto foreach_expr = views::for_each(views::ints(1, 6),

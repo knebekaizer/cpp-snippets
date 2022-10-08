@@ -1,6 +1,5 @@
 
-add_executable(
-        cpp-features
+add_executable(cpp-features
     main.cpp
     structured.cpp
     functional.cpp
@@ -11,12 +10,6 @@ add_executable(
 add_executable(ranges
     ranges.cpp
 )
-
-
-set(USER_HOME $ENV{HOME})
-set(RANGES_INCLUDE "${USER_HOME}/work/3d/range-v3/include")
-target_include_directories(ranges PUBLIC ${RANGES_INCLUDE})
-#target_include_directories(ranges PUBLIC "${RANGES_INCLUDE}/range/v3")
 
 add_executable(concept
     concept.cpp
@@ -53,3 +46,13 @@ add_executable(misc
 add_executable(bitset
     bitset.cpp
 )
+
+add_executable(bitmap
+    bitmap.cpp
+)
+
+set(USER_HOME $ENV{HOME})
+set(RANGES_INCLUDE "${USER_HOME}/work/3d/range-v3/include")
+
+target_include_directories(ranges PUBLIC ${RANGES_INCLUDE})
+target_include_directories(bitmap PUBLIC ${RANGES_INCLUDE})
