@@ -13,12 +13,12 @@
 
 #include "trace.hpp"
 
+using namespace ranges;
+namespace rg = ranges;
+namespace vs = ranges::views;
+
 using namespace std;
 using namespace std::literals;
-
-using namespace ranges;
-namespace rng = ranges;
-namespace vs = ranges::views;
 
 
 template <typename T>
@@ -58,10 +58,10 @@ ostream& operator<<(ostream& os, const array<T, N>& v) {
 
 
 void ex_slice() {
-	auto letters = views::iota('a','g');
+	auto letters = vs::iota('a','g');
 	TraceX(letters);	// prints: {a,b,c,d,e,f,g}
 
-	TraceX(letters | views::slice(2,5));	// prints: {c,d,e}
+	TraceX(letters | vs::slice(2,5));	// prints: {c,d,e}
 	TraceX((letters[{3,6}]));
 
 	auto res = letters[{2, 5}];
@@ -86,6 +86,7 @@ void cipherCaesar() {
 	TraceX(src | encrypt | to<string>);
 }
 
+//! This should be named `views::flat_map`
 void test_foreach() {
 	vector<int> vi = {1,2,3,4,5,6,7,8};
 	auto const s = "abcdefgh"s ;
@@ -96,6 +97,9 @@ void test_foreach() {
 	TraceX(s, s2i | to<string>);    // s = abcdefgh; s2i | to<string> = bcdefghi
 	auto v2 = vi | vs::for_each([](auto k) { return vs::single(k+1); });    // vi = {1, 2, 3, 4, 5, 6, 7, 8}; v2 = [2,3,4,5,6,7,8,9]
 	TraceX(vi, v2);
+	// Equivalent with transform (simpler)
+	auto t2 = vi | vs::transform([](auto k) { return k+1; });    // vi = {1, 2, 3, 4, 5, 6, 7, 8}; v2 = [2,3,4,5,6,7,8,9]
+	TraceX(vi, t2);
 }
 
 void test_toVector() {
@@ -109,7 +113,7 @@ void test_toVector() {
 	TraceX(v2);
 
 	vector<int> v3;
-	rng::copy(v | myConv, rng::back_inserter(v3));
+	rg::copy(v | myConv, rg::back_inserter(v3));
 	TraceX(v3);
 }
 
@@ -180,7 +184,7 @@ auto test_gen() {
 	TraceX(gen[n]);
 
 	static char buf[17][8] = {{0}};
-	rng::for_each(gen, [p = buf](const auto& x) mutable { rng::copy(x, (*++p)); } );
+	rg::for_each(gen, [p = buf](const auto& x) mutable { rg::copy(x, (*++p)); } );
 //	  rng::for_each(gen, [](const auto& x)	{ TraceX(x); });
 	TraceX(buf[16]);
 
@@ -203,12 +207,12 @@ auto test_gen2() {
 //		  rng::for_each(gen, [p = buf](const auto& x) mutable { rng::copy(x, (*++p)); });
 
 
-		rng::for_each(
+		rg::for_each(
 				buf | views::drop(1),
-				[k=0](auto& p) mutable { rng::copy( ("%"s + to_string(++k) + "llx"), p); });
+				[k=0](auto& p) mutable { rg::copy(("%"s + to_string(++k) + "llx"), p); });
 
 		for (int k = 0; auto& p : buf | views::drop(1))
-			rng::copy( ("%"s + to_string(++k) + "llx"), p);
+			rg::copy(("%"s + to_string(++k) + "llx"), p);
 
 		array<char, 8> a = {"qwerty"};
 		TraceX(a);
@@ -247,7 +251,7 @@ void ex_generate(int n) {
     TraceX(fast_Fibonacci | vs::take(n));
 }
 
-void ex_foreach()
+void ex_foreach()git add
 {
 	auto foreach_pipe = vs::ints(1, 6) | views::for_each([](int i) { return yield_from(views::repeat_n(i, i)); });
 	auto foreach_expr = views::for_each(views::ints(1, 6),
@@ -261,7 +265,45 @@ void ex_foreach()
 
 
 auto stream_view(std::istream&& is) {
-	return rng::istream<string>(is);
+	return rg::istream<string>(is);
+}
+
+
+void ex_sort() {
+    constexpr static auto input = "Niebloid comes from Eric Niebler's name. In simple words, they are function objects"
+                                  " that disable ADL (argument-dependent lookup)";
+
+    auto words = vs::c_str(input) | views::split(' ');
+    TraceX(words);
+    TraceX(words | to<vector<string>>);
+    auto words_size = (words | to<vector<string>>).size();
+    TraceX(words_size);
+    {
+        istringstream text(input);
+        auto v = rg::istream<string>(text); // = istream_view<string>(text);
+        vector<string> vecText = v | to_vector;
+        TraceX(v);
+        TraceX(vecText);
+    }
+
+    auto sv = stream_view(istringstream(input)) | to_vector;
+//    auto sorted = vs::all(sv) | actions::sort;
+    TraceX(vs::all(sv) | actions::sort);
+
+    rg::sort(sv, {}, &string::size);
+    auto sortedBack = vs::all(sv) | actions::sort([](const string& a, const string& b) { return a.back() < b.back();});
+    TraceX(sortedBack);
+
+//    auto sortedBack2 = vs::all(sv) | actions::sort([](auto a, auto b) { return a < b;}, &string::size); // OK
+    auto sortedBack2 = vs::all(sv) | actions::sort(rg::greater(), &string::size);
+    TraceX(sortedBack2);
+
+//    auto sortedBack3 = vs::all(sv) | actions::sort(rg::greater(), &string::back); // Failed
+    auto sortedBack3 = vs::all(sv) | actions::sort([](auto a, auto b) { return a.back() < b.back();}); // OK
+    TraceX(sortedBack3);
+
+    vector v = {3,1,2};
+    vs::all(v) | actions::sort;
 }
 
 void ex_istream_view() {
@@ -276,14 +318,14 @@ void ex_istream_view() {
 	TraceX(words_size);
 	{
 		istringstream text(input);
-		auto v = rng::istream<string>(text); // = istream_view<string>(text);
+		auto v = rg::istream<string>(text); // = istream_view<string>(text);
 		vector<string> vecText = v | to_vector;
 		TraceX(v);
 		TraceX(vecText);
 	}
 
 	auto v = stream_view( istringstream(input) );
-	auto maxSize = rng::max(v, std::less{}, &string::size).size();
+	auto maxSize = rg::max(v, std::less{}, &string::size).size();
 	TraceX(maxSize);
 
 	auto sv = stream_view( istringstream(input) ) | to_vector;
@@ -293,7 +335,7 @@ void ex_istream_view() {
 	{
 		istringstream text(input);
 		auto max1 =
-				rng::max(istream_view<string>(text), [](const auto& a, const auto& b) { return a.size() < b.size(); });
+				rg::max(istream_view<string>(text), [](const auto& a, const auto& b) { return a.size() < b.size(); });
 		TraceX(max1);
 	}
 //	  auto words = istream_view<string>(text);
@@ -309,11 +351,11 @@ void ex5() {
 	istringstream from(input);
 
 	vector<string> num(8);
-	rng::generate(num, [k=0]() mutable { return to_string(k++); });
+	rg::generate(num, [k=0]() mutable { return to_string(k++); });
 	TraceX(num);
 
 	vector<string> words;
-	rng::copy(num, rng::back_inserter(words));
+	rg::copy(num, rg::back_inserter(words));
 	TraceX(words);
 
 	{
@@ -321,8 +363,8 @@ void ex5() {
 		TraceX(istream_view<string>(from));
 	}
 
-	words = rng::to_vector(istream_view<string>(from));
-	words = istream_view<string>(from) | rng::to_vector;
+	words = rg::to_vector(istream_view<string>(from));
+	words = istream_view<string>(from) | rg::to_vector;
 
 	auto s = string(input);
 	TraceX(s | vs::split(' '));
@@ -460,9 +502,11 @@ int main() {
 //	ex_71();
 	ex_8();
 
-	test_cstr_array();
-	test_C_accessor([]{return 8u;}, fibonacci);
-	test_C_accessor(get_plainC, fibonacci);
+//	test_cstr_array();
+//	test_C_accessor([]{return 8u;}, fibonacci);
+//	test_C_accessor(get_plainC, fibonacci);
+
+    ex_sort();
 
 	return 0;
 }
