@@ -51,6 +51,61 @@ std::string getOsName() {
     return uts.sysname;
 }
 
+#include <bit>
+
+//if constexpr (std::endian::native == std::endian::big)
+//    log_trace << "big-endian\n";
+//else if constexpr (std::endian::native == std::endian::little)
+//    log_trace << "little-endian\n";
+//else std::cout << "mixed-endian\n";
+
+template <bool BigEndian> struct DataN;
+template <>
+struct DataN<false>{
+    uint8_t half2:4;
+    uint8_t half1:4;
+};
+
+template <>
+struct DataN<true> {
+    uint8_t half1:4;
+    uint8_t half2:4;
+};
+
+constexpr bool BigEndian = (std::endian::native == std::endian::big);
+using DataH = DataN<BigEndian>;
+
+template <std::endian> struct XDataN;
+template <> struct XDataN<std::endian::little>{
+    uint8_t half2:4;
+    uint8_t half1:4;
+};
+template <> struct XDataN<std::endian::big>{
+    uint8_t half2:4;
+    uint8_t half1:4;
+};
+using XDataH = XDataN<std::endian::native>;
+
+void test_endian() {
+    if constexpr (std::endian::native == std::endian::big)
+        log_trace << "big-endian\n";
+    else if constexpr (std::endian::native == std::endian::little)
+        log_trace << "little-endian\n";
+    else std::cout << "mixed-endian\n";
+
+    if(*(char *)(int[]){1}) {
+        log_trace << "little endian";
+    } else {
+        log_trace << "big endian code";
+    }
+
+    uint8_t x = 1;
+    auto y = *(DataH*)&x;
+    TraceX((int)y.half1, (int)y.half2);
+    auto z = *(XDataH*)&x;
+    TraceX((int)z.half1, (int)z.half2);
+}
+
 int main() {
     log_info << "Start";
     TraceX(getOsName());
@@ -62,4 +117,5 @@ int main() {
 	TraceX(msb(1 << 5));
 	assert(msb(1 << 5) == 5);
 	test_scanf();
+    test_endian();
 }
