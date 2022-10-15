@@ -6,7 +6,7 @@
 #include <string>
 #include <chrono>
 
-#include "trace.h"
+#include "trace.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
