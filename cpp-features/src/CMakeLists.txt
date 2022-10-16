@@ -51,6 +51,15 @@ add_executable(bitmap
     bitmap.cpp
 )
 
+add_executable(par_algo
+    par_algo.cpp
+)
+
+add_executable(par_algo_none
+    par_algo.cpp
+)
+target_compile_definitions(par_algo PUBLIC "-DPARALLEL")
+
 set(USER_HOME $ENV{HOME})
 set(RANGES_INCLUDE "${USER_HOME}/work/3d/range-v3/include")
 
