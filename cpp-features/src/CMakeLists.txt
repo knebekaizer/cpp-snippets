@@ -51,6 +51,10 @@ add_executable(bitmap
     bitmap.cpp
 )
 
+add_executable(std-ranges
+    std-ranges.cpp
+)
+
 add_executable(par_algo
     par_algo.cpp
 )

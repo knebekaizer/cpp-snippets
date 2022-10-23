@@ -1,6 +1,7 @@
 #include <iostream>
 #include <array>
 #include <cassert>
+#include <memory>
 #include <type_traits>
 
 #include "trace.hpp"
@@ -104,6 +105,12 @@ void test_endian() {
     TraceX((int)y.half1, (int)y.half2);
     auto z = *(XDataH*)&x;
     TraceX((int)z.half1, (int)z.half2);
+}
+
+class B {};
+class D : public B {};
+unique_ptr<B> test_uptr() {
+    return unique_ptr<B>(new D());
 }
 
 int main() {
