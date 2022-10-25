@@ -51,6 +51,10 @@ add_executable(bitmap
     bitmap.cpp
 )
 
+add_executable(ringbuffer
+    ringbuffer.cpp
+)
+
 add_executable(std-ranges
     std-ranges.cpp
 )
@@ -66,6 +70,8 @@ target_compile_definitions(par_algo PUBLIC "-DPARALLEL")
 
 set(USER_HOME $ENV{HOME})
 set(RANGES_INCLUDE "${USER_HOME}/work/3d/range-v3/include")
+set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
 
 target_include_directories(ranges PUBLIC ${RANGES_INCLUDE})
 target_include_directories(bitmap PUBLIC ${RANGES_INCLUDE} "${CMAKE_SOURCE_DIR}/include/range-v3")
+target_include_directories(ringbuffer PUBLIC ${RANGES_INCLUDE} ${BOOST_INCLUDE} "${CMAKE_SOURCE_DIR}/include/range-v3")
