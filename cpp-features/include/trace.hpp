@@ -16,6 +16,13 @@
 #include <sstream>
 #include <iomanip>
 
+#ifdef TRACE_PRETTY
+//#define TRACE_FUNC TRACE_PRETTY_FUNCTION
+#define TRACE_FUNC __PRETTY_FUNCTION__
+#else
+#define TRACE_FUNC __func__
+#endif
+
 namespace utils {
 
 struct tr_stream_helper {
@@ -60,14 +67,13 @@ inline std::string hexdump(const void* const buf, size_t len)
 }
 
 } // namespace utils
-
 // Defines are out of namespace anyway so use qualified typenames here
 //#ifdef NDEBUG
 //#define tr_stream utils::NullStream()
 //#define err_stream  utils::err_stream_helper().get()
 //#else
-#define tr_stream   utils::tr_stream_helper().get() << __func__ << "> "
-#define err_stream  utils::err_stream_helper().get() <<__FILE__<<"#"<<__LINE__<<":"<<__func__<<"> " << "[ERROR] "
+#define tr_stream   utils::tr_stream_helper().get() << TRACE_FUNC << "> "
+#define err_stream  utils::err_stream_helper().get() <<__FILE__<<"#"<<__LINE__<<":"<<TRACE_FUNC<<"> " << "[ERROR] "
 //#endif // NDEBUG
 
 namespace LOG_LEVEL {
