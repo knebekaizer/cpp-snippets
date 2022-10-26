@@ -1,6 +1,7 @@
 
 #include "boost/circular_buffer.hpp"
 #include <algorithm>
+#include <type_traits>
 
 #include <ranges>
 //using namespace rg = std::ranges;
@@ -9,6 +10,7 @@
 namespace rg = ::ranges;
 namespace vs = rg::views;
 
+#define TRACE_PRETTY
 #include "trace.hpp"
 
 using namespace std;
@@ -30,20 +32,65 @@ std::ostream& operator<<(std::ostream& os, V view) {
 };
 #endif
 
+//template <class Printable>
+//ostream& operator<<(ostream& os, const Printable& p) {
+//    if constexpr (is_convertible)
+//    return os << p;
+//}
+
+struct S;
+ostream& operator<<(ostream& os, const S& p);
+
+struct S {
+    enum {None = -1};
+    S(){ TraceX(*this); }
+    S(int i) : id(i) { TraceX(*this); }
+    S(const S& s) : id(s.id) { TraceX(*this); }
+    S(S&& s) : id(s.id) { s.id = None; TraceX(*this); }
+    S& operator=(const S& s) { id = s.id; TraceX(*this); return *this; }
+    S& operator=(S&& s) { id = s.id; s.id = None; TraceX(*this); return *this; }
+    ~S() { TraceX(id); }
+    int id = None;
+};
+
+ostream& operator<<(ostream& os, const S& p) {
+    return os << p.id;
+}
+
+template <typename T>
 void test() {
-    boost::circular_buffer<int> buf(16);
-    buf.resize(16);
-    TraceX(buf.size());
-    std::generate(buf.begin(), buf.end(), [k=0]() mutable { return k++;});
+    boost::circular_buffer<T> buf(8);
+//    buf.resize(8);
+    TraceX(buf.size(), buf.capacity());
+
+    log_trace << "init with push_back:";
+    for (int k=0; k<8; ++k) buf.push_back(k);
     TraceX(buf | vs::all);
-    for (int k=16; k<32; ++k)  buf.push_back(k);
+
+    log_trace << "resize(0):";
+    buf.resize(0);
     TraceX(buf | vs::all);
-    auto v = buf | vs::filter([](auto k) { return (k & 1) == 0; });
+
+    log_trace << "refill with push_back:";
+    for (int k=0; k<8; ++k) buf.push_back(k);
+    TraceX(buf | vs::all);
+
+    log_trace << "refill with generate:";
+    std::generate(buf.begin(), buf.end(), [k=0]() mutable -> T { return k++;});
+    TraceX(buf | vs::all);
+
+    log_trace << "Continue with push_back";
+    for (int k=buf.size(), e=k+4; k<e; ++k)  buf.push_back(k);
+    TraceX(buf | vs::all);
+    log_trace << "Continue with push_back";
+    for (int k=buf.size(), e=k+4; k<e; ++k)  buf.push_back(k);
+    TraceX(buf | vs::all);
+//    auto v = buf | vs::filter([](auto k) { return (k & 1) == 0; });
 //    auto v = vs::iota(0,8) | vs::filter([](auto k) { return (k & 1) == 0; });
-    TraceX(v);
+    TraceX(buf | vs::stride(2));
 }
 
 int main() {
-    test();
+    test<S>();
     return 0;
 }
