@@ -113,6 +113,7 @@ unique_ptr<B> test_uptr() {
     return unique_ptr<B>(new D());
 }
 
+
 int main() {
     log_info << "Start";
     TraceX(getOsName());

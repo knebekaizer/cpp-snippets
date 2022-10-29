@@ -11,6 +11,7 @@
 
 #include "scoped.hpp"
 
+#define TRACE_PRETTY
 #include "trace.hpp"
 
 using namespace ranges;
@@ -20,6 +21,10 @@ namespace vs = ranges::views;
 using namespace std;
 using namespace std::literals;
 
+
+auto streamView(std::istream&& is) {
+    return rg::istream<string>(is);
+}
 
 template <typename T>
 ostream& operator<<(ostream& os, const vector<T>& v) {
@@ -224,6 +229,14 @@ auto test_gen2() {
 }
 
 void test_temporary() {
+    constexpr static auto input = "Niebloid comes from Eric Niebler's name. In simple words, they are function objects"
+                                  " that disable ADL (argument-dependent lookup)";
+    auto wordsView = streamView(istringstream(input));
+    auto sv = wordsView | to_vector; // materialized
+    TraceX(sv.size());
+    TraceX((wordsView | to_vector).size());  // 0; because it's temporary
+    TraceX(vector(wordsView | to_vector).size());  // 0; because it's temporary ?
+
 	vector<string> one{"one"s, "two"s};
 	auto two = "two";
 	TraceX(vs::c_str(two) | vs::all);
@@ -264,8 +277,43 @@ void ex_foreach()
 }
 
 
-auto stream_view(std::istream&& is) {
-	return rg::istream<string>(is);
+void ex_wordTokenizer() {
+    constexpr static auto input = "Niebloid   comes from Eric Niebler's name.\nIn simple words, they are function objects"
+                                  " that disable ADL (argument-dependent lookup)";
+
+    auto words = vs::c_str(input) | views::split(' ');
+    TraceX(words);
+    TraceX(words | to<vector<string>>);
+    TraceX((words | to<vector<string>>).size()); // 18
+
+    // range of range<char>
+    auto splitBetter = vs::split_when([](auto it, auto end){
+        if (!isspace(*it)) return make_pair(false, it);
+        while (it != end && isspace(*it)) ++it;
+        return make_pair(true, it);
+    } );
+    auto wordsBetter = vs::c_str(input) | splitBetter;
+    TraceX(wordsBetter);
+
+    auto splitFromStream = [](auto input) {
+        istringstream local(input);
+        // Wrong idea: `local` owns text, so returning a view lost ownership and hangs
+//        return rg::istream<string>(local); // returns temporary (from local)
+        // Materialize to vector is OK but expensive
+        return rg::istream<string>(local) | to_vector;
+    };
+    TraceX(splitFromStream(input));
+
+    string str = input;
+    auto wordsAsSV = splitBetter // range of range<char>
+        | vs::transform([](auto &&rng) {
+                    return std::string_view(&*rng.begin(), rg::distance(rng));
+                });
+    TraceX(str | wordsAsSV);
+    TraceX(vs::c_str(input) | wordsAsSV);
+    TraceX(string_view(input) | wordsAsSV);
+
+    cout << endl;
 }
 
 
@@ -273,22 +321,22 @@ void ex_sort() {
     constexpr static auto input = "Niebloid comes from Eric Niebler's name. In simple words, they are function objects"
                                   " that disable ADL (argument-dependent lookup)";
 
-    auto words = vs::c_str(input) | views::split(' ');
-    TraceX(words);
-    TraceX(words | to<vector<string>>);
-    auto words_size = (words | to<vector<string>>).size();
-    TraceX(words_size);
-    {
-        istringstream text(input);
-        auto v = rg::istream<string>(text); // = istream_view<string>(text);
-        vector<string> vecText = v | to_vector;
-        TraceX(v);
-        TraceX(vecText);
-    }
+    auto wordsView = streamView(istringstream(input));
+    auto sv = wordsView | to_vector; // materialized
+    TraceX(sv.size());
+    TraceX((wordsView | to_vector).size());  // 0; because it's temporary
+    TraceX(vector(wordsView | to_vector).size());  // 0; because it's temporary ?
+    TraceX((wordsView | to_vector | actions::sort).size()); // sort temporary: compiled, but empty
+    TraceX(wordsView | to_vector | actions::sort); // sort temporary: compiled, but empty
+    TraceX(0, rg::is_sorted(sv)); // sv now is sorted
+    auto copy = vs::all(sv) | actions::sort;
+    TraceX(boolalpha, (&copy[0] == &sv[0]));  // not a view; full copy
+    TraceX(sv | vs::all | actions::sort); // this is NOT a temporary
+    TraceX(1, rg::is_sorted(sv)); // sv now is sorted too
+    sv = streamView(istringstream(input)) | to_vector; // run again
+    TraceX(2, vs::all(sv) | actions::sort); // the same as above
+    TraceX(2, rg::is_sorted(sv)); // sv now is sorted
 
-    auto sv = stream_view(istringstream(input)) | to_vector;
-//    auto sorted = vs::all(sv) | actions::sort;
-    TraceX(vs::all(sv) | actions::sort);
 
     rg::sort(sv, {}, &string::size);
     auto sortedBack = vs::all(sv) | actions::sort([](const string& a, const string& b) { return a.back() < b.back();});
@@ -304,6 +352,7 @@ void ex_sort() {
 
     vector v = {3,1,2};
     vs::all(v) | actions::sort;
+    cout << endl;
 }
 
 void ex_istream_view() {
@@ -324,21 +373,25 @@ void ex_istream_view() {
 		TraceX(vecText);
 	}
 
-	auto v = stream_view( istringstream(input) );
-	auto maxSize = rg::max(v, std::less{}, &string::size).size();
-	TraceX(maxSize);
+	auto v = streamView( istringstream(input) );
+	auto sizeMax = rg::max(v, std::less{}, &string::size).size();
+	TraceX(sizeMax);
 
-	auto sv = stream_view( istringstream(input) ) | to_vector;
+	auto sv = streamView( istringstream(input) ) | to_vector;
 	auto sorted = vs::all(sv) | actions::sort;
 	TraceX(sorted);
 
 	{
 		istringstream text(input);
 		auto max1 =
-				rg::max(istream_view<string>(text), [](const auto& a, const auto& b) { return a.size() < b.size(); });
-		TraceX(max1);
+				rg::max(rg::istream_view<string>(text), [](const auto& a, const auto& b) { return a.size() < b.size(); });
+        TraceX(max1);
+//		auto max2 [[maybe_unused]] = rg::max(istream_view<string>(text), {}, &string::size); // range is empty; Assertion failed
+//        auto wordsView = [](auto input){ istringstream text(input); return rg::istream<string>(text); };
+// WTF       auto max2 [[maybe_unused]] = rg::max(wordsView(input), {}, &string::size); // range is empty; Assertion failed
+//        TraceX(max2);
 	}
-//	  auto words = istream_view<string>(text);
+
 	istringstream text(input);
 	TraceX(istream_view<string>(text));
 	TraceX(text.gcount(), text.eof());
@@ -433,6 +486,7 @@ void ex_8() {
 			| actions::sort
 			| actions::unique;
 	TraceX(result);
+    cout << endl;
 }
 
 extern "C" void print_plainCStr(int argc, const char** argv) {
@@ -467,6 +521,10 @@ extern "C" index_t get_plainC() { return 8; }
 void test_C_accessor(index_t (get_num)(), value_t (get_value)(index_t)) {
 	auto v = vs::iota(0u, get_num()) | vs::transform([f = get_value](auto k) { return f(k); });
 	TraceX(v.size(), v | vs::reverse);
+}
+
+void ex_stringView() {
+
 }
 
 int main() {
@@ -506,6 +564,7 @@ int main() {
 //	test_C_accessor([]{return 8u;}, fibonacci);
 //	test_C_accessor(get_plainC, fibonacci);
 
+    ex_wordTokenizer();
     ex_sort();
 
 	return 0;
