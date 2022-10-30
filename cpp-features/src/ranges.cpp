@@ -278,40 +278,43 @@ void ex_foreach()
 
 
 void ex_wordTokenizer() {
-    constexpr static auto input = "Niebloid   comes from Eric Niebler's name.\nIn simple words, they are function objects"
+    constexpr static auto zstr = "Niebloid    comes from Eric Niebler's name.\n"
+                                 "In simple words, they are function objects"
                                   " that disable ADL (argument-dependent lookup)";
 
-    auto words = vs::c_str(input) | views::split(' ');
-    TraceX(words);
-    TraceX(words | to<vector<string>>);
-    TraceX((words | to<vector<string>>).size()); // 18
+    /// convert ranga<char> to string_view; no ownership, no allocation
+    auto toStringView = [](auto &&rng) {
+//        static_assert(rg::sized_range<decltype(rng)>);
+        return std::string_view(&*rng.begin(), rg::distance(rng)); // distance may be O(N)
+    };
 
-    // range of range<char>
+    auto asStringViews = vs::transform(toStringView);
+
+    /// @return range of range<char>; supports any number of `isspace`
+    auto words = vs::c_str(zstr) | vs::split_when([](auto c){return isspace(c);});
+    TraceX(words);
+    TraceX(rg::distance(words));
+    TraceX(words | to<vector<string>>);
+    TraceX(words | asStringViews); // range view
+
+    /// the same as above
     auto splitBetter = vs::split_when([](auto it, auto end){
         if (!isspace(*it)) return make_pair(false, it);
         while (it != end && isspace(*it)) ++it;
         return make_pair(true, it);
     } );
-    auto wordsBetter = vs::c_str(input) | splitBetter;
-    TraceX(wordsBetter);
+    auto wordsBetterView = vs::c_str(zstr) | splitBetter;
+    TraceX(wordsBetterView);
+    TraceX(rg::distance(wordsBetterView)); // 18
 
-    auto splitFromStream = [](auto input) {
-        istringstream local(input);
-        // Wrong idea: `local` owns text, so returning a view lost ownership and hangs
-//        return rg::istream<string>(local); // returns temporary (from local)
+    auto splitFromStream = [](auto text) {
+        istringstream local(text);
+        /// Wrong idea: `local` owns text, so returning a view lost ownership and hangs
+//      return rg::istream<string>(local); // returns temporary (from local)
         // Materialize to vector is OK but expensive
         return rg::istream<string>(local) | to_vector;
     };
-    TraceX(splitFromStream(input));
-
-    string str = input;
-    auto wordsAsSV = splitBetter // range of range<char>
-        | vs::transform([](auto &&rng) {
-                    return std::string_view(&*rng.begin(), rg::distance(rng));
-                });
-    TraceX(str | wordsAsSV);
-    TraceX(vs::c_str(input) | wordsAsSV);
-    TraceX(string_view(input) | wordsAsSV);
+    TraceX(splitFromStream(zstr));
 
     cout << endl;
 }
