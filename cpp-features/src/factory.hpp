@@ -12,13 +12,13 @@ public:
     virtual ~Base() = default;
 };
 
-template<typename Ret, typename ...Args>
+template<typename Kind, typename Ret, typename ...Args>
 class FactoryTmpl;
 
-template<typename Ret, typename ...Args>
-class FactoryTmpl<Ret(Args...)> {
+template<typename Kind, typename Ret, typename ...Args>
+class FactoryTmpl<Kind, Ret(Args...)> {
 public:
-    using Key = unsigned; // enum class Key
+    using Key = Kind; // unsigned; // enum class Key
     using createMethodType = Ret (*)(Args&& ...);
 
     FactoryTmpl() = default;
@@ -28,9 +28,8 @@ public:
 
     static FactoryTmpl& instance();
 
-    template <Key key>
-    static Ret create(Args&&... args) {
-        return instance().template create_<key>(std::forward<Args>(args)...);
+	static Ret create(Key key, Args&&... args) {
+		return instance().create_(key, std::forward<Args>(args)...);
     }
 
     template <class Sample>
@@ -39,7 +38,7 @@ public:
         static Ret create(Args&&... args) { return new Sample(std::forward<Args>(args)...); }
         Registrar() : Registrar(Sample::kind) {}
         explicit Registrar(FactoryTmpl::Key kind) {
-            TraceX(kind); FactoryTmpl::register_(kind, create);
+			FactoryTmpl::register_(kind, create);
         }
     };
 
@@ -48,9 +47,7 @@ public:
 	}
 
 private:
-	template <Key key>
-    Ret create_(Args&&... args) {
-		TraceX(key);
+	Ret create_(Key key, Args&&... args) {
 		if (auto it = factoryMap_.find(key); it != factoryMap_.end())
 			return it->second(std::forward<Args>(args)...);
 		return defaultCreateMethod_(std::forward<Args>(args)...);
@@ -63,5 +60,5 @@ private:
 };
 
 //using Factory = FactoryTmpl<Base*, int, std::string>;
-using Factory = FactoryTmpl<Base* (int, std::string)>;
+using Factory = FactoryTmpl<unsigned, Base* (int, std::string)>;
 template<Factory::Key> class Sample;
