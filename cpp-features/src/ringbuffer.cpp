@@ -1,3 +1,4 @@
+/// @file Experiments with `boost/circular_buffer`
 
 #include "boost/circular_buffer.hpp"
 #include <algorithm>

@@ -43,6 +43,10 @@ add_executable(misc
     misc.cpp
 )
 
+add_executable(factory
+        factory.cpp factory.hpp factory_impl.cpp
+)
+
 add_executable(bitset
     bitset.cpp
 )

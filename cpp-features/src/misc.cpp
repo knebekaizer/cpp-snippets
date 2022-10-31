@@ -113,6 +113,29 @@ unique_ptr<B> test_uptr() {
     return unique_ptr<B>(new D());
 }
 
+/// Factory: Can I use const_expr to build the function map (factory)?
+//#include <array>
+//class Base {};
+//using FuncT = Base* (*)();
+//constexpr std::array<FuncT*, 16> factoryMap{};
+//Base* foo();
+//constexpr factoryMap[8] = foo; // Nope
+
+class Smth {
+public:
+    struct Dummy {
+        Dummy() = delete;
+        void foo() const { TraceF; };
+    };
+    static Dummy dummy;
+    void bar() const { TraceF; }
+};
+//Smth::Dummy Smth::dummy;
+
+void testStaticMemberInit() {
+    Smth().bar();
+
+}
 
 int main() {
     log_info << "Start";
@@ -126,4 +149,6 @@ int main() {
 	assert(msb(1 << 5) == 5);
 	test_scanf();
     test_endian();
+
+    testStaticMemberInit();
 }
