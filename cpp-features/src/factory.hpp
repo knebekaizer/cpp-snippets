@@ -6,49 +6,62 @@
 
 class Base {
 public:
+    Base() = default;
+    Base(int, std::string) {}
     virtual void foo() const { log_trace << "Generic"; }
     virtual ~Base() = default;
 };
 
-class Factory {
+template<typename Ret, typename ...Args>
+class FactoryTmpl;
+
+template<typename Ret, typename ...Args>
+class FactoryTmpl<Ret(Args...)> {
 public:
     using Key = unsigned; // enum class Key
-    using createMethodType = Base* (*)();
+    using createMethodType = Ret (*)(Args&& ...);
 
-    Factory() = default;
-    explicit Factory(createMethodType genericImpl) : defaultCreateMethod(genericImpl) {}
+    FactoryTmpl() = default;
+    FactoryTmpl(const FactoryTmpl&) = delete;
+    FactoryTmpl(FactoryTmpl&&) = delete;
+    explicit FactoryTmpl(createMethodType genericImpl) : defaultCreateMethod_(genericImpl) {}
 
-    static Factory& instance();
-
-    static void register_(Key key, createMethodType creator) {
-        instance().factoryMap[key] = creator;
-    }
-    template <Key key>
-    static Base* create() { return instance().create_<key>(); }
+    static FactoryTmpl& instance();
 
     template <Key key>
-    Base* create_() {
-        TraceX(key);
-        if (auto it = factoryMap.find(key); it != factoryMap.end())
-            return it->second();
-        return defaultCreateMethod();
+    static Ret create(Args&&... args) {
+        return instance().template create_<key>(std::forward<Args>(args)...);
     }
 
     template <class Sample>
     class Registrar {
     public:
-        static Base* create() { return new Sample; }
+        static Ret create(Args&&... args) { return new Sample(std::forward<Args>(args)...); }
         Registrar() : Registrar(Sample::kind) {}
-        explicit Registrar(Factory::Key kind) {
-            TraceX(kind); Factory::register_(kind, create);
+        explicit Registrar(FactoryTmpl::Key kind) {
+            TraceX(kind); FactoryTmpl::register_(kind, create);
         }
     };
 
+	static void register_(Key key, createMethodType creator) {
+		instance().factoryMap_[key] = creator;
+	}
+
 private:
-//    using Map = std::array<createMethodType, 64>;
+	template <Key key>
+    Ret create_(Args&&... args) {
+		TraceX(key);
+		if (auto it = factoryMap_.find(key); it != factoryMap_.end())
+			return it->second(std::forward<Args>(args)...);
+		return defaultCreateMethod_(std::forward<Args>(args)...);
+	}
+
+        //    using Map = std::array<createMethodType, 64>;
     using Map = std::map<Key, createMethodType>;
-    Map factoryMap;
-    const createMethodType defaultCreateMethod = {};
+    Map factoryMap_;
+    const createMethodType defaultCreateMethod_ = {};
 };
 
+//using Factory = FactoryTmpl<Base*, int, std::string>;
+using Factory = FactoryTmpl<Base* (int, std::string)>;
 template<Factory::Key> class Sample;
