@@ -14,7 +14,7 @@
 #define TRACE_PRETTY
 #include "trace.hpp"
 
-using namespace ranges;
+//using namespace ranges;
 namespace rg = ranges;
 namespace vs = ranges::views;
 
@@ -81,17 +81,17 @@ void cipherCaesar() {
 	auto const src = "apple"s;
 	TraceX(src);
 
-	auto alphabet = views::closed_iota('a','z') | views::cycle; // [a,b,c...a,b,c...]
-	auto shifted_alphabet = alphabet | views::drop(shift); // [l,m,n...a,b,c...]
+	auto alphabet = vs::closed_iota('a','z') | vs::cycle; // [a,b,c...a,b,c...]
+	auto shifted_alphabet = alphabet | vs::drop(shift); // [l,m,n...a,b,c...]
 
-	auto encrypt = views::for_each([shifted_alphabet](char letter){
-		return shifted_alphabet | views::drop(letter - 'a') | views::take(1);
+	auto encrypt = vs::for_each([shifted_alphabet](char letter){
+		return shifted_alphabet | vs::drop(letter - 'a') | vs::take(1);
 	}); // [l,a,a,w,p]
 
-	TraceX(src | encrypt | to<string>);
+	TraceX(src | encrypt | rg::to<string>);
 }
 
-//! This should be named `views::flat_map`
+//! This should be named `vs::flat_map`
 void test_foreach() {
 	vector<int> vi = {1,2,3,4,5,6,7,8};
 	auto const s = "abcdefgh"s ;
@@ -99,7 +99,7 @@ void test_foreach() {
 	auto s2i  = s | vs::for_each([](char k) { return vs::single(k+1); }); // list of ints
 	auto s2c  = s | vs::for_each([](char k) { return vs::single((char)(k+1)); }); // list of chars
 	TraceX(s, s2i, s2c);               // s2i = [98,99,100,101,102,103,104,105]; s2c = [b,c,d,e,f,g,h,i]
-	TraceX(s, s2i | to<string>);    // s = abcdefgh; s2i | to<string> = bcdefghi
+	TraceX(s, s2i | rg::to<string>);    // s = abcdefgh; s2i | rg::to<string> = bcdefghi
 	auto v2 = vi | vs::for_each([](auto k) { return vs::single(k+1); });    // vi = {1, 2, 3, 4, 5, 6, 7, 8}; v2 = [2,3,4,5,6,7,8,9]
 	TraceX(vi, v2);
 	// Equivalent with transform (simpler)
@@ -114,7 +114,7 @@ void test_toVector() {
 //			| vs::filter([](int x) { return x > 3; });
 	auto myConv = vs::transform([](int x){ return x * 2; })
 				| vs::filter([](int x) { return x > 3; });
-	auto v2 = v | myConv | to<decltype(v)>;
+	auto v2 = v | myConv | rg::to<decltype(v)>;
 	TraceX(v2);
 
 	vector<int> v3;
@@ -123,7 +123,7 @@ void test_toVector() {
 }
 
 void test_shuffle() {
-	vector<int> src = vs::ints(0,10) | to<decltype(src)>;  // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+	vector<int> src = vs::ints(0,10) | rg::to<decltype(src)>;  // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 	TraceX(src);
 	TraceX(vs::ints(0,8));
 
@@ -131,14 +131,14 @@ void test_shuffle() {
 
 //	vs::ints(0,8) | actions::shuffle(gen); // invalid
 //	vs::ints(0,8) | vs::cache1 | actions::shuffle(gen); // invalid
-	auto sh1 = vs::ints(0,8) | to_vector | actions::shuffle(mt19937{21});
+	auto sh1 = vs::ints(0,8) | rg::to_vector | rg::actions::shuffle(mt19937{21});
 	TraceX(sh1);  // {4, 2, 3, 1, 6, 5, 0, 7} = vector
 
-	auto t = actions::push_back(views::iota(0, 10)) | actions::shuffle(gen);
+	auto t = rg::actions::push_back(vs::iota(0, 10)) | rg::actions::shuffle(gen);
 	auto v1 = std::vector<int>{} | t;
 	TraceX(v1);
-	TraceX(std::move(v1) | actions::shuffle(gen));
-	vector<int>{1,2,3} | actions::shuffle(gen);
+	TraceX(std::move(v1) | rg::actions::shuffle(gen));
+	vector<int>{1,2,3} | rg::actions::shuffle(gen);
 }
 
 void test_transform() {
@@ -160,11 +160,11 @@ vector<string> formatStr(int n) {
 
 	using C = array<char, 8>; //char C[8];
 	array<C, 17> buf = {{{'\0'}}};
-	auto fmt = views::iota(1, n+1)
-			| views::transform([](auto x) { return string("%") + to_string(x) + "llx"; });
-//			  | views::for_each([](auto x) { return string("%") + to_string(x) + "llx"; });
+	auto fmt = vs::iota(1, n+1)
+			| vs::transform([](auto x) { return string("%") + to_string(x) + "llx"; });
+//			  | vs::for_each([](auto x) { return string("%") + to_string(x) + "llx"; });
 
-//	  std::for_each(buf.begin() + 1, buf.end(), [k=0](auto& p) mutable { views::copy( ("%"s + to_string(k) + "llx"s),  )})
+//	  std::for_each(buf.begin() + 1, buf.end(), [k=0](auto& p) mutable { vs::copy( ("%"s + to_string(k) + "llx"s),  )})
 	string s = fmt[0];
 	std::copy(s.begin(), s.end(), buf[1].begin());
 	std::copy_n(fmt[0].begin(), fmt[0].size(), buf[1].begin());
@@ -184,8 +184,8 @@ vector<string> formatStr(int n) {
 //! Generate the array of format strings to be used in sscanf;   {%1llx, %2llx ... %16llx}
 auto test_gen() {
 	constexpr int n = 16;
-	auto gen = views::iota(1, n+1)
-				| views::transform([](auto x) { return "%"s + to_string(x) + "llx"; });
+	auto gen = vs::iota(1, n+1)
+				| vs::transform([](auto x) { return "%"s + to_string(x) + "llx"; });
 	TraceX(gen[n]);
 
 	static char buf[17][8] = {{0}};
@@ -204,8 +204,8 @@ auto test_gen() {
 auto test_gen2() {
 	auto gen_fn = []() {
 		constexpr int n = 16;
-		auto gen = views::iota(1, n + 1)
-				| views::transform([](auto x) { return "%"s + to_string(x) + "llx"; });
+		auto gen = vs::iota(1, n + 1)
+				| vs::transform([](auto x) { return "%"s + to_string(x) + "llx"; });
 		TraceX("lambda> ", gen[n]);
 
 		static char buf[17][8] = {{0}};
@@ -213,10 +213,10 @@ auto test_gen2() {
 
 
 		rg::for_each(
-				buf | views::drop(1),
+				buf | vs::drop(1),
 				[k=0](auto& p) mutable { rg::copy(("%"s + to_string(++k) + "llx"), p); });
 
-		for (int k = 0; auto& p : buf | views::drop(1))
+		for (int k = 0; auto& p : buf | vs::drop(1))
 			rg::copy(("%"s + to_string(++k) + "llx"), p);
 
 		array<char, 8> a = {"qwerty"};
@@ -232,10 +232,10 @@ void test_temporary() {
     constexpr static auto input = "Niebloid comes from Eric Niebler's name. In simple words, they are function objects"
                                   " that disable ADL (argument-dependent lookup)";
     auto wordsView = streamView(istringstream(input));
-    auto sv = wordsView | to_vector; // materialized
+    auto sv = wordsView | rg::to_vector; // materialized
     TraceX(sv.size());
-    TraceX((wordsView | to_vector).size());  // 0; because it's temporary
-    TraceX(vector(wordsView | to_vector).size());  // 0; because it's temporary ?
+    TraceX((wordsView | rg::to_vector).size());  // 0; because it's temporary
+    TraceX(vector(wordsView | rg::to_vector).size());  // 0; because it's temporary ?
 
 	vector<string> one{"one"s, "two"s};
 	auto two = "two";
@@ -250,7 +250,7 @@ void test_temporary() {
 	// `auto s` is a temporary; then vs::all produces dangling. Use `by ref` parameter passing, then it references stable source (container)
 	cout << ">> " << (one | vs::transform([](auto& s){ return s | vs::all; })) << endl;
 //	cout << ">> " << (one | vs::for_each( [](string s){ return s | vs::all; } )) << endl;
-	cout << ">>> " << (one | vs::transform( [](string& s){ return s | vs::all; } ) | vs::join('\n') | to<string> ) << endl;
+	cout << ">>> " << (one | vs::transform( [](string& s){ return s | vs::all; } ) | vs::join('\n') | rg::to<string> ) << endl;
 
 }
 
@@ -266,14 +266,14 @@ void ex_generate(int n) {
 
 void ex_foreach()
 {
-	auto foreach_pipe = vs::ints(1, 6) | views::for_each([](int i) { return yield_from(views::repeat_n(i, i)); });
-	auto foreach_expr = views::for_each(views::ints(1, 6),
-							  [](int i) { return yield_from(views::repeat_n(i, i)); }) |
-			  to<std::vector>();
+	auto foreach_pipe = vs::ints(1, 6) | vs::for_each([](int i) { return rg::yield_from(vs::repeat_n(i, i)); });
+	auto foreach_expr = vs::for_each(vs::ints(1, 6),
+							  [](int i) { return rg::yield_from(vs::repeat_n(i, i)); }) |
+			  rg::to<std::vector>();
 	// prints: [1,2,2,3,3,3,4,4,4,4,5,5,5,5,5]
 	TraceX(foreach_pipe);
 	TraceX(foreach_expr);
-	TraceX(views::all(foreach_expr));
+	TraceX(vs::all(foreach_expr));
 }
 
 
@@ -294,7 +294,7 @@ void ex_wordTokenizer() {
     auto words = vs::c_str(zstr) | vs::split_when([](auto c){return isspace(c);});
     TraceX(words);
     TraceX(rg::distance(words));
-    TraceX(words | to<vector<string>>);
+    TraceX(words | rg::to<vector<string>>);
     TraceX(words | asStringViews); // range view
 
     /// the same as above
@@ -312,7 +312,7 @@ void ex_wordTokenizer() {
         /// Wrong idea: `local` owns text, so returning a view lost ownership and hangs
 //      return rg::istream<string>(local); // returns temporary (from local)
         // Materialize to vector is OK but expensive
-        return rg::istream<string>(local) | to_vector;
+        return rg::istream<string>(local) | rg::to_vector;
     };
     TraceX(splitFromStream(zstr));
 
@@ -325,37 +325,46 @@ void ex_sort() {
                                   " that disable ADL (argument-dependent lookup)";
 
     auto wordsView = streamView(istringstream(input));
-    auto sv = wordsView | to_vector; // materialized
+    auto sv = wordsView | rg::to_vector; // materialized
     TraceX(sv.size());
-    TraceX((wordsView | to_vector).size());  // 0; because it's temporary
-    TraceX(vector(wordsView | to_vector).size());  // 0; because it's temporary ?
-    TraceX((wordsView | to_vector | actions::sort).size()); // sort temporary: compiled, but empty
-    TraceX(wordsView | to_vector | actions::sort); // sort temporary: compiled, but empty
+    TraceX((wordsView | rg::to_vector).size());  // 0; because it's temporary
+    TraceX(vector(wordsView | rg::to_vector).size());  // 0; because it's temporary ?
+    TraceX((wordsView | rg::to_vector | rg::actions::sort).size()); // sort temporary: compiled, but empty
+    TraceX(wordsView | rg::to_vector | rg::actions::sort); // sort temporary: compiled, but empty
+
     TraceX(0, rg::is_sorted(sv)); // sv now is sorted
-    auto copy = vs::all(sv) | actions::sort;
+    auto copy = vs::all(sv) | rg::actions::sort;
     TraceX(boolalpha, (&copy[0] == &sv[0]));  // not a view; full copy
-    TraceX(sv | vs::all | actions::sort); // this is NOT a temporary
+    TraceX(sv | vs::all | rg::actions::sort); // this is NOT a temporary
     TraceX(1, rg::is_sorted(sv)); // sv now is sorted too
-    sv = streamView(istringstream(input)) | to_vector; // run again
-    TraceX(2, vs::all(sv) | actions::sort); // the same as above
+    sv = streamView(istringstream(input)) | rg::to_vector; // run again
+    TraceX(2, vs::all(sv) | rg::actions::sort); // the same as above
     TraceX(2, rg::is_sorted(sv)); // sv now is sorted
 
 
     rg::sort(sv, {}, &string::size);
-    auto sortedBack = vs::all(sv) | actions::sort([](const string& a, const string& b) { return a.back() < b.back();});
+    auto sortedBack = vs::all(sv) | rg::actions::sort([](const string& a, const string& b) { return a.back() < b.back();});
     TraceX(sortedBack);
 
-//    auto sortedBack2 = vs::all(sv) | actions::sort([](auto a, auto b) { return a < b;}, &string::size); // OK
-    auto sortedBack2 = vs::all(sv) | actions::sort(rg::greater(), &string::size);
+//    auto sortedBack2 = vs::all(sv) | rg::actions::sort([](auto a, auto b) { return a < b;}, &string::size); // OK
+    auto sortedBack2 = vs::all(sv) | rg::actions::sort(rg::greater(), &string::size);
     TraceX(sortedBack2);
 
-//    auto sortedBack3 = vs::all(sv) | actions::sort(rg::greater(), &string::back); // Failed
-    auto sortedBack3 = vs::all(sv) | actions::sort([](auto a, auto b) { return a.back() < b.back();}); // OK
+//    auto sortedBack3 = vs::all(sv) | rg::actions::sort(rg::greater(), &string::back); // Failed
+    auto sortedBack3 = vs::all(sv) | rg::actions::sort([](auto a, auto b) { return a.back() < b.back();}); // OK
     TraceX(sortedBack3);
 
     vector v = {3,1,2};
-    vs::all(v) | actions::sort;
+    vs::all(v) | rg::actions::sort;
     cout << endl;
+}
+
+void ex_enumerate() {
+    auto chars = vs::c_str("qwerty");
+    auto en = chars | vs::enumerate;
+    for (auto const& x : en) {
+        TraceX(x.first, x.second);
+    }
 }
 
 void ex_istream_view() {
@@ -363,15 +372,15 @@ void ex_istream_view() {
 	constexpr static auto input = "Niebloid comes from Eric Niebler's name. In simple words, they are function objects"
 								  " that disable ADL (argument-dependent lookup)";
 
-	auto words = vs::c_str(input) | views::split(' ');
+	auto words = vs::c_str(input) | vs::split(' ');
 	TraceX(words);
-	TraceX(words | to<vector<string>>);
-	auto words_size = (words | to<vector<string>>).size();
+	TraceX(words | rg::to<vector<string>>);
+	auto words_size = (words | rg::to<vector<string>>).size();
 	TraceX(words_size);
 	{
 		istringstream text(input);
-		auto v = rg::istream<string>(text); // = istream_view<string>(text);
-		vector<string> vecText = v | to_vector;
+		auto v = rg::istream<string>(text); // = rg::istream_view<string>(text);
+		vector<string> vecText = v | rg::to_vector;
 		TraceX(v);
 		TraceX(vecText);
 	}
@@ -380,8 +389,8 @@ void ex_istream_view() {
 	auto sizeMax = rg::max(v, std::less{}, &string::size).size();
 	TraceX(sizeMax);
 
-	auto sv = streamView( istringstream(input) ) | to_vector;
-	auto sorted = vs::all(sv) | actions::sort;
+	auto sv = streamView( istringstream(input) ) | rg::to_vector;
+	auto sorted = vs::all(sv) | rg::actions::sort;
 	TraceX(sorted);
 
 	{
@@ -389,14 +398,14 @@ void ex_istream_view() {
 		auto max1 =
 				rg::max(rg::istream_view<string>(text), [](const auto& a, const auto& b) { return a.size() < b.size(); });
         TraceX(max1);
-//		auto max2 [[maybe_unused]] = rg::max(istream_view<string>(text), {}, &string::size); // range is empty; Assertion failed
+//		auto max2 [[maybe_unused]] = rg::max(rg::istream_view<string>(text), {}, &string::size); // range is empty; Assertion failed
 //        auto wordsView = [](auto input){ istringstream text(input); return rg::istream<string>(text); };
 // WTF       auto max2 [[maybe_unused]] = rg::max(wordsView(input), {}, &string::size); // range is empty; Assertion failed
 //        TraceX(max2);
 	}
 
 	istringstream text(input);
-	TraceX(istream_view<string>(text));
+	TraceX(rg::istream_view<string>(text));
 	TraceX(text.gcount(), text.eof());
 	cout << endl;
 }
@@ -416,25 +425,25 @@ void ex5() {
 
 	{
 		istringstream from(input);
-		TraceX(istream_view<string>(from));
+		TraceX(rg::istream_view<string>(from));
 	}
 
-	words = rg::to_vector(istream_view<string>(from));
-	words = istream_view<string>(from) | rg::to_vector;
+	words = rg::to_vector(rg::istream_view<string>(from));
+	words = rg::istream_view<string>(from) | rg::to_vector;
 
 	auto s = string(input);
 	TraceX(s | vs::split(' '));
-	TraceX(s | vs::split(' ') | to<vector<string>>);
+	TraceX(s | vs::split(' ') | rg::to<vector<string>>);
 
 	istringstream f2(input);
-	TraceX(istream_view<string>(f2));
+	TraceX(rg::istream_view<string>(f2));
 
 	istringstream f3(input);
-	vector<string> v3 = istream_view<string>(f3) | to_vector;
+	vector<string> v3 = rg::istream_view<string>(f3) | rg::to_vector;
 	TraceX(v3);
-//	  auto v2 = i2 | vs::split(' ') | to<vector<string>>);
+//	  auto v2 = i2 | vs::split(' ') | rg::to<vector<string>>);
 
-//	  words = istream_view<string>(from) | rng::to<string>;
+//	  words = rg::istream_view<string>(from) | rng::rg::to<string>;
 
 //	  vector<string> words = istream_iterator<string>(from);
 //	  rng::copy(istream_iterator<string>(from), rng::back_inserter(words));
@@ -442,39 +451,39 @@ void ex5() {
 
 void ex6() {
 	auto GetEvens =
-		views::for_each(views::iota(1,9), [](int i) {
-			return yield_if((i % 2) == 0, i);
+		vs::for_each(vs::iota(1,9), [](int i) {
+			return rg::yield_if((i % 2) == 0, i);
 		});
 	TraceX(GetEvens);
 }
 
 void ex7() {
-	using views::drop;
-	using views::transform;
+	using vs::drop;
+	using vs::transform;
 
 	auto const s = std::string{"feel_the_force"};
-	auto words = s | views::split('_'); // [[f,e,e,l],[t,h,e],[f,o,r,c,e]]
-	auto words_cap = words | views::transform([](auto w){
-		auto head = w | views::take(1)
-					  | views::transform([](unsigned char c){return std::toupper(c);}); // e.g. [F]
-		return views::concat(head, w | views::tail); // e.g. [F,e,e,l]
+	auto words = s | vs::split('_'); // [[f,e,e,l],[t,h,e],[f,o,r,c,e]]
+	auto words_cap = words | vs::transform([](auto w){
+		auto head = w | vs::take(1)
+					  | vs::transform([](unsigned char c){return std::toupper(c);}); // e.g. [F]
+		return vs::concat(head, w | vs::tail); // e.g. [F,e,e,l]
 	}); // [[F,e,e,l],[T,h,e],[F,o,r,c,e]]
-	auto s_camelcase = words_cap | views::join | to<std::string>(); // FeelTheForce
+	auto s_camelcase = words_cap | vs::join | rg::to<std::string>(); // FeelTheForce
 	TraceX(s_camelcase);
 }
 
 void ex_71() {
-	using views::take;
-	using views::drop;
-	using views::transform;
+	using vs::take;
+	using vs::drop;
+	using vs::transform;
 
-	auto firstUp = views::take(1) | transform(::toupper);
+	auto firstUp = vs::take(1) | transform(::toupper);
 	auto title_view = [firstUp](auto w){
-			return views::concat(w | firstUp, w | drop(1)); // e.g. [F,e,e,l]
+			return vs::concat(w | firstUp, w | drop(1)); // e.g. [F,e,e,l]
 		};
-	auto words = "feel_the_force"sv | views::split('_'); // [[f,e,e,l],[t,h,e],[f,o,r,c,e]]
-	auto words_cap = words | views::transform(title_view); // [[F,e,e,l],[T,h,e],[F,o,r,c,e]]
-	auto s_camelcase = words_cap | views::join("<+>"sv) | to<std::string>(); // FeelTheForce
+	auto words = "feel_the_force"sv | vs::split('_'); // [[f,e,e,l],[t,h,e],[f,o,r,c,e]]
+	auto words_cap = words | vs::transform(title_view); // [[F,e,e,l],[T,h,e],[F,o,r,c,e]]
+	auto s_camelcase = words_cap | vs::join("<+>"sv) | rg::to<std::string>(); // FeelTheForce
 	TraceX(s_camelcase);
 }
 
@@ -485,9 +494,9 @@ void ex_8() {
 //			vs::c_str(" 1A2a3Z4b5Z6cz ") // ok
 			| vs::filter(::isalpha)
 			| vs::transform(::tolower)
-			| to<std::string>
-			| actions::sort
-			| actions::unique;
+			| rg::to<std::string>
+			| rg::actions::sort
+			| rg::actions::unique;
 	TraceX(result);
     cout << endl;
 }
@@ -501,8 +510,8 @@ extern "C" void print_plainCStr(int argc, const char** argv) {
 // convert vector<string> to const char**
 void test_cstr_array() {
 	vector<string> args = {"one", "two", "three"};
-//	auto argv = args | vs::transform([](const string& s){ return s.c_str(); }) | to_vector;
-	auto argv = args | vs::transform(&string::c_str) | to_vector;
+//	auto argv = args | vs::transform([](const string& s){ return s.c_str(); }) | rg::to_vector;
+	auto argv = args | vs::transform(&string::c_str) | rg::to_vector;
 	print_plainCStr(argv.size(), &argv[0]);
 }
 
@@ -526,8 +535,13 @@ void test_C_accessor(index_t (get_num)(), value_t (get_value)(index_t)) {
 	TraceX(v.size(), v | vs::reverse);
 }
 
-void ex_stringView() {
-
+#include <ranges>
+void ex_span() {
+	cout << endl;
+    auto fOdd = vs::filter([](auto& i) { return i & 1; });
+    vector<int> v = vs::iota(0, 10) | rg::to_vector;
+    auto s8 = std::span(&*v.begin(), 8) | fOdd; TraceX(s8);
+    auto v8 = rg::span{&*v.begin(), 8} | fOdd; TraceX(v8);
 }
 
 int main() {
@@ -569,6 +583,9 @@ int main() {
 
     ex_wordTokenizer();
     ex_sort();
+
+    ex_enumerate();
+    ex_span();
 
 	return 0;
 }
