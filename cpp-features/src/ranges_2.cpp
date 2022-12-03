@@ -107,10 +107,8 @@ void testMap() {
 	TraceX(eq_range(m, 80));
 	TraceX(eq_range(m, 200));
 	TraceX(*m.find(90));
-	TraceX(*m.lower_bound(75));
-	TraceX(*m.upper_bound(75));
-	TraceX(*m.lower_bound(85));
-	TraceX(*m.upper_bound(85));
+	TraceX(*m.lower_bound(80));
+	TraceX(*m.upper_bound(80));
 
 }
 
