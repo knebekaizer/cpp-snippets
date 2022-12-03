@@ -4,7 +4,9 @@
 #include <memory>
 #include <type_traits>
 
+#define USE_RUNTIME_LOG_LEVEL
 #include "trace.hpp"
+LOG_LEVEL::LOG_LEVEL gLogLevel = LOG_LEVEL::trace;
 
 using namespace std;
 int msb(int a) {
@@ -137,6 +139,109 @@ void testStaticMemberInit() {
 
 }
 
+void testHierarchy() {
+    struct A { virtual ~A() = default; }; A* a = new A;
+    struct B : A {}; A* b = new B; B* bb = new B; B* z = nullptr;
+    struct C : B {}; A* c = new C;
+
+    cout << boolalpha;
+    TraceX(typeid(z) == typeid(B*));     // true
+    TraceX(typeid(a) == typeid(b));     // true
+    TraceX(typeid(bb) == typeid(b));    // false
+    TraceX((bool)dynamic_cast<B*>(z), typeid(z) == typeid(B*));
+    TraceX((bool)dynamic_cast<B*>(a), typeid(a) == typeid(B*));
+    TraceX((bool)dynamic_cast<B*>(b), typeid(b) == typeid(B*));
+    TraceX((bool)dynamic_cast<B*>(c), typeid(b) == typeid(B*));
+    TraceX((bool)dynamic_cast<B*>(bb), typeid(bb) == typeid(B*));
+
+}
+
+namespace {
+int loggerCount = 0;
+}
+#include "scoped.hpp"
+void testLogger() {
+    struct Str {
+        Str() { ++loggerCount; }
+        int count() const { return loggerCount; }
+    };
+    log_trace << Str().count();
+    gLogLevel = LOG_LEVEL::warn;
+    log_trace << Str().count();
+    log_trace << Str().count();
+    gLogLevel = LOG_LEVEL::trace;
+    log_trace << Str().count();
+}
+
+/*
+template <class...> constexpr std::false_type always_false{};
+if constexpr(condition1) {
+	...
+} else if constexpr (condition2) {
+	...
+} else if constexpr (condition3) {
+	...
+} else {
+	static_assert(always_false<T>);
+}
+*/
+
+namespace boolWrapper {
+string g_s = "abc";
+int ln = 0;
+bool isSameBuf(string const& s) { return (s.data() == g_s.data()); }
+void foo(auto x, string const& s) { log_trace << x << ", " << (s==g_s) << ", " << isSameBuf(s); }
+void bar(auto x, string&& s)  { log_trace << x << ", " << (s==g_s) << ", " << isSameBuf(s); }
+}
+//static void foo(string s) { TraceX(s); }
+void ex_boolWrapper() {
+	using namespace boolWrapper;
+	struct XString {
+		XString(std::string& s) : s_(s) {}
+		operator std::string const&() const& { return s_; }   // NOLINT(google-explicit-constructor)
+		operator std::string&() & { return s_; }              // NOLINT(google-explicit-constructor)
+		operator std::string&&() && { return std::move(s_); } // NOLINT(google-explicit-constructor)
+		explicit operator bool() const { return !s_.empty(); }
+		std::string& s_;
+	};
+
+	auto check = [](auto const& s){ return s ? "not empty" : "empty"; };
+	XString xs = g_s;
+	foo(1, xs.s_);
+
+	string ss = xs; // copy, as expected
+	foo(2, xs);
+
+	auto xss = xs;
+	foo(3, xss);    // no copy; expected copy
+
+	foo(4, ss);
+//	bar(xs);    // won't compile - as expected
+	TraceX(check(xs), g_s);
+	bar(5, std::move(xs)); // NOLINT(performance-move-const-arg)
+	TraceX(check(xs), g_s);
+//	TraceX(check(ss), g_s);  // OK: no viable conversion from 'const std::string' to 'bool'
+	g_s.resize(0);
+	TraceX(check(xs), g_s);
+
+	struct String : public std::string {
+		String() = delete;
+		explicit operator bool() const { return !empty(); }
+	};
+	g_s = "cba";
+	String& a = static_cast<String&>(g_s);
+	foo(11, a);
+	auto b = a;
+	foo(12, b);
+
+	TraceX(check(a), g_s);
+	bar(13, std::move(a)); // no move, reference copied
+	TraceX(check(a), g_s);
+	bar(14, std::move(std::remove_reference<decltype(a)>::type(a))); // bar> 14, true, false  WTF? it's copy
+	TraceX(check(a), g_s);
+}
+
+
 int main() {
     log_info << "Start";
     TraceX(getOsName());
@@ -151,4 +256,8 @@ int main() {
     test_endian();
 
     testStaticMemberInit();
+    testHierarchy();
+
+    testLogger();
+	ex_boolWrapper();
 }

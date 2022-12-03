@@ -3,6 +3,7 @@
 #include "boost/circular_buffer.hpp"
 #include <algorithm>
 #include <type_traits>
+#include <map>
 
 #include <ranges>
 //using namespace rg = std::ranges;
@@ -91,7 +92,49 @@ void test() {
     TraceX(buf | vs::stride(2));
 }
 
+struct U { uint8_t v; };
+void test2() {
+	using T = uint8_t;
+	boost::circular_buffer<T> buf(8);
+	auto offset = [](T x, T a) -> int {
+		if (T(x - a) < T(a - x)) { // x > a
+			return (int)(int8_t)(x - a);
+		} else {// x < a
+			return (int)(int8_t)(x - a);
+		}
+	};
+	TraceX(offset(8, 5));
+	TraceX(offset(1, 255));
+	TraceX(offset(5, 8));
+	TraceX(offset(255, 1));
+	TraceX(offset(0, 128));
+	TraceX(offset(128, 0));
+
+	[[maybe_unused]] auto insert = [&](T x) {
+//		T last = buf.back();
+	};
+	T a = 1;
+	T b = 255;
+	TraceX( (int)(T)(a - b));
+}
+
+void testMap() {
+	struct T {
+		explicit T(int x) : v(x) {}
+		int v;
+	};
+	using TP = unique_ptr<T>;
+	using TMap = multimap<int, TP>;
+	TMap tmap;
+	for (int k : vs::iota(8, 16)) tmap.insert({k, make_unique<T>(k)});
+	TP t120{new T(120)};
+	tmap.insert({12, std::move(t120)});
+	for (auto& it : tmap) cout << it.first << " : " << it.second->v << '\n';
+}
+
 int main() {
-    test<S>();
+//    test<S>();
+	test2();
+	testMap();
     return 0;
 }

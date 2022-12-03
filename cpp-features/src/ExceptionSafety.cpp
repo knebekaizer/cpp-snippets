@@ -27,7 +27,7 @@ void test_reserve() {
 	VFoo v(4);
 	TraceX(v.capacity(), v.size());
 //	v.reserve(8);
-	v.push_back(Foo(-1)); // move ctor, does not threow
+	v.push_back(Foo(-1)); // move ctor, does not throw
 	TraceX(v.capacity(), v.size());
 	try {
 		v.reserve(16);

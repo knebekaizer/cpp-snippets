@@ -260,10 +260,10 @@ void test_std() {
 //    for (auto x : v3) cout << x << ","; cout << endl;
 //    TraceX(rg::ref_view(rg::sort(v, rg::greater())));
 //    auto s2 = rg::sort(s1);
-    auto ov [[maybe_unused]] = rg::owning_view(vs::iota(0, 8));
+//    auto ov [[maybe_unused]] = rg::owning_view(vs::iota(0, 8));  // not in g++10
 //    rg::sort(ov, rg::greater());
 //    TraceX(ov);
-    rg::sort(rg::ref_view(vs::iota(0, 8)), rg::greater());
+//    rg::sort(rg::ref_view(vs::iota(0, 8)), rg::greater());
 //    TraceX( rg::sort(rg::ref_view(vs::iota(0, 8)), rg::greater()) );
 //    TraceX( rg::sort(rg::owning_view(s), rg::greater()) );
 //    TraceX( rg::sort(rg::owning_view(vs::iota(0, 8)), rg::greater()) );
