@@ -179,46 +179,11 @@ public:
 	using Map = std::multimap<T, SP>;
 	using value_type =  Map::value_type;
 	using It = Map::iterator;
-	auto equal_range(T x) const { return mp.equal_range(x); }
-	Map::const_iterator lower_bound(T x) const;
 
-	auto makeIt() {
-		return [this](){
-			It p = mp.begin();
-			if (sup < inf) {
-				p = mp.equal_range(inf).first;
-			}
-			return vs::iota(0u, mp.size()) | vs::transform([&](auto k) -> Map::value_type& {
-//			TraceX(k);
-				auto it = p;
-				TraceX(1, *it);
-				TraceX(2, (int)it->first, (int)it->second->x);
-				if (++p == mp.end()) p = mp.begin();
-				return *it;
-			});
-		};
+	auto equal_range(T x) const {
+		auto [b, e] = mp.equal_range(x);
+		return rg::make_subrange(b, e);
 	}
-//	auto all() { return makeIt()(); }
-/*
-	auto all()  {
-		std::ostream& operator<<(std::ostream& os, Map::value_type const& v);
-//		return rg::make_subrange(mp.begin(), mp.end());
-		It p = mp.begin();
-		if (sup < inf) {
-			p = mp.equal_range(inf).first;
-		}
-//		TraceX(p != mp.end());
-//		TraceX(*p);
-//		return vs::iota(0u, mp.size()) | vs::transform(makeIt(p, this));
-		return vs::iota(0u, mp.size()) | vs::transform([&](auto k) -> Map::value_type& {
-//			TraceX(k);
-			auto it = p;
-//			TraceX(2, ret);
-			if (++p == mp.end()) p = mp.begin();
-			return *it;
-		});
-	}
-*/
 
 	auto all()  {
 			return vs::iota(0, 2) | vs::transform([&](auto k) {
@@ -229,105 +194,14 @@ public:
 				}
 			})
 			| vs::join
-			| vs::take(mp.size())
+//			| vs::take_exactly(mp.size())
 			;
 	}
 
-	auto all2()  {
-//		if (sup >= inf) {
-//			return rg::make_subrange(mp.begin(), mp.end());
-//		} else {
-//			auto [b, _] = mp.equal_range(inf);
-//			auto b = mp.find(inf);
-//			auto e = mp.upper_bound(sup);
-			return vs::iota(0, 2) | vs::transform([&](auto k) {
-				if (k == 0) {
-					return rg::make_subrange(mp.find(inf), mp.end());
-//					return rg::make_subrange(b, sup >= inf ? e : mp.end());
-				 } else {
-//					auto e = mp.upper_bound(sup);
-////					return rg::make_subrange(mp.begin(), sup >= inf ? mp.begin() : e);
-//					auto sbr = rg::make_subrange(mp.begin(), e);
-//					TraceX(rg::distance(sbr));
-//					return rg::make_subrange(mp.begin(), mp.end());
-					return rg::make_subrange(mp.begin(), mp.upper_bound(sup));
-				}
-			})
-//			| vs::take(1)
-			| vs::join | vs::take(mp.size());
-//		}
-	}
 
-
-//	static bool less(T a, T b) { return isNewer(b, a); }
-	void push(T key, SP&& value) {
-		if (mp.empty()) {
-			inf = sup = key;
-		} else {
-			if (isNewer(inf, key)) inf = key;
-			if (isNewer(key, sup)) sup = key;
-		}
-		mp.insert({key, std::move(value)});
-	}
-	void erase(It it) {
-		if (it == mp.end()) return;
-		if (mp.size() == 1 || inf == sup) {
-			// all keys are equal
-			mp.erase(it);
-			return;
-		}
-		// if we remove the first one (==inf) just advance `inf` to the next
-		if (it->first == inf) {
-			It p = it; ++p;
-			if (p == mp.end())
-				inf = mp.begin()->first; // wrap it aka overflow
-			else
-				inf = p->first;
-			mp.erase(it);
-		} else if (it->first == sup) {
-			// need to find new sup
-			// At FEC we only remove the oldest elements so this case should not occcure
-			if (inf <= sup) {
-				// trivial: no wrap
-				mp.erase(it);
-				sup = mp.rbegin()->first;
-			} else  if (mp.begin()->first == sup) {
-				mp.erase(it);
-				if (mp.begin()->first == sup) {
-					// there are more elements with the same key; keep sup intact
-				} else {
-					// wrap it and take the last key
-					sup = mp.rbegin()->first;
-				}
-			} else {
-				// There are lower keys so let's find the highest one < sup (binary search)
-				auto lo = mp.begin()->first;
-				auto hi = sup;
-				while (hi - lo > 1) {
-					auto mid = lo + (hi - lo)/2;
-					It up = mp.upper_bound(mid);
-					assert(up != mp.end());
-					if (up->first < sup) {
-						lo = mid;
-					} else {
-						hi = mid;
-					}
-				}
-				// hi may be better candidate; or hi may be = sup
-				mp.erase(it);
-				// check if key = sup still exists; otherwise set sup to prev
-				if (mp.find(sup) == mp.end()) {
-					// there is no such key anymore; move to previous
-					if (sup != hi)
-						sup = hi;
-					else
-						sup = lo;
-				}
-			}
-		} else {
-			mp.erase(it);
-		}
-	}
+	Map::const_iterator lower_bound(T x) const;
+	void push(T key, SP&& value);
+	void erase(It it);
 
 	void erase(T key) {
 //		auto [b, e] = mp.equal_range(key);
@@ -347,6 +221,76 @@ XMap::Map::const_iterator XMap::lower_bound(T x) const {
 	return mp.cend();
 }
 
+void XMap::push(T key, SP&& value) {
+	if (mp.empty()) {
+		inf = sup = key;
+	} else {
+		if (isNewer(inf, key)) inf = key;
+		if (isNewer(key, sup)) sup = key;
+	}
+	mp.insert({key, std::move(value)});
+}
+
+void XMap::erase(It it) {
+	if (it == mp.end()) return;
+	if (mp.size() == 1 || inf == sup) {
+		// all keys are equal
+		mp.erase(it);
+		return;
+	}
+	// if we remove the first one (==inf) just advance `inf` to the next
+	if (it->first == inf) {
+		It p = it; ++p;
+		if (p == mp.end())
+			inf = mp.begin()->first; // wrap it aka overflow
+		else
+			inf = p->first;
+		mp.erase(it);
+	} else if (it->first == sup) {
+		// need to find new sup
+		// At FEC we only remove the oldest elements so this case should not occcure
+		if (inf <= sup) {
+			// trivial: no wrap
+			mp.erase(it);
+			sup = mp.rbegin()->first;
+		} else  if (mp.begin()->first == sup) {
+			mp.erase(it);
+			if (mp.begin()->first == sup) {
+				// there are more elements with the same key; keep sup intact
+			} else {
+				// wrap it and take the last key
+				sup = mp.rbegin()->first;
+			}
+		} else {
+			// There are lower keys so let's find the highest one < sup (binary search)
+			auto lo = mp.begin()->first;
+			auto hi = sup;
+			while (hi - lo > 1) {
+				auto mid = lo + (hi - lo)/2;
+				It up = mp.upper_bound(mid);
+				assert(up != mp.end());
+				if (up->first < sup) {
+					lo = mid;
+				} else {
+					hi = mid;
+				}
+			}
+			// hi may be better candidate; or hi may be = sup
+			mp.erase(it);
+			// check if key = sup still exists; otherwise set sup to prev
+			if (mp.find(sup) == mp.end()) {
+				// there is no such key anymore; move to previous
+				if (sup != hi)
+					sup = hi;
+				else
+					sup = lo;
+			}
+		}
+	} else {
+		mp.erase(it);
+	}
+}
+
 
 std::ostream& operator<<(std::ostream& os, XMap::value_type const& v) {
 	return os << '(' << (uint)v.first << " : " << (uint)v.second->x << ')';
@@ -361,16 +305,8 @@ bool equals(auto&& a, auto&& b) {
 	auto pa = a.begin();
 	auto pb = b.begin();
 	for ( ; pa != a.end() && pb != b.end(); ++pa, ++pb) {
-//		*pa;
-//		TraceX(*pa, *pb, rg::distance(a));
-//		TraceX(*pa, *pb, rg::distance(a));
-//		TraceX(*pa, *pb, rg::distance(a));
-//		TraceX(*pa != *pb);
-////		TraceX(*pa != (decltype(*pa)) *pb);
-////		if (*pa != (decltype(*pa)) *pb) return false;
 		if (*pa != *pb) return false;
 	}
-//	TraceX(pa != a.end(), pb != b.end());
 	if (pa != a.end() || pb != b.end()) return false;
 	return true;
 //	return rg::distance(a) == rg::distance(b) &&
@@ -451,6 +387,25 @@ void test_XMap() {
 	m.erase(2);
 	TraceX((uint)m.inf, (uint)m.sup, m.all());
 	assert( equalsV(m.all(), {{250, 0}, {255, 0}, {255, 255}}) );
+
+	m.erase(255);
+	TraceX((uint)m.inf, (uint)m.sup, m.all());
+	assert( equalsV(m.all(), {{250, 0}}) );
+
+	m.erase(255);
+	assert( equalsV(m.all(), {{250, 0}}) );
+
+	m.erase(250);
+	TraceX((uint)m.inf, (uint)m.sup, m.all());
+	assert( equalsV(m.all(), {}) );
+
+	m.erase(0);
+	assert( equalsV(m.all(), {}) );
+
+	push(12); push(200);
+	TraceX((uint)m.inf, (uint)m.sup, m.all());
+	assert( equalsV(m.all(), {{200, 0}, {12, 0}}) );
+
 }
 
 
