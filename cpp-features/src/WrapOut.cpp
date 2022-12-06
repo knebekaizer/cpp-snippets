@@ -5,8 +5,9 @@
 #include <set>
 #include <vector>
 #include <ostream>
+#include <cassert>
 
-#define STD_RANGES 0
+//#define STD_RANGES 0
 
 #ifndef STD_RANGES
 #ifdef __cpp_lib_ranges
@@ -60,12 +61,22 @@ inline bool isNewer(U value, U prev_value) {
 	return value != prev_value && static_cast<U>(value - prev_value) < kBreakpoint;
 }
 
-template <class T>
-struct Less {
-	bool operator()(T x, T y) const{ return isNewer(y, x); }
-};
+//template <class U>
+//struct Less {
+//	static_assert(!std::numeric_limits<U>::is_signed, "U must be unsigned");
+//	bool operator()(U x, U y) const{
+////		return isNewer(y, x);
+//		constexpr U half = (std::numeric_limits<U>::max() >> 1) + 1;
+//		if (y - x == half) {
+//			return x < y;
+//		}
+//		return x != y && static_cast<U>(y - x) < half;
+//	}
+//};
+
+
 using T = uint8_t;
-using Map = multimap<T, T, Less<T>>;
+//using Map = multimap<T, T, Less<T>>;
 
 #if STD_RANGES
 #define make_subrange subrange
@@ -80,86 +91,10 @@ auto eq_range(const auto& m, T x) {
 	return to_rng(m.equal_range(x));
 }
 
-#ifdef make_subrange
-#undef make_subrange
-#endif
+//#ifdef make_subrange
+//#undef make_subrange
+//#endif
 
-void testMap() {
-	Map m;
-	[[maybe_unused]] auto push = [&](T x) {
-		if (!m.empty() && uint(x - m.begin()->first) > 64) {
-			m.erase(m.begin(), m.end());
-		}
-		m.insert({x,x});
-	};
-
-	for (T x : {1,2,3}) push(x); TraceX(m);
-	for (T x : {200, 1,2}) push(x); TraceX(m);
-	for (T x : {10, 20, 30, 1,2}) push(x); TraceX(m);
-	for (T x : {40,50,60,70,80,90}) push(x); TraceX(m);
-	m.insert({80, 81});
-	m.insert({80, 82});
-
-
-#if STD_RANGES
-	auto map_subrange = rg::subrange(m.begin(), m.end());
-#else
-	[[maybe_unused]]
-	auto map_subrange = rg::make_subrange(m.begin(), m.end());
-#endif
-	TraceX(m);
-	TraceX(map_subrange);
-
-	TraceX(eq_range(m, 40));
-	TraceX(eq_range(m, 80));
-	TraceX(eq_range(m, 200));
-	TraceX(*m.find(90));
-	TraceX(*m.lower_bound(75));
-	TraceX(*m.upper_bound(75));
-	TraceX(*m.lower_bound(80));
-	TraceX(*m.upper_bound(80));
-	TraceX(*m.lower_bound(200));
-	TraceX(*m.upper_bound(200));
-}
-
-void testMap_Plain() {
-	using Map = multimap<T, T>;
-	Map m;
-	[[maybe_unused]] auto push = [&](T x) {
-		if (!m.empty() && uint(x - m.begin()->first) > 64) {
-			m.erase(m.begin(), m.end());
-		}
-		m.insert({x,x});
-	};
-
-	for (T x : {1,2,3}) push(x); TraceX(m);
-	for (T x : {200, 1,2}) push(x); TraceX(m);
-	for (T x : {10, 20, 30, 1,2}) push(x); TraceX(m);
-	for (T x : {40,50,60,70,80,90}) push(x); TraceX(m);
-	m.insert({80, 81});
-	m.insert({80, 82});
-
-
-#if STD_RANGES
-	auto map_subrange = rg::subrange(m.begin(), m.end());
-#else
-	[[maybe_unused]]
-	auto map_subrange = rg::make_subrange(m.begin(), m.end());
-#endif
-	TraceX(m);
-	TraceX(map_subrange);
-
-	TraceX(eq_range(m, 40));
-	TraceX(eq_range(m, 80));
-	TraceX(eq_range(m, 200));
-	TraceX(*m.find(90));
-	TraceX(*m.lower_bound(75));
-	TraceX(*m.upper_bound(75));
-	TraceX(*m.lower_bound(80));
-	TraceX(*m.upper_bound(80));
-	TraceX(*m.lower_bound(200));
-	TraceX(*m.upper_bound(200));
-}
 
 struct S {
 	S() = default;
@@ -175,6 +110,14 @@ ostream& operator<<(ostream& os, const S& s) {
 
 using SP = unique_ptr<S>;
 class XMap {
+	bool less(T x, T y) const{
+		constexpr T half = (std::numeric_limits<T>::max() >> 1) + 1;
+		if (y - x == half) {
+			return x < y;
+		}
+		return x != y && static_cast<T>(y - x) < half;
+	}
+
 public:
 	using Map = std::multimap<T, SP>;
 	using value_type =  Map::value_type;
@@ -185,21 +128,19 @@ public:
 		return rg::make_subrange(b, e);
 	}
 
-	auto all()  {
-			return vs::iota(0, 2) | vs::transform([&](auto k) {
-				if (k == 0)
-					return rg::make_subrange(mp.find(inf), sup >= inf ? mp.upper_bound(sup) : mp.end());
-				else {
-					return rg::make_subrange(mp.begin(), sup >= inf ? mp.begin() : mp.upper_bound(sup));
-				}
-			})
-			| vs::join
-//			| vs::take_exactly(mp.size())
-			;
+	auto subrange(T lo, T hi) {
+		return vs::iota(0, 2) | vs::transform([this, lo, hi](auto k) {
+			if (k == 0)
+				return rg::make_subrange(mp.lower_bound(lo), hi >= lo ? mp.upper_bound(hi) : mp.end());
+			else {
+				return rg::make_subrange(mp.begin(), hi >= lo ? mp.begin() : mp.upper_bound(hi));
+			}
+		}) | vs::join;
 	}
 
+	auto all()  { return subrange(inf, sup); }
 
-	Map::const_iterator lower_bound(T x) const;
+	auto lower_bound(T x) const { return mp.lower_bound(x); }
 	void push(T key, SP&& value);
 	void erase(It it);
 
@@ -217,16 +158,14 @@ public:
 	T sup;
 };
 
-XMap::Map::const_iterator XMap::lower_bound(T x) const {
-	return mp.cend();
-}
-
 void XMap::push(T key, SP&& value) {
 	if (mp.empty()) {
 		inf = sup = key;
 	} else {
-		if (isNewer(inf, key)) inf = key;
-		if (isNewer(key, sup)) sup = key;
+		if (less(key, inf)) inf = key;
+		if (less(sup, key)) sup = key;
+//		if (isNewer(inf, key)) inf = key;
+//		if (isNewer(key, sup)) sup = key;
 	}
 	mp.insert({key, std::move(value)});
 }
@@ -248,7 +187,7 @@ void XMap::erase(It it) {
 		mp.erase(it);
 	} else if (it->first == sup) {
 		// need to find new sup
-		// At FEC we only remove the oldest elements so this case should not occcure
+		// At FEC we only remove the oldest elements so this case is not expected
 		if (inf <= sup) {
 			// trivial: no wrap
 			mp.erase(it);
@@ -302,15 +241,16 @@ std::ostream& operator<<(std::ostream& os, std::pair<T, SP> const& v) {
 
 /// compare two ranges
 bool equals(auto&& a, auto&& b) {
-	auto pa = a.begin();
-	auto pb = b.begin();
-	for ( ; pa != a.end() && pb != b.end(); ++pa, ++pb) {
-		if (*pa != *pb) return false;
-	}
-	if (pa != a.end() || pb != b.end()) return false;
-	return true;
-//	return rg::distance(a) == rg::distance(b) &&
-//		rg::all_of(vs::zip(a, b), [](auto&& pair){ return pair.first == pair.second; });
+//	auto pa = a.begin();
+//	auto pb = b.begin();
+//	for ( ; pa != a.end() && pb != b.end(); ++pa, ++pb) {
+//		TraceX(*pa, *pb);
+//		if (*pa != *pb) return false;
+//	}
+//	if (pa != a.end() || pb != b.end()) return false;
+//	return true;
+	return rg::distance(a) == rg::distance(b) &&
+		rg::all_of(vs::zip(a, b), [](auto&& pair){ return pair.first == pair.second; });
 }
 
 void test_equals() {
@@ -406,13 +346,26 @@ void test_XMap() {
 	TraceX((uint)m.inf, (uint)m.sup, m.all());
 	assert( equalsV(m.all(), {{200, 0}, {12, 0}}) );
 
+	for (uint k = 245u; k < 265u; k+=2) {
+		T u = (T)k;
+		push(u);
+	}
+	push(250,250);
+	push(0,1); push(0,2);
+	TraceX((uint)m.inf, (uint)m.sup, m.all());
+
+	TraceX(m.subrange(248, 253));
+	assert( equalsV(m.subrange(248, 253), {{249, 0},{250, 250},{251, 0},{253, 0}}) );
+
+	TraceX(m.subrange(253, 8));
+	assert( equalsV(m.subrange(253, 8), {{253, 0},{255, 0},{0, 1},{0, 2},{1, 0},{3, 0},{5, 0},{7, 0}}) );
 }
 
 
 int main() {
-	testMap_Plain();
-	testMap();
-	cout << '\n';
+//	testMap_Plain();
+//	testMap();
+//	cout << '\n';
 	test_XMap();
 	return 0;
 }
