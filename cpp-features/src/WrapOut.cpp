@@ -82,14 +82,6 @@ using T = uint8_t;
 #define make_subrange subrange
 #endif
 
-auto to_rng(auto p) {
-	auto [b, e] = p;
-	return rg::make_subrange(b, e);
-}
-
-auto eq_range(const auto& m, T x) {
-	return to_rng(m.equal_range(x));
-}
 
 //#ifdef make_subrange
 //#undef make_subrange
@@ -107,6 +99,9 @@ ostream& operator<<(ostream& os, const S& s) {
 	return os << s.x;
 }
 
+ostream& operator<<(ostream& os, uint8_t x) {
+	return os << (uint)x;
+}
 
 using SP = unique_ptr<S>;
 class XMap {
@@ -119,6 +114,7 @@ class XMap {
 	}
 
 public:
+	using Key = T;
 	using Map = std::multimap<T, SP>;
 	using value_type =  Map::value_type;
 	using It = Map::iterator;
@@ -128,19 +124,22 @@ public:
 		return rg::make_subrange(b, e);
 	}
 
-	auto subrange(T lo, T hi) {
+	/// @return [lo,hi] subrange including hi
+	auto subrange(T lo, T hi) const {
 		return vs::iota(0, 2) | vs::transform([this, lo, hi](auto k) {
-			if (k == 0)
+			// a dirty trick to get empty range of Who Must Not Be Named type
+			if (less(hi, lo)) return rg::make_subrange(mp.begin(), mp.begin());
+			if (k == 0) {
 				return rg::make_subrange(mp.lower_bound(lo), hi >= lo ? mp.upper_bound(hi) : mp.end());
-			else {
+			} else {
 				return rg::make_subrange(mp.begin(), hi >= lo ? mp.begin() : mp.upper_bound(hi));
 			}
 		}) | vs::join;
 	}
 
-	auto all()  { return subrange(inf, sup); }
+	auto all() const { return subrange(inf, sup); }
 
-	auto lower_bound(T x) const { return mp.lower_bound(x); }
+//	auto lower_bound(T x) const { return mp.lower_bound(x); } // Wrong
 	void push(T key, SP&& value);
 	void erase(It it);
 
@@ -153,6 +152,15 @@ public:
 		}
 	}
 
+	void reset() {
+		mp.erase(mp.begin(), mp.end());
+		inf = sup = 0;
+	}
+
+	size_t size() const { return mp.size(); }
+
+	Key lower() const { return inf; }
+
 	std::multimap<T, SP> mp;
 	T inf;
 	T sup;
@@ -161,12 +169,16 @@ public:
 void XMap::push(T key, SP&& value) {
 	if (mp.empty()) {
 		inf = sup = key;
+	} else if (less(key, inf) && less(sup, key)) {
+		// interval [inf, sup) can't span more than half of max<T>
+		// we have to reset the map
+		reset();
+		inf = sup = key;
 	} else {
 		if (less(key, inf)) inf = key;
 		if (less(sup, key)) sup = key;
-//		if (isNewer(inf, key)) inf = key;
-//		if (isNewer(key, sup)) sup = key;
 	}
+	assert(inf == sup || less(inf, sup));
 	mp.insert({key, std::move(value)});
 }
 
@@ -175,10 +187,8 @@ void XMap::erase(It it) {
 	if (mp.size() == 1 || inf == sup) {
 		// all keys are equal
 		mp.erase(it);
-		return;
-	}
-	// if we remove the first one (==inf) just advance `inf` to the next
-	if (it->first == inf) {
+	} else if (it->first == inf) {
+		// if we remove the first one (==inf) just advance `inf` to the next
 		It p = it; ++p;
 		if (p == mp.end())
 			inf = mp.begin()->first; // wrap it aka overflow
@@ -228,6 +238,7 @@ void XMap::erase(It it) {
 	} else {
 		mp.erase(it);
 	}
+	assert(inf == sup || less(inf, sup));
 }
 
 
@@ -241,16 +252,18 @@ std::ostream& operator<<(std::ostream& os, std::pair<T, SP> const& v) {
 
 /// compare two ranges
 bool equals(auto&& a, auto&& b) {
-//	auto pa = a.begin();
-//	auto pb = b.begin();
-//	for ( ; pa != a.end() && pb != b.end(); ++pa, ++pb) {
-//		TraceX(*pa, *pb);
-//		if (*pa != *pb) return false;
-//	}
-//	if (pa != a.end() || pb != b.end()) return false;
-//	return true;
+#if STD_RANGES
+	auto pa = a.begin();
+	auto pb = b.begin();
+	for ( ; pa != a.end() && pb != b.end(); ++pa, ++pb) {
+		if (*pa != *pb) return false;
+	}
+	if (pa != a.end() || pb != b.end()) return false;
+	return true;
+#else
 	return rg::distance(a) == rg::distance(b) &&
 		rg::all_of(vs::zip(a, b), [](auto&& pair){ return pair.first == pair.second; });
+#endif
 }
 
 void test_equals() {
@@ -278,8 +291,17 @@ bool operator!=(XMap::value_type const& x, pair<T, T> const& y) {
 }
 
 bool equalsV(auto&& m, vector<pair<T, T>> const& v) {
-	return equals(m, v);
+	auto ret = equals(m, v);
+	if (!ret) log_error << "Failure:\n  " << m << "\nexpected:\n  " << v;
+	return ret;
 }
+
+//void testEq(auto&& a, vector<pair<T, T>> const& b) {
+//	if (!equalsV(a, b)) {
+//		log_error << "Failure:\n  " << a << "\nexpected:\n  " << b;
+//	}
+////	assert(equalsV(a,b));
+//}
 
 void test_XMap() {
 	test_equals();
@@ -329,14 +351,12 @@ void test_XMap() {
 	assert( equalsV(m.all(), {{250, 0}, {255, 0}, {255, 255}}) );
 
 	m.erase(255);
-	TraceX((uint)m.inf, (uint)m.sup, m.all());
 	assert( equalsV(m.all(), {{250, 0}}) );
 
 	m.erase(255);
 	assert( equalsV(m.all(), {{250, 0}}) );
 
 	m.erase(250);
-	TraceX((uint)m.inf, (uint)m.sup, m.all());
 	assert( equalsV(m.all(), {}) );
 
 	m.erase(0);
@@ -354,11 +374,39 @@ void test_XMap() {
 	push(0,1); push(0,2);
 	TraceX((uint)m.inf, (uint)m.sup, m.all());
 
-	TraceX(m.subrange(248, 253));
 	assert( equalsV(m.subrange(248, 253), {{249, 0},{250, 250},{251, 0},{253, 0}}) );
+	assert( equalsV(m.subrange(8, 253), {}));
 
 	TraceX(m.subrange(253, 8));
 	assert( equalsV(m.subrange(253, 8), {{253, 0},{255, 0},{0, 1},{0, 2},{1, 0},{3, 0},{5, 0},{7, 0}}) );
+	m.erase(253); m.erase(255);
+	TraceX(m.all());
+
+	m.reset();
+	for (uint k = 0u; k < 8u; k += 2) {
+		push(k);
+	}
+	assert( equalsV(m.all(), {{0, 0}, {2, 0}, {4, 0}, {6, 0}} ));
+	push(254);
+	assert( equalsV(m.all(), {{254, 0}, {0, 0}, {2, 0}, {4, 0}, {6, 0}} ));
+	assert( equalsV(m.subrange(255,255), {}) );
+	assert( equalsV(m.subrange(255,0), {{0, 0}}) );
+	assert( equalsV(m.subrange(255,1), {{0, 0}}) );
+	assert( equalsV(m.subrange(0,0), {{0, 0}}) );
+	assert( equalsV(m.subrange(0,1), {{0, 0}}) );
+
+	m.erase(254);
+	push(128);
+	assert( equalsV(m.all(), {{0, 0}, {2, 0}, {4, 0}, {6, 0}, {128, 0}} ));
+	assert( equalsV(m.subrange(1,1), {}) );
+	assert( equalsV(m.subrange(2,2), {{2, 0}}) );
+	assert( equalsV(m.subrange(1,2), {{2, 0}}) );
+	assert( equalsV(m.subrange(1,3), {{2, 0}}) );
+
+	push(129); // reset
+	TraceX(m.all());
+	assert( equalsV(m.all(), {{129, 0}} ));
+	assert(m.size() == 1);
 }
 
 
