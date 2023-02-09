@@ -241,6 +241,20 @@ void ex_boolWrapper() {
 	TraceX(check(a), g_s);
 }
 
+#include <charconv>
+#include <cstdint>
+using int128_t = __int128;
+using uint128_t = unsigned __int128;
+
+uint128_t x2u128(string_view s) {
+	auto s1 = "5e1463677a8246bf2f99ea81f6baf1a6"sv;
+	auto s2 = "5e1463677a8246bf2f99ea81f6baf1a7"sv;
+	uint128_t x1, x2;
+	from_chars(s1.begin(), s1.end(), x1, 16);
+	from_chars(s2.begin(), s2.end(), x2, 16);
+	TraceX(int(x2 - x1));
+	return x1;
+}
 
 int main() {
     log_info << "Start";
@@ -260,4 +274,5 @@ int main() {
 
     testLogger();
 	ex_boolWrapper();
+	x2u128("5e1463677a8246bf2f99ea81f6baf1a6");
 }

@@ -55,7 +55,7 @@ ostream& operator<<(ostream& os, const S& s) {
 
 void test_vector() {
 	vector<S> sv(5);
-	// Check this dos not call copy ctor
+	// Check this does not call copy ctor
 	TraceX(sv);
 	TraceX(sv | vs::all);
 }

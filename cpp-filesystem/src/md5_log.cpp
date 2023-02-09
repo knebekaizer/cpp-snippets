@@ -18,12 +18,13 @@ namespace fs = ghc::filesystem;
 #include <cassert>
 #include <vector>
 #include <deque>
+#include <map>
 #include <algorithm>
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
+#include <charconv>
 
 #include <cstdint>
 using int128_t = __int128;
@@ -34,7 +35,10 @@ using uint128_t = unsigned __int128;
 
 #include <limits>
 
-#include "gsl-lite.hpp"
+//#include "gsl-lite.hpp"
+#include "range/v3/all.hpp"
+namespace rg = ::ranges;
+namespace vs = ::ranges::views;
 
 #include "timing.hpp"
 #include "trace.h"
@@ -100,46 +104,9 @@ void test_once() {
 }
 
 uint128_t x2u128(string_view s) {
-    static auto fmt = []() {
-        CTime gen;
-        static array<string, 16> buf;
-        generate(begin(buf), end(buf), [k = 0] () mutable {
-            return string("%") + to_string(++k) + "llx";
-        });
-        array<gsl::czstring, buf.size() + 1> f = {""}; // make the array index 1-based
-        transform(begin(buf), end(buf), begin(f) + 1, [] (auto& it) { return it.c_str(); });
-        auto stop = gen();
-        TraceX(stop);
-        return f;
-    }();
-//        printme() {
-////            for (auto x : gsl::make_span(fmt2, 16)) TraceX(x);
-//            for (auto x : fmt) TraceX(x);
-//        }
-//    } _;
-
-//    cout << s << endl;
-
-    [[maybe_unused]]
-    int dummy = []() { cout << " static decl is supposed to have a side effect" << endl; return 0; }();
-
-    struct guard {
-        guard() { /*cout << "Have side effect\n";*/ }
-    } _ ;
-
-
-    uint64_t high = 0, low;
-    int len = min((int)s.size(), 32);
-    int half = max(0, len - 16);
-    if (half > 0) {
-        sscanf(&s[0], fmt[half], &high);
-    } else {
-        high = 0;
-    }
-    sscanf(&s[half], fmt[len-half], &low);
-//    cout << hex << high << low << dec << "\n\n";
-
-    return ((uint128_t)high << 64) + (uint128_t)low;
+	uint128_t x;
+	from_chars(s.begin(), s.end(), x, 16);
+	return x;
 }
 
 string u128x(uint128_t x) {
@@ -185,55 +152,92 @@ std::ostream& operator<<(std::ostream& out, const CTime& t) {
     return out << to_string(t.nsec().count()) << "ns";
 }
 
-struct File {
-    uint128_t md5;
-    string fname;
+struct Md5Record {
+    uint128_t hash;
+    string name;
 };
 
-//using FList = vector<File>;
-using FList = deque<File>;
 
-void load(istream& inp) {
-    CTime t;
-    uint128_t md5;
-    string fname;
-    log_trace << "Using deque";
-    FList flist;
-    while (inp >> md5 && inp.ignore(2)
-            && getline(inp, fname)) {
-        flist.push_back({md5, fname});
-//        cout << u128x(md5) << " -> " << fname << endl << flush;
-    }
-    TraceX(t.nsec(), t.sec());
+inline std::istream& operator>>(std::istream& is, Md5Record& r) {
+	string hash, name;
+	if ((is >> hash) && isspace(is.get()) && getline(is, name)) {
+		auto end = hash.data() + hash.size();
+		uint128_t x = 0;
+		auto rc = from_chars(hash.data(), end, x, 16);
+		if (rc.ptr != end || rc.ec != std::errc{}) {
+			is.setstate(is.rdstate() | ios::failbit);
+			return is;
+		};
+		r.hash = x;
+		r.name = std::move(name);
+	}
+	return is;
+}
+
+//using FList = vector<File>;
+//using FList = deque<File>;
+
+using Records = std::vector<Md5Record>;
+using HashToName = std::multimap<uint128_t, string_view>;
+
+void dedup(const HashToName& byHash);
+
+void load(istream& ifs) {
+	CTime t;
+
+	auto iss = rg::istream<Md5Record>(ifs);
+	Records buf = iss | rg::to_vector;
+	if (!ifs.eof()) {
+		log_error << "Invalid format at line #" << buf.size() + 1;
+	}
+	log_trace << "Total records: " << buf.size();
+
+	auto byHash =
+		buf
+		| vs::transform([](const Md5Record& r) { return make_pair(r.hash, string_view(r.name)); })
+		| rg::to<HashToName>;
+	dedup(byHash);
+}
+
+void dedup(const HashToName& byHash) {
+
+	auto byHashGroups = byHash
+		| vs::chunk_by(
+			[](const auto& x1, const auto& x2) {
+				return x1.first == x2.first;
+		});
+	log_trace << "Total unique files: " << rg::distance(byHashGroups);
+	size_t total = 0;
+	size_t grpCount = 0;
+	for (auto&& grp : byHashGroups) {
+		int n = 0;
+		for (auto& [hash, fn] : grp) {
+			if (fs::exists(fn)) {
+				if (auto sz = fs::file_size(fn); sz > 1024 * 64) {
+					if (n == 1) ++grpCount;
+					if (n++ > 0) total += sz;
+				}
+			}
+		}
+	}
+	TraceX(grpCount, total>>20);
 }
 
 
 int main(int argc, char const **argv) {
     TraceX(__clang_version__);
 
-    test_once();
-    exit(0);
+	if (argc < 2) {
+		log_error << "Usage " << argv[0] << " <file.md5>";
+		return 1;
+	}
+	TraceX(argv[1]);
+	ifstream ifs(argv[1]);
+	if (!ifs) {
+		log_error << "can't open file " << argv[1];
+		return 2;
+	}
 
-//    using Args = invoke_result(decltype( gsl::make_span(argv, argc)))::type;  //vector<string>;
-//    using Args = result_of<decltype(gsl::make_span(argv, argc))>::type;  //vector<string>;
-
-    auto args = gsl::make_span(argv, argc);
-    options(args);
-
-
-    try {
-        if (args.size() > 1) {
-            ifstream inp(args[1]);
-            if (!inp) log_error << "Can't open " << args[1];
-            load(inp);
-        } else {
-            load(cin);
-        }
-    }
-    catch (std::exception& e) {
-        log_error << e.what();
-    }
-
-
-    return 0;
+	load(ifs);
+	return 0;
 }

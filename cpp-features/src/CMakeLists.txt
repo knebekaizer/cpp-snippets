@@ -1,6 +1,6 @@
 
 #add_definitions(-DUSE_RUNTIME_LOG_LEVEL)
-set(RANGES_INCLUDE "${CMAKE_SOURCE_DIR}/range-v3/include")
+set(RANGES_INCLUDE "${CMAKE_SOURCE_DIR}/../range-v3/include")
 include_directories(ranges ${RANGES_INCLUDE})
 
 add_executable(cpp-features
