@@ -31,7 +31,7 @@ add_executable(testShared
     shared_ptr.cpp
 )
 
-add_executable(testRandom
+add_executable(random
     random.cpp
 )
 
@@ -87,6 +87,11 @@ add_executable(par_algo_none
     par_algo.cpp
 )
 target_compile_definitions(par_algo PUBLIC "-DPARALLEL")
+
+
+add_executable(deque_dtor
+    deque_dtor.cpp
+)
 
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")

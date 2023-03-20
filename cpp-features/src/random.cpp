@@ -39,7 +39,15 @@ void dump2(ostream& os, int stdDev) {
 		os << x;
 	}
 }
-
+void randomFloat(unsigned seed)
+{
+	std::mt19937 mt;
+	mt.seed(seed);
+	std::uniform_real_distribution<float> dt(-1,1);
+	for (int k = 0; k < 5; ++k) cout << dt(mt) << " ";
+	cout << endl;
+//	return dt(mt);
+}
 int main()
 {
 	log_info << "Start";
@@ -92,6 +100,10 @@ int main()
 
 	ofstream o64("o64");
 	dump_random(o64, 64);
+
+	randomFloat(1);
+	randomFloat(12);
+	randomFloat(12);
 
 	return 0;
 }
