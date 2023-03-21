@@ -16,7 +16,8 @@ template <class Tp_> struct Ptr;
 template <class T>
 struct Ptr {
     using P = T*;
-    T* p_;
+    T* p_ = nullptr;
+	Ptr() = default;
     Ptr(nullptr_t) : p_(nullptr) {}
     Ptr(T* p) : p_(p) {}
     Ptr(const T*& p) : p_(p) {}
@@ -30,6 +31,8 @@ struct Ptr {
 
     template <class U>
     Ptr(Ptr<U> other) : Ptr(static_cast<T*>(other.p_)) {}
+    T& operator*() { return *p_; }
+    T& operator*() const { return *p_; }
     T* operator->() { return p_; }
     T* operator->() const { return p_; }
     bool operator==(const Ptr<T> other) const { return p_ == other.p_; }
@@ -40,6 +43,9 @@ struct Ptr {
     Ptr  operator++(int) { Ptr t(*this); ++p_; return t;}
     Ptr& operator--() { --p_; return *this;}
     Ptr  operator--(int) { Ptr t(*this); --p_; return t; }
+
+	bool operator<(const Ptr& p) const { return p_ < p.p_; }
+	explicit operator bool() const { return p_; }
 
     Ptr operator+(size_t n) {
         if (err_ == Err::INCR_MAY_THROW) throw std::logic_error("logic_error #11");
@@ -61,15 +67,15 @@ ptrdiff_t operator-(const Ptr<T> a, const Ptr<T>& b) {
 	}
 }
 
-template <class T>
-struct CPtr {
-    const T* p_;
-    CPtr(T* p) : p_(p) {}
-    CPtr(Ptr<T> ptr) : CPtr(ptr.p_) {}
-    template <class U>
-    CPtr(CPtr<U> other) : CPtr(static_cast<const T*>(other.p_)) {}
-    const T* operator->() const { return p_; }
-};
+//template <class T>
+//struct CPtr {
+//    const T* p_;
+//    CPtr(T* p) : p_(p) {}
+//    CPtr(Ptr<T> ptr) : CPtr(ptr.p_) {}
+//    template <class U>
+//    CPtr(CPtr<U> other) : CPtr(static_cast<const T*>(other.p_)) {}
+//    const T* operator->() const { return p_; }
+//};
 
 template <class Tp_> class alloc;
 
@@ -139,13 +145,33 @@ public:
 namespace fi = fault_injection;
 using namespace std;
 
-void test(fi::Err err) {
+template <typename Vec>
+bool validate_size(fi::Err err, const Vec& v, size_t expected) {
 	fi::err_ = err;
-    cout << "err = " << err << endl;
+	auto sz = v.size();
+	cout << "size = " << sz << " : expected " << expected <<  endl;
+	fi::err_ = fi::Err::NONE; // restore no-error
+	return sz == expected;
+}
+
+template<typename T>
+auto make_vector(size_t t) {
+//	setContainerSize(t); // store size
+	return std::make_unique<std::vector<T>>(t);
+}
+
+template <typename T>
+void test(fi::Err err) {
+	fi::err_ = fi::Err::NONE; // initialize as clean
+
+	// DIFF_ERROR should be applied only to size() function, otherwise it may corrupt any memory allocation
+	if (err != fi::Err::DIFF_ERROR) fi::err_ = err;
+	cout << "err = " << err << endl;
     try {
-        vector<int, fi::alloc<int>> v(10);
-	    auto sz = v.size();
-        cout << "size = " << sz << " : expected 10" <<  endl;
+        vector<T, fi::alloc<T>> v(9);
+	    validate_size(err, v, 9);
+	    v.push_back(42);
+	    validate_size(err, v, 10);
     }
     catch (std::exception& e) {
         cout << "Exception handled " << e.what() << endl;
@@ -156,10 +182,10 @@ void test(fi::Err err) {
 }
 
 int main() {
-    test(fi::Err::NONE);
-    test(fi::Err::DIFF_ERROR);
-    test(fi::Err::INCR_MAY_THROW);
-    test(fi::Err::DIFF_MAY_THROW);
+    test<int>(fi::Err::NONE);
+    test<int>(fi::Err::DIFF_ERROR);
+    test<int>(fi::Err::INCR_MAY_THROW);
+    test<int>(fi::Err::DIFF_MAY_THROW);
 	return 0;
 }
 
