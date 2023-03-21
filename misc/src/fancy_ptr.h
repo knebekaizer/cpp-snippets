@@ -253,6 +253,11 @@ public:
 	bool operator==(const custom_allocator<Tp> other) const { return true; }
 	bool operator!=(const custom_allocator<Tp> other) const { return !operator==(other); }
 
+	template<class Up>
+	struct rebind {
+		typedef custom_allocator<Up> other;
+	};
+
 };
 
 } // namespace my

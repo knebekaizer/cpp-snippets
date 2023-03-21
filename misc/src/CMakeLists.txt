@@ -14,9 +14,8 @@ add_executable(fancy_ptr
         fancy_ptr.h
         )
 
-add_executable(fancy_ptr_err
-        fancy_ptr_with_errors.cpp
-        fancy_ptr.h
+add_executable(fault_injection_ptr
+        fault_injection_ptr.cpp
         )
 
 #set(USER_HOME $ENV{HOME})
