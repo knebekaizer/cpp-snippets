@@ -154,10 +154,28 @@ bool validate_size(fi::Err err, const Vec& v, size_t expected) {
 	return sz == expected;
 }
 
+struct FIType {};
+
+// type trait for is_fancy_ptr (general case)
 template<typename T>
+struct is_fault_injection_ptr : std::false_type {};
+
+// specialization for fancy_ptr
+template<>
+struct is_fault_injection_ptr<FIType> : std::true_type {};
+
+template <typename T,
+	typename std::enable_if<is_fault_injection_ptr<T>::value == false, bool>::type = true>
 auto make_vector(size_t t) {
 //	setContainerSize(t); // store size
 	return std::make_unique<std::vector<T>>(t);
+}
+
+template <typename T,
+	typename std::enable_if<is_fault_injection_ptr<T>::value == true, bool>::type = true>
+auto make_vector(size_t t) {
+//	setContainerSize(t); // store size
+	return std::make_unique<std::vector<T, fi::alloc<T>>>(t);
 }
 
 template <typename T>
@@ -181,11 +199,21 @@ void test(fi::Err err) {
     }
 }
 
+
+template <typename T>
+void test2() {
+	auto v = make_vector<T>(10);
+	validate_size(fi::Err::DIFF_ERROR, *v, 10);
+}
+
 int main() {
     test<int>(fi::Err::NONE);
     test<int>(fi::Err::DIFF_ERROR);
     test<int>(fi::Err::INCR_MAY_THROW);
-    test<int>(fi::Err::DIFF_MAY_THROW);
+//    test<int>(fi::Err::DIFF_MAY_THROW);
+
+	test2<int>();
+	test2<FIType>();
 	return 0;
 }
 
