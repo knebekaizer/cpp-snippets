@@ -256,9 +256,76 @@ uint128_t x2u128(string_view s) {
 	return x1;
 }
 
+template <class _Key, class _Value> struct __value_type;
+template <class _Tp>
+struct __tree_key_value_types {};
+
+template <class _Key, class _Tp>
+struct __tree_key_value_types<__value_type<_Key, _Tp> > {};
+
+
+struct S {
+	S() { ++count; }
+	~S() { --count; }
+	static int count;
+};
+int S::count = 0;
+void shared() {
+	{
+		auto x = make_shared<S>();
+		TraceX(x->count);
+		assert(x.use_count() == 1);
+		auto x1 = x;
+		assert(x.use_count() == 2);
+		assert(S::count == 1);
+	}
+	TraceX(S::count);
+	assert(S::count == 0);
+}
+
+struct S2 {
+	S2() : flag(1) {}
+	S2(int x) : flag(2) {}
+	S2(const char* s) : flag(4) {}
+	S2(int a, double b) : flag(8) {}
+	unsigned flag = 0;
+};
+void shared2() {
+	auto s0 = make_shared<S2>();
+	assert(s0->flag == 1);
+	auto s1 = make_shared<S2>(42);
+	assert(s1->flag == 2);
+	auto s3 = make_shared<S2>("qwerty");
+	assert(s3->flag == 4);
+	auto s4 = make_shared<S2>(0, 0.0);
+	assert(s4->flag == 8);
+}
+
+template <typename T, typename S>
+bool string_ctor(T begin, T end, S not_used) {
+	S s(begin, end);
+	S q(static_cast<typename S::size_type>(begin), static_cast<typename S::value_type>(end));
+	return s == q;
+}
+
+void string_test() {
+	assert((string_ctor(4, 16, string()) == true));
+	assert((string_ctor(4ull, 16ull, u16string()) == true));
+	vector<int> v = {65, 66, 67, 68};
+	string s(v.begin(), v.end());
+	assert(s == "ABCD");
+	TraceX(s);
+	log_trace << "PASSED";
+}
+
 int main() {
-    log_info << "Start";
-    TraceX(getOsName());
+	shared();
+	shared2();
+	string_test();
+	return 0;
+
+	log_info << "Start";
+	TraceX(getOsName());
 
 	myTemplateFunc(42);
 	myTemplateFunc("Hello, world!");
@@ -267,12 +334,14 @@ int main() {
 	TraceX(msb(1 << 5));
 	assert(msb(1 << 5) == 5);
 	test_scanf();
-    test_endian();
+	test_endian();
 
-    testStaticMemberInit();
-    testHierarchy();
+	testStaticMemberInit();
+	testHierarchy();
 
-    testLogger();
+	testLogger();
 	ex_boolWrapper();
 	x2u128("5e1463677a8246bf2f99ea81f6baf1a6");
+
+	return 0;
 }

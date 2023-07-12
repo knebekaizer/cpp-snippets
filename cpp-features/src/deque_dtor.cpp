@@ -1,5 +1,5 @@
 #include "trace.hpp"
-#include<array>
+#include <array>
 #include <iostream>
 #include <deque>
 #include <map>
@@ -14,6 +14,13 @@ struct S {
 	S& operator=(const S&) { log_trace << "Copy assignment " << (void*)this; return *this; }
 	S& operator=(S&&) { log_trace << "Move assignment " << (void*)this; return *this; }
 	~S() { log_trace << "S dtor " << (void*)this; }
+	void operator delete(void *ptr) {
+		TraceX(ptr);
+		::operator delete(ptr);
+	}
+	void* operator new(size_t sz) {
+		return malloc(sz);
+	}
 };
 
 template<class Tp = S>
@@ -32,7 +39,8 @@ struct custom_allocator {
     }
 
     void deallocate(value_type * p, std::size_t n) {
-        ::operator delete(p);
+//        ::operator delete(p);
+		delete p;
 //        memory_deallocated = true;
     }
     void construct(value_type * p, value_type value) {
@@ -46,16 +54,20 @@ struct custom_allocator {
         p->~value_type();
 	    TraceX(2, (void*)p, actual_elements_destroyed);
     }
-//	template <class U>
-//	struct rebind { typedef std::allocator<U> other; };
+	template <class U>
+	struct rebind { typedef std::allocator<U> other; };
 };
 
 void test_types() {
 	{
-		std::deque<S, custom_allocator<S>> d1(1);
+//		std::deque<S, custom_allocator<S>> d1(1);
+		std::deque<S> d1(1);
 	}
 	{
-		std::map<int, S, custom_allocator<S>> d1({0, {}});
+//		std::map<int, S, custom_allocator<S>> d1({0, {}});
+//		std::map<int, S,> d1;
+//		d1.emplace(0, S());
+//		TraceF;
 	}
 }
 

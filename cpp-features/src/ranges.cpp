@@ -5,6 +5,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <span>
 
 #include "range/v3/all.hpp"
@@ -535,13 +536,59 @@ void test_C_accessor(index_t (get_num)(), value_t (get_value)(index_t)) {
 	TraceX(v.size(), v | vs::reverse);
 }
 
+void filterTwice() {
+	const std::vector<int> inputs{1, 2, 3, 4, 5, 6};
+
+	auto square_it = [](auto i) {
+		std::cout << i << ' ';
+		return i * 2; };
+
+	auto results = inputs
+	               | vs::transform(square_it)
+	               //		| vs::cache1
+	               | vs::filter([](auto i){ return i % 3 == 0; });
+
+	// 1 2 3 3 4 5 6 6
+	for (auto r [[maybe_unused]]  : results) { }; cout << endl;
+
+	// 4 5 6 3 4 5 6 6
+	auto vec [[maybe_unused]] = results | rg::to<vector>; cout << endl;
+	TraceX(vec); // vec = [6,12]
+
+	// 3 4 5 6 6
+	for (auto r [[maybe_unused]]  : results) { }; cout << endl;
+}
+
+void filterCache1() {
+	const std::vector<int> inputs{1, 2, 3, 4, 5, 6};
+
+	auto square_it = [](auto i) {
+		std::cout << i << ' ';
+		return i * 2; };
+
+	auto results = inputs
+	               | vs::transform(square_it)
+	               | vs::cache1
+	               | vs::filter([](auto i){ return i % 3 == 0; });
+
+	// 1 2 3 4 5 6
+	for (auto r [[maybe_unused]]  : results) { }; cout << endl;
+
+	// 3 4 5 6
+	auto vec [[maybe_unused]] = results | rg::to<vector>; cout << endl;
+	TraceX(vec); // vec = [6,12]
+
+	// 3 4 5 6
+	for (auto r [[maybe_unused]]  : results) { }; cout << endl;
+}
+
 #include <ranges>
 void ex_span() {
 	cout << endl;
-    auto fOdd = vs::filter([](auto& i) { return i & 1; });
-    vector<int> v = vs::iota(0, 10) | rg::to_vector;
-    auto s8 = std::span(&*v.begin(), 8) | fOdd; TraceX(s8);
-    auto v8 = rg::span{&*v.begin(), 8} | fOdd; TraceX(v8);
+	auto fOdd = vs::filter([](auto& i) { return i & 1; });
+	vector<int> v = vs::iota(0, 10) | rg::to_vector;
+	auto s8 = std::span(&*v.begin(), 8) | fOdd; TraceX(s8);
+	auto v8 = rg::span{&*v.begin(), 8} | fOdd; TraceX(v8);
 }
 
 int main() {
@@ -586,6 +633,11 @@ int main() {
 
     ex_enumerate();
     ex_span();
+
+	cout << endl;
+	filterTwice();
+	cout << endl;
+	filterCache1();
 
 	return 0;
 }

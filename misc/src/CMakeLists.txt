@@ -18,6 +18,10 @@ add_executable(fault_injection_ptr
         fault_injection_ptr.cpp
         )
 
+add_executable(ttt
+        t.cpp
+        )
+
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
 

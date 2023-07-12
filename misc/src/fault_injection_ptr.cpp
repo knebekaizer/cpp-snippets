@@ -86,7 +86,7 @@ public:
     typedef void*             pointer;
     typedef const void*       const_pointer;
     typedef void              value_type;
-    template <class Up_> struct rebind {typedef alloc<Up_> other;};
+    template <class Up_> struct rebind {typedef std::allocator<Up_> other;};
 };
 
 template<class Tp_>
@@ -105,7 +105,7 @@ public:
 
     template<class Up_>
     struct rebind {
-        typedef alloc<Up_> other;
+        typedef std::allocator<Up_> other;
     };
 
     alloc() noexcept {}
@@ -123,11 +123,13 @@ public:
         if (n > max_size())
             std::__throw_length_error("allocator<T>::allocate(size_t n)"
                                  " 'n' exceeds maximum supported size");
-        return static_cast<Tp_*>(std::__libcpp_allocate(n * sizeof(Tp_), alignof(Tp_)));
+//        return static_cast<Tp_*>(std::__libcpp_allocate(n * sizeof(Tp_), alignof(Tp_)));
+		return reinterpret_cast<Tp_*>(new char[n * sizeof(Tp_)]);
     }
 
      void deallocate(pointer p, size_type n) noexcept {
-        std::__libcpp_deallocate((void *) p.p_, n * sizeof(Tp_), alignof(Tp_));
+		delete[](p.p_);
+//        std::__libcpp_deallocate((void *) p.p_, n * sizeof(Tp_), alignof(Tp_));
     }
 
      size_type max_size() const noexcept { return size_type(~0) / sizeof(Tp_); }
@@ -203,6 +205,7 @@ void test(fi::Err err) {
 template <typename T>
 void test2() {
 	auto v = make_vector<T>(10);
+	v->begin();
 	validate_size(fi::Err::DIFF_ERROR, *v, 10);
 }
 
@@ -214,6 +217,7 @@ int main() {
 
 	test2<int>();
 	test2<FIType>();
+
 	return 0;
 }
 
