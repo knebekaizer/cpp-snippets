@@ -102,8 +102,10 @@ void asyncTest_4() {
 	}
 	t.join();
 }
-void async() {
+int main() {
 	asyncTest_1();
 	asyncTest_2();
 	asyncTest_3();
+	asyncTest_4();
+	return 0;
 }

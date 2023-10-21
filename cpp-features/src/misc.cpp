@@ -318,30 +318,96 @@ void string_test() {
 	log_trace << "PASSED";
 }
 
+//void t15() {
+//	auto x = use_facet<ctype<char16_t> >(getloc()).widen(__c);
+//}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wvexing-parse"
+void testDefault() {
+	struct S {
+		S() { log_trace << "Default constructor"; }
+		S(const S&) { log_trace << "Copy constructor"; }
+		S(S&&) { log_trace << "Move constructor"; }
+		S& operator=(const S&) { log_trace << "Copy assignment"; return *this; }
+		S& operator=(S&&) { log_trace << "Move assignment"; return *this; }
+		~S() { log_trace << "Destructor"; }
+
+		S(int) { log_trace << "int constructor"; }
+	};
+	cout << "1: "; S s;         // Default constructor
+	cout << "2: "; S s1(s);     // Copy constructor
+	cout << "3: "; S s2(std::move(s1)); // Move constructor
+	cout << "0: "; S s0(S()); // Nothing; it's a declaration of function s0 with parameter `S (*)()` and return type S; Declared function is never used
+	cout << "4: "; S s3 = s2;  // Copy constructor, no assignment
+	cout << "5: "; S s4 = S(); // Default constructor, no assignment
+	cout << "6: "; S s5 = S(0); // int constructor, no assignment
+	cout << "7: "; s4 = s2;    // Copy assignment
+	cout << "8: "; s4 = std::move(s2);    // Move assignment
+	cout << "9: "; s4 = S();   // Default constructor; Move assignment; Destructor
+	cout << "10: "; S s9 = 42;  // int constructor
+	cout << "11: "; s9 = 0; // int constructor; Move assignment; Destructor
+}
+#pragma GCC diagnostic pop
+
+#include <set>
+void testSetOfView() {
+	string_view a("123456789");
+	string_view b("_123456789_");
+	b.remove_prefix(1);
+	b.remove_suffix(1);
+	set<string_view> s = {a, b};
+	TraceX(s.size());
+}
+
+struct X {
+	int x;
+	bool operator<(const X& other) const { return x < other.x; }
+};
+void test_min() {
+//	auto x1 = std::min(3, 5);
+//	TraceX(x1);
+	auto a1 = make_unique<int>(5);
+	auto a2 = make_unique<int>(5);
+	auto& x = std::min(a2, a1);
+	assert((a1.get() < a2.get() && x < a2) || (a2.get() < a1.get() && x < a1));
+	assert((a1 < a2 && x < a2) || (a2 < a1 && x < a1));
+	TraceX(a1.get(), a2.get(), x.get());
+
+	X x1{1}, x2{2};
+	auto& mn = min(x1, x2);
+	TraceX(mn.x);
+}
+
 int main() {
 	shared();
 	shared2();
 	string_test();
-	return 0;
+	testDefault();
 
-	log_info << "Start";
-	TraceX(getOsName());
+	testSetOfView();
 
-	myTemplateFunc(42);
-	myTemplateFunc("Hello, world!");
-	std::cout << "Hello, world!" << std::endl;
+	test_min();
 
-	TraceX(msb(1 << 5));
-	assert(msb(1 << 5) == 5);
-	test_scanf();
-	test_endian();
-
-	testStaticMemberInit();
-	testHierarchy();
-
-	testLogger();
-	ex_boolWrapper();
-	x2u128("5e1463677a8246bf2f99ea81f6baf1a6");
+//	log_info << "Start";
+//	TraceX(getOsName());
+//
+//	myTemplateFunc(42);
+//	myTemplateFunc("Hello, world!");
+//	std::cout << "Hello, world!" << std::endl;
+//
+//	TraceX(msb(1 << 5));
+//	assert(msb(1 << 5) == 5);
+//	test_scanf();
+//	test_endian();
+//
+//	testStaticMemberInit();
+//	testHierarchy();
+//
+//	testLogger();
+//	ex_boolWrapper();
+//	x2u128("5e1463677a8246bf2f99ea81f6baf1a6");
 
 	return 0;
 }
