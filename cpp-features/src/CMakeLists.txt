@@ -87,6 +87,10 @@ add_executable(ranges_2
     ranges_2.cpp
 )
 
+add_executable(test_sfinae
+    sfinae.cpp
+)
+
 add_executable(par_algo
     par_algo.cpp
 )
@@ -102,6 +106,11 @@ add_executable(deque_dtor
 
 add_executable(extern_tmpl
         extern_tmpl.cpp
+        extern_tmpl_2.cpp
+)
+
+add_executable(stream_failure
+        stream_failure.cpp
 )
 
 #set(USER_HOME $ENV{HOME})

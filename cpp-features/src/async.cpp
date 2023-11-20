@@ -35,7 +35,8 @@ void asyncTest_2() {
 	std::future<int> f = std::async(std::launch::async, []{
 		std::this_thread::sleep_for(1s);
 		TraceX( std::this_thread::get_id() );
-		return true ? throw std::runtime_error("7") : 7;
+		throw std::runtime_error("7");
+		return 7;
 	});
 	log_trace << time() << " waiting for the future, f.valid() == " << f.valid();
 	try {
@@ -52,12 +53,14 @@ void asyncTest_3() {
 	log_trace << "async vs promise+thread:";
 	std::packaged_task<int()> task([]{
 		log_trace << "This is a packaged_task: current thread_id = " << this_thread::get_id();
+		std::this_thread::sleep_for(1s);
 		return 7; }); // wrap the function
 	std::future<int> f1 = task.get_future();  // get a future
 	std::thread t(std::move(task)); // launch on a thread
  
 	// future from an async()
 	std::future<int> f2 = std::async(std::launch::async, []{
+		std::this_thread::sleep_for(2s);
 		log_trace << "This runs as async(): current thread_id = " << this_thread::get_id();
 		return 8; });
  
@@ -65,13 +68,17 @@ void asyncTest_3() {
 	std::promise<int> p;
 	std::future<int> f3 = p.get_future();
 	std::thread( [&p]{
+		std::this_thread::sleep_for(5s);
 		log_trace << "Running as `promise::set_value_at_thread_exit`: current thread_id = " << this_thread::get_id();
 		p.set_value_at_thread_exit(9); }).detach();
  
 	log_trace << "Waiting..." << std::flush;
 	f1.wait();
+	log_trace << "Waiting... 1" << std::flush;
 	f2.wait();
+	log_trace << "Waiting... 2" << std::flush;
 	f3.wait();
+	log_trace << "Waiting... 3" << std::flush;
 	log_trace << "...Done!\nResults are: "
 			  << f1.get() << ' ' << f2.get() << ' ' << f3.get();
 	t.join();	 

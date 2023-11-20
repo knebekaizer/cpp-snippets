@@ -4,12 +4,11 @@
 template <typename T>
 class MyExternTmpl {
 public:
-	inline void foo();
+	inline void foo() {
+		std::cout << "Generic form: " << __PRETTY_FUNCTION__ << std::endl;
+	}
+
 };
 
-template <typename T>
-void MyExternTmpl<T>::foo() {
-	std::cout << __PRETTY_FUNCTION__ << std::endl;
-}
-
-extern template class __attribute__((__visibility__("default"))) MyExternTmpl<int>;
+//template class __attribute__((__visibility__("default"))) MyExternTmpl<int>;
+//template class MyExternTmpl<int>;

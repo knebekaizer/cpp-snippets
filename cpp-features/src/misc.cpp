@@ -380,6 +380,71 @@ void test_min() {
 	TraceX(mn.x);
 }
 
+void test_reset() {
+	struct S{
+		int i = 42;
+		S(int k) : i{k} {}
+		S() = default;
+		S(const S&) = default;
+		S(S&&) = default;
+	};
+	S s = {11};
+	auto p = make_unique<S>(11);
+	p.reset();
+
+	unique_ptr<int[]> p8{new int[8]};
+	p8.reset();
+}
+
+template <typename T1, typename T2> struct Q {
+	operator pair<int, string>&() { return *(pair<int, string>*)this; }
+	T1 t1;
+	T2 t2;
+};
+template <typename T1, typename T2>
+auto foo(T1 t1, T2 t2) { return pair{t1, t2}; }
+template <typename T1, typename T2>
+auto foo(T1 t1, T2* t2) { return tuple{t1, t2}; }
+auto foo(int t1, string&& t2) { return tuple{t1, t2}; }
+
+//template <typename T1, typename T2>
+//struct bar {
+//	bar(T1 t1, T2 t2) : self_(t1, t2) {}
+//	auto operator()() { return self_; }
+//	pair<T1, T2> self_;
+//};
+//template <typename T1, typename T2> bar(T1, T2) -> bar<T1, T2>;
+
+void assign_tuple() {
+	pair<int, string> p{11, "eleven"s};
+	tuple<int, string> t{12, "twelve"s};
+	p = t;
+	Q<int, string> q{12, "twelve"s};
+	p = q;
+	auto s = "twelve"s;
+	p = foo(12, s);
+	p = foo(12, "twelve"s);
+	p = foo(12, "twelve");
+//	p = bar(12, "twelve"s);
+}
+
+#include <chrono>
+void sign_unsign() {
+	uint64_t a = 0;
+	uint16_t b = 1;
+	TraceX(a - b);
+	TraceX(a + (-b));
+	using namespace chrono;
+	time_point<system_clock, hours> lhs(hours(0));
+	duration<uint16_t> rhs(1);
+	auto x1 = lhs - rhs;
+	auto x2 = lhs + (-rhs);
+	TraceX(rhs.count());
+	TraceX((-rhs).count());
+	TraceX(x1.time_since_epoch().count());
+	TraceX(x2.time_since_epoch().count());
+}
+
 int main() {
 	shared();
 	shared2();
@@ -389,6 +454,8 @@ int main() {
 	testSetOfView();
 
 	test_min();
+//	assign_tuple();
+	sign_unsign();
 
 //	log_info << "Start";
 //	TraceX(getOsName());

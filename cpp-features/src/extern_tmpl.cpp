@@ -1,18 +1,8 @@
 /// @file
+#include "extern_tmpl.h"
 #include <iostream>
 
-template <typename T>
-class MyExternTmpl {
-public:
-	inline void foo();
-};
-
-template <typename T>
-void MyExternTmpl<T>::foo() {
-	std::cout << __PRETTY_FUNCTION__ << std::endl;
-}
-
-extern template class __attribute__((__visibility__("default"))) MyExternTmpl<int>;
+extern template class MyExternTmpl<int>;
 
 int main() {
 	MyExternTmpl<int>().foo();
