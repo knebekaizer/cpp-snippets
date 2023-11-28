@@ -64,14 +64,15 @@ inline std::string hexdump(const void* const buf, size_t len)
 } // namespace utils
 
 // Defines are out of namespace anyway so use qualified typenames here
-//#ifdef NDEBUG
-//#define tr_stream utils::NullStream()
-//#define err_stream  utils::err_stream_helper().get()
-//#else
+#ifdef NDEBUG
+#define tr_stream   utils::tr_stream_helper().get() << TRACE_FUNC << "> "
+#define debug_stream   utils::tr_stream_helper().get() <<__FILE__<<":"<<__LINE__<<" :"<<TRACE_FUNC<<"> "
+#define err_stream  utils::err_stream_helper().get() << TRACE_FUNC << "> "
+#else
 #define tr_stream   utils::tr_stream_helper().get() << TRACE_FUNC << "> "
 #define debug_stream   utils::tr_stream_helper().get() <<__FILE__<<":"<<__LINE__<<" :"<<TRACE_FUNC<<"> "
 #define err_stream  utils::err_stream_helper().get() <<__FILE__<<":"<<__LINE__<<" :"<<TRACE_FUNC<<"> "
-//#endif // NDEBUG
+#endif // NDEBUG
 
 namespace LOG_LEVEL {
 enum LOG_LEVEL {none = 0, fatal, error, warn, info, debug, trace, invalid};
@@ -99,7 +100,11 @@ extern LOG_LEVEL::LOG_LEVEL gLogLevel;
 #define log_trace   (LOG_LEVEL_ >= LOG_LEVEL::trace) && tr_stream
 #define log_debug   (LOG_LEVEL_ >= LOG_LEVEL::debug) && debug_stream << "[DEBUG] "
 #define log_info    (LOG_LEVEL_ >= LOG_LEVEL::info) && tr_stream << "[INFO] "
-#define log_warn    (LOG_LEVEL_ >= LOG_LEVEL::warn) && debug_stream << "[WARN] "
+#ifdef NDEBUG
+#define log_warn    (LOG_LEVEL_ >= LOG_LEVEL::warn) && err_stream << "[WARNING] "
+#else
+#define log_warn    (LOG_LEVEL_ >= LOG_LEVEL::warn) && debug_stream << "[WARNING] "
+#endif
 #define log_error   (LOG_LEVEL_ >= LOG_LEVEL::error) && err_stream << "[ERROR] "
 #define log_fatal   (LOG_LEVEL_ >= LOG_LEVEL::error) && err_stream << "[FATAL] "
 
