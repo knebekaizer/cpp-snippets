@@ -6,7 +6,7 @@
 
 #include <ios>
 #include <sstream>
-#include <format>
+//#include <format>
 
 #include "trace.hpp"
 
@@ -74,7 +74,6 @@ protected:
 		return seekoff(__sp, ios_base::beg, __wch);
 	}
 };
-#endif
 
 //template <class _CharT, class _Traits = char_traits<_CharT>,
 //		class _Allocator = allocator<_CharT> >
@@ -149,6 +148,7 @@ public:
 		__sb_.str(__s);
 	}
 };
+#endif
 
 
 
@@ -156,7 +156,7 @@ void test_out() {
 	ostringstream oss;
 	oss << "0123456789";
 	TraceX(oss.str());
-x
+
 	TraceX((int) oss.rdstate());
 	oss.seekp(5);
 	oss << "qwe";
@@ -164,7 +164,7 @@ x
 
 	try {
 		oss.seekp(12);
-		oss << S();
+		oss << 42;
 		TraceX(1, bitset<8>(oss.rdstate()));
 	} catch (ios::failure& e) {
 		TraceX(11, bitset<8>(oss.rdstate()));
@@ -202,23 +202,41 @@ void test_in() {
 
 	try {
 		iss.clear();
-//		iss.exceptions(ios::failbit | ios::badbit);
-		iss.exceptions(ios::badbit);
+		iss.exceptions(ios::failbit);
 		iss >> dec;
 		TraceX(2, bitset<8>(iss.rdstate()));
 	} catch (std::exception& e) {
 		TraceX(2, bitset<8>(iss.rdstate()), e.what());
-		try {
-			iss >> dec;
-		} catch (std::exception& e) {
-			TraceX(3, bitset<8>(iss.rdstate()), e.what());
-		}
+//		try {
+//			iss >> dec;
+//		} catch (std::exception& e) {
+//			TraceX(3, bitset<8>(iss.rdstate()), e.what());
+//		}
+	}
+
+	try {
+		iss.clear();
+//		iss.exceptions(ios::failbit | ios::badbit);
+log_trace << "3: expecting badbit exception";
+		iss.exceptions(ios::badbit);
+		iss >> dec;
+		log_trace << "3: " << "Not thrown; failbit: " << iss.fail() << "; badbit: " << iss.bad();
+		TraceX(3, bitset<8>(iss.rdstate()));
+	} catch (std::exception& e) {
+		TraceX(3, bitset<8>(iss.rdstate()), e.what());
+//		try {
+//			iss >> dec;
+//		} catch (std::exception& e) {
+//			TraceX(3, bitset<8>(iss.rdstate()), e.what());
+//		}
 	}
 
 	istringstream is2;
 
 	try {
-		is2.exceptions(ios::failbit | ios::badbit);
+		log_trace << "4: Reading from empty stream will cause badbit state";
+//		is2.exceptions(ios::failbit | ios::badbit);
+		is2.exceptions(ios::failbit);
 		is2 >> dec;
 		TraceX(4, bitset<8>(is2.rdstate()));
 	} catch (std::ios_base::failure& e) {
@@ -234,8 +252,8 @@ void test_in() {
 
 int main() {
 //	test_0();
-	test_out();
-//	test_in();
+//	test_out();
+	test_in();
 
 	return 0;
 }
