@@ -14,6 +14,9 @@ add_executable(cpp-features
 add_executable(async
     async.cpp
 )
+add_executable(deleter
+    deleter.cpp
+)
 
 add_executable(semaphore
     semaphore.cpp
@@ -126,3 +129,4 @@ if (CMAKE_CXX_STANDARD EQUAL "17")
     set_source_files_properties(bitmap.cpp PROPERTIES COMPILE_FLAGS -std=c++20)
     message(STATUS "Set std=c++20 for bitmap.cpp")
 endif()
+add_executable(locale locale.cpp)
