@@ -1,5 +1,6 @@
 #include <iostream>
 #include <array>
+#include <vector>
 #include <cassert>
 #include <memory>
 #include <type_traits>
@@ -96,7 +97,8 @@ void test_endian() {
         log_trace << "little-endian\n";
     else std::cout << "mixed-endian\n";
 
-    if(*(char *)(int[]){1}) {
+    int a[]{1};
+    if(*(char *)a) {
         log_trace << "little endian";
     } else {
         log_trace << "big endian code";
@@ -388,7 +390,7 @@ void test_reset() {
 		S(const S&) = default;
 		S(S&&) = default;
 	};
-	S s = {11};
+	[[maybe_unused]] S s = {11};
 	auto p = make_unique<S>(11);
 	p.reset();
 
@@ -415,6 +417,7 @@ auto foo(int t1, string&& t2) { return tuple{t1, t2}; }
 //};
 //template <typename T1, typename T2> bar(T1, T2) -> bar<T1, T2>;
 
+#ifndef __GNUC__
 void assign_tuple() {
 	pair<int, string> p{11, "eleven"s};
 	tuple<int, string> t{12, "twelve"s};
@@ -427,6 +430,7 @@ void assign_tuple() {
 	p = foo(12, "twelve");
 //	p = bar(12, "twelve"s);
 }
+#endif // __GNUC__
 
 #include <chrono>
 void sign_unsign() {
@@ -445,6 +449,61 @@ void sign_unsign() {
 	TraceX(x2.time_since_epoch().count());
 }
 
+#include <deque>
+void test_same() {
+    using Deque = deque<int>;
+    Deque d(8);
+    Deque::iterator it = d.begin();
+    static_assert(is_same<Deque::iterator,
+        remove_reference<decltype(++it)>::type>::value);
+}
+
+#include <limits>
+void string_length_error() {
+    TraceX(std::numeric_limits<string::size_type>::max());
+    string s;
+    TraceX(s.max_size());
+}
+
+#include "fstream.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+void test_fclose() {
+    ofstream of("test.txt");
+    for (int k = 0; k < 100000; ++k) {
+        of << k << ' ';
+    }
+    auto rc = rename("test.txt", "dummy.txt");
+    TraceX(rc);
+
+    static struct stat empty;
+    struct stat buf = empty;
+    rc = stat("test.txt", &buf);
+    TraceX(rc, buf.st_ino, buf.st_nlink);
+    buf = empty;
+    rc = stat("dummy.txt", &buf);
+    TraceX(rc, buf.st_ino, buf.st_nlink);
+    buf = empty;
+//    of.close();
+    rc = stat("test.txt", &buf);
+    TraceX(rc, buf.st_ino, buf.st_nlink);
+}
+
+void test_typeinfo() {
+    struct S{};
+    using S2 = S;
+    struct Q{};
+    vector<S> v1; const auto& t1 = typeid(decltype(v1));
+    vector<S2> v2; const auto& t2 = typeid(decltype(v2));
+    vector<decltype(v1)::value_type> v3; const auto& t3 = typeid(decltype(v3));
+    vector<Q> v4; const auto& t4 = typeid(decltype(v4));
+    TraceX(t1 == t2);
+    TraceX(t2 == t3);
+    TraceX(t4 == t3);
+}
+
 int main() {
 	shared();
 	shared2();
@@ -456,6 +515,11 @@ int main() {
 	test_min();
 //	assign_tuple();
 	sign_unsign();
+
+    string_length_error();
+
+//    test_fclose();
+    test_typeinfo();
 
 //	log_info << "Start";
 //	TraceX(getOsName());
