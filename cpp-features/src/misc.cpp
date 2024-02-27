@@ -504,6 +504,17 @@ void test_typeinfo() {
     TraceX(t4 == t3);
 }
 
+#include <iterator>
+void back_insert() {
+    struct ContainerDummy {
+        typedef int value_type;
+        void push_back(value_type v) { TraceX(v); }
+    } c;
+    back_insert_iterator<ContainerDummy> it(c);
+    *it++ = 0;
+    *it++ = 1;
+}
+
 int main() {
 	shared();
 	shared2();
@@ -520,6 +531,8 @@ int main() {
 
 //    test_fclose();
     test_typeinfo();
+
+    back_insert();
 
 //	log_info << "Start";
 //	TraceX(getOsName());
