@@ -97,8 +97,7 @@ void test_endian() {
         log_trace << "little-endian\n";
     else std::cout << "mixed-endian\n";
 
-    int a[]{1};
-    if(*(char *)a) {
+	if(int a[]{1}; *(char *)a) {
         log_trace << "little endian";
     } else {
         log_trace << "big endian code";
@@ -432,6 +431,20 @@ void assign_tuple() {
 }
 #endif // __GNUC__
 
+void sign_unsign_int() {
+	TraceX(10 - 20u, typeid(10 - 20u).name());
+	TraceX(10l - 20u, typeid(10l - 20u).name());
+	TraceX(10ll - 20u, typeid(10ll - 20u).name());
+	TraceX(10l - 20ul, typeid(10l - 20ul).name());
+}
+
+#include <limits>
+void signed_overflow() {
+	auto f = [](int x){ return x + 1 > x; };
+	TraceX(f(1));   // gcc: 1; clang: 1
+	TraceX(f(numeric_limits<int>::max()));   // gcc: 1; clang: 0
+}
+
 #include <chrono>
 void sign_unsign() {
 	uint64_t a = 0;
@@ -513,13 +526,17 @@ int main() {
 	testSetOfView();
 
 	test_min();
+
 //	assign_tuple();
-	sign_unsign();
+//	sign_unsign_chrono();
 
     string_length_error();
 
 //    test_fclose();
     test_typeinfo();
+
+	sign_unsign_int();
+	signed_overflow();
 
 //	log_info << "Start";
 //	TraceX(getOsName());
