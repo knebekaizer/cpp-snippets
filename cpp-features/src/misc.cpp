@@ -478,7 +478,8 @@ void string_length_error() {
     TraceX(s.max_size());
 }
 
-#include "fstream.h"
+//#include "fstream.h"
+#include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
