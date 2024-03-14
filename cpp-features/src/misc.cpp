@@ -117,27 +117,29 @@ unique_ptr<B> test_uptr() {
 }
 
 /// Factory: Can I use const_expr to build the function map (factory)?
-//#include <array>
-//class Base {};
-//using FuncT = Base* (*)();
-//constexpr std::array<FuncT*, 16> factoryMap{};
-//Base* foo();
-//constexpr factoryMap[8] = foo; // Nope
+#include <array>
+class Base {};
+using FuncT = Base* (*)();
+Base* foo() { return new Base; }
+constexpr std::array<FuncT, 16> factoryMap{0,0,foo};
+
 
 class Smth {
 public:
     struct Dummy {
         Dummy() = delete;
-        void foo() const { TraceF; };
+        void foo() const { log_trace << "Smth::Dummy<<bar>"; };
     };
     static Dummy dummy;
-    void bar() const { TraceF; }
+    void bar() const { log_trace << "Smth::bar>"; }
+    void foo() const { dummy.foo(); } // compilable
 };
-//Smth::Dummy Smth::dummy;
+// Can't initialize dummy, but it's still OK until it is actually used
+//Smth::Dummy Smth::dummy; // error: use of deleted function ‘Smth::Dummy::Dummy()’
 
 void testStaticMemberInit() {
-    Smth().bar();
-
+    Smth().bar(); // still OK
+//  Smth().foo(); // linker error: undefined reference to `Smth::dummy'
 }
 
 void testHierarchy() {
@@ -431,13 +433,6 @@ void assign_tuple() {
 }
 #endif // __GNUC__
 
-void sign_unsign_int() {
-	TraceX(10 - 20u, typeid(10 - 20u).name());
-	TraceX(10l - 20u, typeid(10l - 20u).name());
-	TraceX(10ll - 20u, typeid(10ll - 20u).name());
-	TraceX(10l - 20ul, typeid(10l - 20ul).name());
-}
-
 #include <limits>
 void signed_overflow() {
 	auto f = [](int x){ return x + 1 > x; };
@@ -536,7 +531,7 @@ int main() {
 //    test_fclose();
     test_typeinfo();
 
-	sign_unsign_int();
+//	arithm_conversion();
 	signed_overflow();
 
 //	log_info << "Start";
@@ -551,7 +546,7 @@ int main() {
 //	test_scanf();
 //	test_endian();
 //
-//	testStaticMemberInit();
+	testStaticMemberInit();
 //	testHierarchy();
 //
 //	testLogger();

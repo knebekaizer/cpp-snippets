@@ -116,6 +116,18 @@ add_executable(stream_failure
         stream_failure.cpp
 )
 
+add_executable(bitset_subscript
+        bitset_subscript.cpp
+)
+
+add_executable(fstream_open
+        fstream_open.cpp
+)
+
+add_executable(arith_conversion
+        arith_conversion.cpp
+)
+
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
 
