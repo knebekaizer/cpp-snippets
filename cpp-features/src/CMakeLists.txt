@@ -120,10 +120,6 @@ add_executable(bitset_subscript
         bitset_subscript.cpp
 )
 
-add_executable(fstream_open
-        fstream_open.cpp
-)
-
 add_executable(arith_conversion
         arith_conversion.cpp
 )
