@@ -1,7 +1,7 @@
 
 #add_definitions(-DUSE_RUNTIME_LOG_LEVEL)
-set(RANGES_INCLUDE "${CMAKE_SOURCE_DIR}/../range-v3/include")
-include_directories(ranges ${RANGES_INCLUDE})
+#set(RANGES_INCLUDE "${CMAKE_SOURCE_DIR}/../range-v3/include")
+#include_directories(ranges ${RANGES_INCLUDE})
 
 add_executable(cpp-features
     main.cpp
@@ -14,6 +14,11 @@ add_executable(cpp-features
 add_executable(async
     async.cpp
 )
+
+add_executable(booStringlWrapper
+    booStringlWrapper.cpp
+)
+
 add_executable(deleter
     deleter.cpp
 )
