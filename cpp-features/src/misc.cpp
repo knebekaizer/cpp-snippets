@@ -56,7 +56,6 @@ std::string getOsName() {
 }
 
 #include <bit>
-
 //if constexpr (std::endian::native == std::endian::big)
 //    log_trace << "big-endian\n";
 //else if constexpr (std::endian::native == std::endian::little)
@@ -92,15 +91,15 @@ using XDataH = XDataN<std::endian::native>;
 
 void test_endian() {
     if constexpr (std::endian::native == std::endian::big)
-        log_trace << "big-endian\n";
+        log_trace << "Using std::endian: big-endian";
     else if constexpr (std::endian::native == std::endian::little)
-        log_trace << "little-endian\n";
-    else std::cout << "mixed-endian\n";
+        log_trace << "Using std::endian: little-endian";
+    else log_trace << "Using std::endian: mixed-endian";
 
-	if(int a[]{1}; *(char *)a) {
-        log_trace << "little endian";
+	if (int a[]{1}; *(char *)a) {
+        log_trace << "Using runtime check: little endian";
     } else {
-        log_trace << "big endian code";
+        log_trace << "Using runtime check: big endian code";
     }
 
     uint8_t x = 1;
@@ -476,7 +475,6 @@ int main() {
 //    test_fclose();
     test_typeinfo();
 
-//	arithm_conversion();
 	signed_overflow();
 
 //	log_info << "Start";
@@ -489,13 +487,12 @@ int main() {
 //	TraceX(msb(1 << 5));
 //	assert(msb(1 << 5) == 5);
 //	test_scanf();
-//	test_endian();
+	test_endian();
 //
 	testStaticMemberInit();
 //	testHierarchy();
 //
 //	testLogger();
-//	ex_boolWrapper();
 //	x2u128("5e1463677a8246bf2f99ea81f6baf1a6");
 
 	return 0;
