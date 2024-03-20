@@ -162,18 +162,18 @@ void testHierarchy() {
 namespace {
 int loggerCount = 0;
 }
-#include "scoped.hpp"
 void testLogger() {
     struct Str {
         Str() { ++loggerCount; }
         int count() const { return loggerCount; }
     };
-    log_trace << Str().count();
+    int i = 0;
+    log_trace "Line 1: " << ++i << "; " << Str().count(); // Line 1: 1; 1
     gLogLevel = LOG_LEVEL::warn;
-    log_trace << Str().count();
-    log_trace << Str().count();
+    log_trace "Line 2: " << ++i << "; " << Str().count();
+    log_trace "Line 3: " << ++i << "; " << Str().count();
     gLogLevel = LOG_LEVEL::trace;
-    log_trace << Str().count();
+    log_trace "Line 4: " << ++i << "; " << Str().count(); // Line 4: 2; 2
 }
 
 /*
@@ -188,61 +188,6 @@ if constexpr(condition1) {
 	static_assert(always_false<T>);
 }
 */
-
-namespace boolWrapper {
-string g_s = "abc";
-int ln = 0;
-bool isSameBuf(string const& s) { return (s.data() == g_s.data()); }
-void foo(auto x, string const& s) { log_trace << x << ", " << (s==g_s) << ", " << isSameBuf(s); }
-void bar(auto x, string&& s)  { log_trace << x << ", " << (s==g_s) << ", " << isSameBuf(s); }
-}
-//static void foo(string s) { TraceX(s); }
-void ex_boolWrapper() {
-	using namespace boolWrapper;
-	struct XString {
-		XString(std::string& s) : s_(s) {}
-		operator std::string const&() const& { return s_; }   // NOLINT(google-explicit-constructor)
-		operator std::string&() & { return s_; }              // NOLINT(google-explicit-constructor)
-		operator std::string&&() && { return std::move(s_); } // NOLINT(google-explicit-constructor)
-		explicit operator bool() const { return !s_.empty(); }
-		std::string& s_;
-	};
-
-	auto check = [](auto const& s){ return s ? "not empty" : "empty"; };
-	XString xs = g_s;
-	foo(1, xs.s_);
-
-	string ss = xs; // copy, as expected
-	foo(2, xs);
-
-	auto xss = xs;
-	foo(3, xss);    // no copy; expected copy
-
-	foo(4, ss);
-//	bar(xs);    // won't compile - as expected
-	TraceX(check(xs), g_s);
-	bar(5, std::move(xs)); // NOLINT(performance-move-const-arg)
-	TraceX(check(xs), g_s);
-//	TraceX(check(ss), g_s);  // OK: no viable conversion from 'const std::string' to 'bool'
-	g_s.resize(0);
-	TraceX(check(xs), g_s);
-
-	struct String : public std::string {
-		String() = delete;
-		explicit operator bool() const { return !empty(); }
-	};
-	g_s = "cba";
-	String& a = static_cast<String&>(g_s);
-	foo(11, a);
-	auto b = a;
-	foo(12, b);
-
-	TraceX(check(a), g_s);
-	bar(13, std::move(a)); // no move, reference copied
-	TraceX(check(a), g_s);
-	bar(14, std::move(std::remove_reference<decltype(a)>::type(a))); // bar> 14, true, false  WTF? it's copy
-	TraceX(check(a), g_s);
-}
 
 #include <charconv>
 #include <cstdint>

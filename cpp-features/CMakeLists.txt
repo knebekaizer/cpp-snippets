@@ -22,8 +22,8 @@ message(STATUS "CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/../include)
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Werror -Wall")
 #SET(CMAKE_EXE_LINKER_FLAGS "-L/opt/llvm-15/lib/c++ -Wl,-rpath,/opt/llvm-15/lib/c++")
