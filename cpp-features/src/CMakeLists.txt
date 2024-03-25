@@ -103,12 +103,8 @@ add_executable(par_algo_none
 )
 target_compile_definitions(par_algo PUBLIC "-DPARALLEL")
 
-add_executable(deque_dtor
-    deque_dtor.cpp
-)
-
-add_executable(deque_dtor2
-    deque_dtor2.cpp
+add_executable(container_allocator
+        container_allocator.cpp
 )
 
 add_executable(extern_tmpl
