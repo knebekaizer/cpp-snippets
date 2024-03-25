@@ -137,6 +137,7 @@ extern LOG_LEVEL::LOG_LEVEL gLogLevel;
 #define Trace3(a,b,c)   Trace2(a,b) <<"; " << #c << " = " << (c)
 #define Trace4(a,b,c,d)   Trace3(a,b,c) <<"; " << #d << " = " << (d)
 #define Trace5(a1,a2,a3,a4,a5)   Trace4(a1,a2,a3,a4) <<"; " << #a5 << " = " << (a5)
+#define Trace6(a1,a2,a3,a4,a5,a6)   Trace5(a1,a2,a3,a4,a5) <<"; " << #a6 << " = " << (a6)
 
 
 #define tr_stream1(name)  utils::tr_stream_helper().get() << #name << "> "
@@ -144,14 +145,14 @@ extern LOG_LEVEL::LOG_LEVEL gLogLevel;
 
 // Variadic tricks
 #if defined(__GNUC__) || defined(__clang__)
-#define _TRACE_GET_MACRO(_0,_1,_2,_3,_4,_5,NAME,...) NAME
+#define _TRACE_GET_MACRO(_0,_1,_2,_3,_4,_5,_6,NAME,...) NAME
 #define _TRACE_GET_MACRO1(_0,_1,NAME,...) NAME
 
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
 #endif // clang diagnostic
-#define TraceX(...) _TRACE_GET_MACRO(_0, ##__VA_ARGS__, Trace5, Trace4, Trace3, Trace2, Trace1, Trace0)(__VA_ARGS__)
+#define TraceX(...) _TRACE_GET_MACRO(_0, ##__VA_ARGS__, Trace6, Trace5, Trace4, Trace3, Trace2, Trace1, Trace0)(__VA_ARGS__)
 
 // Use parameter instead of __func__. TODO: fix naming
 #define tr_stream_(...) _TRACE_GET_MACRO1(_0, ##__VA_ARGS__, tr_stream1, tr_stream)(__VA_ARGS__)
