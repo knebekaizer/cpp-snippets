@@ -9,8 +9,6 @@
 
 using namespace std;
 
-size_t num_dtor;
-
 static struct Stat {
 	size_t nConstruct = 0;
 	size_t nDestroy = 0;
@@ -34,8 +32,8 @@ struct S {
 	S& operator=(const S&) { log_trace << "Copy assignment " << (void*)this; return *this; }
 	S& operator=(S&&) { log_trace << "Move assignment " << (void*)this; return *this; }
 	~S() {
-		++num_dtor;
-		TraceX(this, num_dtor);
+        ++stat.n_dtor;
+		TraceX(this, stat.n_dtor);
 	}
 	void operator delete(void *ptr) {
 		TraceX(ptr);
@@ -45,18 +43,18 @@ struct S {
 		return malloc(sz);
 	}
 	unsigned char c_;
+    static struct Stat {
+        size_t n_ctor;
+        size_t n_dtor;
+    } stat;
 };
+S::Stat S::stat;
 
-//template<class T = S>
-//using Tp = S;
 struct alloc1 {
     using T = S;
     typedef T value_type;
 
     alloc1() = default;
-
-//    template<typename T_rhs>
-//    alloc1(const std::allocator<T_rhs>& rhs) { }
 
     value_type * allocate(std::size_t n) {
         value_type * p = static_cast<value_type *>(::operator new(n * sizeof(value_type)));
@@ -67,20 +65,14 @@ struct alloc1 {
 
     void deallocate(value_type * p, std::size_t n) {
         ::operator delete(p);
-//		delete (char*)p;
 	    ++stat.nDealloc;
 	    TraceX(typeid(T).name(), sizeof(T), this, p, stat.nDealloc);
     }
-//    void construct(value_type * p, value_type value) {
-//        new ((void *) p) value_type(value);
-//        num_constructed++;
-//	    TraceX(typeid(T).name(), sizeof(T), this, p, num_constructed);
-//    }
 
     void construct(value_type * p) {
-//        new ((void *) p) value_type;
+        ::new ((void *) p) value_type;
 	    stat.nConstruct++;
-	    TraceX(typeid(T).name(), sizeof(T), this, p, stat.nConstruct);
+	    TraceX(typeid(T).name(), this, p, stat.nConstruct);
     }
 
     void destroy(value_type * p) {
@@ -88,10 +80,8 @@ struct alloc1 {
         p->~value_type();
 	    TraceX(typeid(T).name(), sizeof(T), this, p, stat.nDestroy);
 	}
-	template <class U>
-	struct rebind { typedef std::allocator<U> other; };
 
-//	static struct Stat_ : Stat {} stat;
+	static struct Stat_ : Stat {} stat;
 };
 
 template<class T = S>
@@ -103,58 +93,42 @@ struct alloc2 {
     value_type* allocate(std::size_t n) {
         value_type* p = static_cast<value_type *>(::operator new(n * sizeof(value_type)));
 		++stat.nAlloc;
-	    TraceX(typeid(T).name(), sizeof(T), this, p, stat.nAlloc);
+	    TraceX(typeid(T).name(), this, p, stat.nAlloc);
 	    return p;
     }
 
     void deallocate(value_type * p, std::size_t n) {
         ::operator delete(p);
-//		delete (char*)p;
 	    ++stat.nDealloc;
-	    TraceX(typeid(T).name(), sizeof(T), this, p, stat.nDealloc);
+	    TraceX(typeid(T).name(), this, p, stat.nDealloc);
     }
-//    void construct(value_type * p, value_type value) {
-//        new ((void *) p) value_type(value);
-//        num_constructed++;
-//	    TraceX(typeid(T).name(), sizeof(T), this, p, num_constructed);
-//    }
 
-//    void construct(value_type * p) {
-//        new ((void *) p) value_type;
-//        num_constructed++;
-//	    TraceX(typeid(T).name(), sizeof(T), this, p, num_constructed);
-//    }
-
-	template <class _Up, class... _Args>
-	void construct(_Up* p, _Args&&... args) {
-		::new ((void*)p) _Up(std::forward<_Args>(args)...);
+//	template <class _Up, class... _Args>
+	template <class... _Args>
+	void construct(T* p, _Args&&... args) {
+		::new ((void*)p) T(std::forward<_Args>(args)...);
 		stat.nConstruct++;
-		TraceX(typeid(T).name(), sizeof(T), this, p, stat.nConstruct);
+		TraceX(typeid(T).name(), this, p, stat.nConstruct);
 	}
 
     void destroy(value_type * p) {
 	    stat.nDestroy++;
         p->~value_type();
-	    TraceX(typeid(T).name(), sizeof(T), this, p, stat.nDestroy);
+	    TraceX(typeid(T).name(), this, p, stat.nDestroy);
 	}
 
-	template <class Up>
-    void destroy(Up* p) {
-	    stat.nDestroy++;
-        p->~Up();
-	    TraceX(typeid(T).name(), sizeof(T), this, p, stat.nDestroy);
-	}
-
-//	template <class U>
-//	struct rebind { typedef alloc2<U> other; };
+	template <class U>
+	struct rebind { typedef alloc2<U> other; };
 
 	template<typename U>
 	alloc2(const alloc2<U>& other) {
 		TraceF << "rebind allocator from the type " << typeid(U).name() << " to the type " << typeid(T).name();
 	}
 
+    static struct Stat_ : Stat {} stat;
 };
 
+template <typename T> typename alloc2<T>::Stat_ alloc2<T>::stat;
 
 template <class Alloc>
 void test_deque() {
@@ -164,7 +138,8 @@ void test_deque() {
 	{
 		std::deque<S, Alloc> d1(1);
 	}
-	log_trace << stat;
+	log_trace << alloc2<S>::stat;
+    log_trace << alloc2<S*>::stat;
 }
 
 
@@ -181,7 +156,7 @@ void test_set() {
 		d1.emplace();
 		d1.emplace();
 	}
-	log_trace << stat;
+	log_trace << alloc2<S>::stat;
 }
 
 template <class Alloc>
@@ -194,7 +169,7 @@ void test_list() {
 		d1.emplace_back();
 		d1.emplace_back();
 	}
-	log_trace << stat;
+	log_trace << Alloc::stat;
 }
 
 int main() {
