@@ -28,44 +28,46 @@ using namespace std;
 //    return G(std::random_device{}());
 //}
 
-int seed;
+size_t seed;
 template<class G>
 auto repro_gen() {
     std::mt19937 dev(++seed);
     return G(dev());
 }
 
+struct Min {
+	size_t seed = 0;
+	size_t iter = numeric_limits<decltype(iter)>::max();
+} stat;
+
 template <typename RE>
 int test_random() {
     using F = float;
-    std::uniform_real_distribution<F>::param_type param(0, 42);
+    std::uniform_real_distribution<F>::param_type param(0, 2);
     std::uniform_real_distribution<F> distribution(param);
 //    auto g = RE(random_device{}());
 //    auto g = RE{std::random_device{}()}; //create_generator<RE>();
     auto g = repro_gen<RE>();
-    const size_t N = 100000;
-    for (size_t k = 0; k < 100; ++k)
+    const size_t N = 2000000;
+//    for (size_t k = 0; k < 100; ++k)
     for (size_t i = 0; i < N; ++i) {
         auto x = distribution(g);
-        if (x >= param.b()) printf("FAILED! seed: %d, iterations: %lu:%lu; %f, %f\n", seed, k, i, x, param.b());
-        int n = static_cast<int>(x - param.a());
-        if (n >= 42) {
-            printf("INT: %d, %f\n", n, x);
-            TraceX(distribution.min(), distribution.max());
-            return -1;
-        }
-        if (seed == 10 && k == 16 && i == 57022) {
-            printf("PASSED? seed: %d, iterations: %lu:%lu; %f, %f\n", seed, k, i, x, param.b());
+        if (x >= distribution.max()) {
+			printf("FAILED! seed: %lu, iterations: %lu; %f, %f\n", seed, i, x, distribution.max());
+	        if (i < stat.iter) stat = {seed, i};
+	        return -1;
         }
     }
     return 0;
 }
 
+
 int testAllRandom() {
 //    test_random<std::default_random_engine>();
 //    test_random<std::knuth_b>();
 //    test_random<std::minstd_rand0>();
-    if (test_random<std::minstd_rand>()) return 1;
+//    if (test_random<std::minstd_rand>()) return 1;
+    test_random<std::minstd_rand>();
 //    test_random<std::mt19937>();
 //    test_random<std::mt19937_64>();
 //    test_random<std::ranlux24>();
@@ -76,8 +78,9 @@ int testAllRandom() {
 }
 
 int main() {
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 100; ++i) {
         if (testAllRandom()) break;
     }
-    return 0;
+	TraceX(stat.seed, stat.iter);
+	return 0;
 }
