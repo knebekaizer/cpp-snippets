@@ -128,8 +128,13 @@ add_executable(bitset_subscript
 add_executable(arith_conversion
         arith_conversion.cpp
 )
+
 add_executable(float_precision
         float_precision.cpp
+)
+
+add_executable(float_random
+        float_random.cpp
 )
 
 #set(USER_HOME $ENV{HOME})

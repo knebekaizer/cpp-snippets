@@ -2,12 +2,15 @@
 // Created by vdi on 28.03.24.
 //
 
-#include "trace.hpp"
-#include <iostream>
-#include <cmath>
-#include <random>
-#include <limits>
+#include <bitset>
 #include <cassert>
+#include <climits>
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <random>
+#include <typeinfo>
+#include "trace.hpp"
 using namespace std;
 
 void testDouble() {
@@ -81,7 +84,38 @@ void testAllRandom() {
     test_random<std::ranlux48_base>();
 }
 
+//string floatToBin2(float f) {
+//    constexpr unsigned int Size = sizeof(f) * CHAR_BIT;
+//    bitset<Size> bits{*reinterpret_cast<unsigned int*>(&f)};
+//    return bits.to_string();
+//}
+
+string floatToBin(float f) {
+    auto* buf = (const unsigned char*)&f;
+    string s;
+    for (auto k = sizeof(f); k-->0; ++buf)
+        s += bitset<8>{*buf}.to_string();
+    return s;
+}
+
+void typesRepresentation() {
+    TraceX(typeid(short).name(), typeid(unsigned short).name(), sizeof(short));
+    TraceX(typeid(int).name(), typeid(unsigned int).name(), sizeof(int));
+    TraceX(typeid(long).name(), typeid(unsigned long).name(), sizeof(long));
+    TraceX(typeid(long long).name(), typeid(unsigned long long).name(), sizeof(long long));
+    TraceX(floatToBin(.0f));
+    TraceX(floatToBin(1.0f));
+    TraceX(floatToBin(2.0f));
+//    TraceX(floatToBin2(2.0f));
+    TraceX(floatToBin(4.0f));
+    TraceX(floatToBin(42.0f));
+//    TraceX(floatToBin2(42.0f));
+    TraceX(floatToBin(43.0f));
+    TraceX(numeric_limits<float>::digits);
+}
+
 int main() {
+//    typesRepresentation();
     testDouble();
     testF();
     for (int i = 0; i < 20; ++i) {
