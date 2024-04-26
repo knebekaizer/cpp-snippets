@@ -13,6 +13,7 @@ int testSingle(size_t seed) {
 		if (x >= distribution.b()) {
 			cout << "FAILED! seed: " << seed << "; iterations: " << i << "; value: " << x
                  << "; max: " << distribution.b()
+                 << "; x < b: " << (x < distribution.b())
                  << "; (b-x): " << (distribution.b() - x)
                  << "; (x-a): " << (x - distribution.a())
                  << "; int(x-a): " << (int)(x - distribution.a())
