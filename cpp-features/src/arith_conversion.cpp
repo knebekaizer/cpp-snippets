@@ -1,6 +1,12 @@
 #include "trace.hpp"
 #include <iostream>
 #include <typeinfo>
+
+#include <bitset>
+#include <limits>
+#include <climits>
+#include <arpa/inet.h>
+
 using namespace std;
 
 void typeIDs() {
@@ -35,7 +41,22 @@ void arithm_conversion() {
     TraceX(-20 + 10ul, typeid(-20 + 10ul).name()); // 10
 }
 
+void bit_repr() {
+    TraceX(numeric_limits<int>::digits);
+    TraceX(numeric_limits<unsigned>::digits);
+//    auto bits = [](auto x){ return bitset<numeric_limits<decltype(x)>::digits + 1>(x).to_string(); };
+    auto bits = [](auto x){ return bitset<sizeof(x) * CHAR_BIT>(x).to_string(); };
+    int8_t i = -128; // 128
+    uint32_t j = i;
+    int32_t ij = j;
+    int8_t ii = j;
+    TraceX((int)i, j, ij, (int)ii);
+    TraceX(bits(i), bits(j), bits(ii));
+    unsigned long ul = -2;
+    TraceX(bits(ul), bits(ii));
+}
 int main() {
     arithm_conversion();
+    bit_repr();
     return 0;
 }
