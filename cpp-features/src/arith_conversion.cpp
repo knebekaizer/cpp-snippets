@@ -54,7 +54,15 @@ void bit_repr() {
     TraceX(bits(i), bits(j), bits(ii));
     unsigned long ul = -2;
     TraceX(bits(ul), bits(ii));
+    bitset<8> b2(2);
+    uint64_t ull = (255ull << 56) | (127ull << 48) | (63ull << 40) | (31ull << 32)
+        | (15ull << 24) | (7ull << 16) | (3ull << 8) | 1;
+    TraceX(bits(ull));
+    TraceX(bitset<8>(2).to_string());
+    for (size_t k = 0; k != b2.size(); ++k) cout << b2[k];
+    cout << endl;
 }
+
 int main() {
     arithm_conversion();
     bit_repr();
