@@ -141,6 +141,8 @@ add_executable(float_random
         float_random.cpp
 )
 
+add_executable(set_algo set_algorithm.cpp)
+
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
 
