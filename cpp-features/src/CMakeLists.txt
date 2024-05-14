@@ -143,6 +143,7 @@ add_executable(float_random
 
 add_executable(set_algo set_algorithm.cpp)
 add_executable(tuple_apply tuple_apply.cpp)
+add_executable(enum_array enum_array.cpp)
 
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
