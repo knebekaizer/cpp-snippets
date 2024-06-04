@@ -5,6 +5,7 @@
 #include <string>
 
 #define VALUES = one,two,three,four
+using namespace std;
 using namespace std::string_literals;
 
 namespace numbers {

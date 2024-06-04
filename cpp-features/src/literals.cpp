@@ -147,6 +147,44 @@ void testFooS2() {
 //#warning <user type> nontype template args not suppported
 #endif // __cplusplus >= 202002
 
+/// What if I don't need the enum names? Can I use the literal as a typed named constant?
+
+
+enum class NoNum {};
+[[maybe_unused]] constexpr array NoNumS { "none", "one", "two", "three"};
+
+template<typename T, T... index>
+constexpr enum NoNum s2e(const char* str, std::integer_sequence<T, index...> seq) {
+    int found = -1;
+    using unused = int[];
+
+    int val = 1;
+    (void)unused{ ((found = std::get<index>(NumS) == (str) ? index : found ), ++val)... };
+
+    return static_cast<NoNum>(found);
+}
+
+
+constexpr enum NoNum s2e(const char* str) {
+    return s2e(str, std::make_index_sequence<NoNumS.size()>{});
+}
+
+constexpr enum NoNum operator""_f (const char* str, std::size_t) {
+    return s2e(str);
+}
+
+std::ostream& operator<<(ostream& os, enum NoNum n) {
+    auto i = static_cast<size_t>(n);
+    return os << (i < NoNumS.size() ? NoNumS[i] : "Invalid");
+}
+
+template <enum NoNum n>
+void bar() {
+    TraceX(n);
+}
+
+
+
 int main() {
 	test();
 	[[maybe_unused]] constexpr auto t = "one"_tag;
@@ -162,5 +200,9 @@ int main() {
 
 	TraceX((string{65,66,67}));
 	TraceX((string{'a', 'b', 'c'}));
+
+    bar<"one"_f>();
+    bar<"two"_f>();
+    bar<"blabla"_f>();
 	return 0;
 }
