@@ -3,6 +3,7 @@
 
 using namespace std;
 
+#if (__cplusplus >= 201700)
 template <class ... Ts>
 void foo(Ts && ... inputs)
 {
@@ -22,6 +23,10 @@ void bar()
 		std::cout << "type " << i << ": " << typeid(Ts).name() << std::endl;
 	} (), ...);
 }
+#else
+
+
+#endif
 
 int main ()
 {

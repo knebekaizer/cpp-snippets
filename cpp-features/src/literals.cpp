@@ -38,7 +38,7 @@ enum class Num { none, one, two, three};
 [[maybe_unused]] constexpr array NumS { "none"sv, "one"sv, "two"sv, "three"sv};
 //[[maybe_unused]] constexpr array NumS { "none", "one", "two", "three"};
 #else
-[[maybe_unused]] constexpr array<string_view, 4> NumS { "none"sv, "one"sv, "two"sv, "three"sv};
+[[maybe_unused]] constexpr array<const char*, 4> NumS { "none", "one", "two", "three"};
 //[[maybe_unused]] constexpr array<const char*, 4> NumS { "none", "one", "two", "three"};
 #endif
 std::ostream& operator<<(ostream& os, enum Num n) {
@@ -60,20 +60,6 @@ constexpr enum Num str2enum(const char* str, std::integer_sequence<T, index...> 
 	return found;
 }
 #else // 2014
-// FixMe
-//template<typename T, T v>
-//constexpr enum Num str2enum(const char* str, T index) {
-//	Num found = (std::get<index>(NumS) == string_view(str)) ? static_cast<Num>(index) : Num::none;
-//    return found;
-//}
-//
-//template<typename T, T, T... index>
-//constexpr enum Num str2enum(const char* str, T i0, std::integer_sequence<T, index...> seq)
-//{
-//	if (std::get<i0>(NumS) == string_view(str))
-//		return static_cast<Num>(i0);
-//	return str2enum(str, index...);
-//}
 template<typename T, T... index>
 constexpr enum Num str2enum(const char* str, std::integer_sequence<T, index...> seq)
 {
@@ -147,12 +133,18 @@ void testFooS2() {
 //#warning <user type> nontype template args not suppported
 #endif // __cplusplus >= 202002
 
-/// What if I don't need the enum names? Can I use the literal as a typed named constant?
+/**
+ * If I don't need the enum names
+ * then I can I use the literal as a typed named constant
+ */
 
-
-enum class NoNum {};
+enum class NoNum {}; // Empty
+#if (__cplusplus >= 201700)
 [[maybe_unused]] constexpr array NoNumS { "none", "one", "two", "three"};
-
+#else
+// Use make_array
+[[maybe_unused]] constexpr array<const char*, 4> NoNumS { "none", "one", "two", "three"};
+#endif
 template<typename T, T... index>
 constexpr enum NoNum s2e(const char* str, std::integer_sequence<T, index...> seq) {
     int found = -1;

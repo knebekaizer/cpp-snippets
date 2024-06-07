@@ -8,14 +8,28 @@
 using namespace std;
 using namespace std::string_literals;
 
+#if (__cplusplus < 201700)
+#include "cpp14_stubs.hpp"
+using cpp14_stubs::make_array;
+#endif
+
 namespace my {
 enum class Value : size_t { one, two, three, four, end };
 
 [[maybe_unused]]
+#if (__cplusplus >= 201700)
 constexpr std::array Values{Value::one, Value::two, Value::three, Value::four};
+#else
+constexpr auto Values = make_array(Value::one, Value::two, Value::three, Value::four);
+#endif
 
 std::ostream& operator<<(std::ostream& os, my::Value v) {
+#if (__cplusplus >= 201700)
     constexpr std::array valueNames{"one", "two", "three", "four"};
+#else
+    constexpr auto valueNames = make_array("one", "two", "three", "four");
+#endif
+
     static_assert(valueNames.size() >= Values.size());
     return os << valueNames[static_cast<std::underlying_type_t<Value>>(v)];
 }
@@ -53,6 +67,8 @@ constexpr std::array<size_t, 4> Values2{0,1,2,3};
 #include <iostream>
 #include <tuple>
 #include <utility>
+
+/*
 
 // debugging aid
 template<typename T, T... ints>
@@ -112,6 +128,7 @@ void bar(std::integer_sequence<size_t, inputs...> seq)
     ((std::cout << inputs << ' '), ...);
     std::cout << '\n';
 }
+*/
 
 /*
 template<typename T, T... ints>
@@ -134,11 +151,17 @@ void testFoo() {
 }
 
 template<typename T, T... values>
+void runAll_14(std::integer_sequence<T, values...> seq)
+{
+//    [[maybe_unused]]
+    using unused = int[];
+    (void)unused{ 0, (testFoo<values>(), 0)... };
+}
+
+template<typename T, T... values>
 void runAll(std::integer_sequence<T, values...> seq)
 {
-//    std::cout << "The sequence of size " << seq.size() << ": ";
     ((testFoo<values>()), ...);
-//    std::cout << '\n';
 }
 
 template<my::Value ... values>
