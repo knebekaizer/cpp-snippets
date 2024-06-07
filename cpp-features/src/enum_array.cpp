@@ -8,27 +8,27 @@
 using namespace std;
 using namespace std::string_literals;
 
-namespace numbers {
+namespace my {
 enum class Value : size_t { one, two, three, four, end };
 
 [[maybe_unused]]
 constexpr std::array Values{Value::one, Value::two, Value::three, Value::four};
 
-std::ostream& operator<<(std::ostream& os, numbers::Value v) {
+std::ostream& operator<<(std::ostream& os, my::Value v) {
     constexpr std::array valueNames{"one", "two", "three", "four"};
     static_assert(valueNames.size() >= Values.size());
     return os << valueNames[static_cast<std::underlying_type_t<Value>>(v)];
 }
 
-} // namespace numbers
+} // namespace my
 
-template <numbers::Value>
-constexpr auto toN(numbers::Value v) -> std::underlying_type<decltype(v)>::type {
+template <my::Value>
+constexpr auto toN(my::Value v) -> std::underlying_type<decltype(v)>::type {
     return static_cast<std::underlying_type<decltype(v)>::type>(v);
 }
 
 constexpr std::array<size_t, 4> Values2{0,1,2,3};
-//constexpr std::array<size_t, 4> Values2{std::make_index_sequence<toN<numbers::four>(numbers::four)>{}};
+//constexpr std::array<size_t, 4> Values2{std::make_index_sequence<toN<my::four>(my::four)>{}};
 
 
 //template <std::size_t... Is>
@@ -42,7 +42,7 @@ constexpr std::array<size_t, 4> Values2{0,1,2,3};
 
 
 //int main() {
-//    for (auto x : std::make_index_sequence<toN<numbers::four>(numbers::four)>)
+//    for (auto x : std::make_index_sequence<toN<my::four>(my::four)>)
 //        TraceX(x);
 //
 //    return 0;
@@ -123,7 +123,7 @@ void print_sequence(std::integer_sequence<T, ints...> int_seq)
 }
 */
 
-template <numbers::Value v>
+template <my::Value v>
 void testFoo() {
     log_trace << v;
 }
@@ -141,7 +141,7 @@ void runAll(std::integer_sequence<T, values...> seq)
 //    std::cout << '\n';
 }
 
-template<numbers::Value ... values>
+template<my::Value ... values>
 void runAll()
 {
     log_trace << __PRETTY_FUNCTION__;
@@ -152,8 +152,8 @@ template<typename Array, typename T, T... values>
 void runAll(Array a, std::integer_sequence<T, values...> seq)
 {
     ([&] {		// Do things in your "loop" lambda
-        constexpr numbers::Value v = std::get<values>(numbers::Values);
-//        constexpr numbers::Value v = std::get<values>(a); // error: ‘a’ is not a constant expression
+        constexpr my::Value v = std::get<values>(my::Values);
+//        constexpr my::Value v = std::get<values>(a); // error: ‘a’ is not a constant expression
         testFoo<v>();
     } (), ...);
 }
@@ -162,7 +162,7 @@ void runAll(Array a, std::integer_sequence<T, values...> seq)
 //void runAll(Array a) {
 //    log_trace << __PRETTY_FUNCTION__;
 //    constexpr size_t sz = a.size(); //  sizeof(Array)/sizeof(std::remove_reference<Array>::type
-////    constexpr size_t sz = numbers::Values.size(); //  sizeof(Array)/sizeof(std::remove_reference<Array>::type
+////    constexpr size_t sz = my::Values.size(); //  sizeof(Array)/sizeof(std::remove_reference<Array>::type
 //    runAll(a, std::make_index_sequence<sz>{});
 //}
 
@@ -189,11 +189,11 @@ int main() {
     foo(0,1,2,3);
     bar(std::make_index_sequence<10>{});
 
-//    testFoo<numbers::Value::one>();
-    runAll(std::integer_sequence<numbers::Value, numbers::Value::one, numbers::Value::two, numbers::Value::three>{});
+//    testFoo<my::Value::one>();
+    runAll(std::integer_sequence<my::Value, my::Value::one, my::Value::two, my::Value::three>{});
 //    runAll(std::make_integer_sequence<int, 4>{});
-//    runAll(numbers::Values);
-    runAll(numbers::Values, std::make_index_sequence<numbers::Values.size()>{});
+//    runAll(my::Values);
+    runAll(my::Values, std::make_index_sequence<my::Values.size()>{});
 
-    runAll<numbers::Value::one, numbers::Value::two, numbers::Value::three>();
+    runAll<my::Value::one, my::Value::two, my::Value::three>();
 }
