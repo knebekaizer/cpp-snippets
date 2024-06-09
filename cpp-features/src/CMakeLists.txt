@@ -113,6 +113,7 @@ add_executable(deque_dtor
 )
 
 add_executable(variadic variadic_tmpl.cpp )
+add_executable(variadic_tuple variadic_tuple.cpp )
 
 add_executable(extern_tmpl
         extern_tmpl.cpp

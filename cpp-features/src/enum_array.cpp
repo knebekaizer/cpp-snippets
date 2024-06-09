@@ -41,8 +41,6 @@ constexpr auto toN(my::Value v) -> std::underlying_type<decltype(v)>::type {
     return static_cast<std::underlying_type<decltype(v)>::type>(v);
 }
 
-constexpr std::array<size_t, 4> Values2{0,1,2,3};
-//constexpr std::array<size_t, 4> Values2{std::make_index_sequence<toN<my::four>(my::four)>{}};
 
 
 //template <std::size_t... Is>
@@ -55,20 +53,12 @@ constexpr std::array<size_t, 4> Values2{0,1,2,3};
 //}
 
 
-//int main() {
-//    for (auto x : std::make_index_sequence<toN<my::four>(my::four)>)
-//        TraceX(x);
-//
-//    return 0;
-//}
-
 #include <array>
 #include <cstddef>
 #include <iostream>
 #include <tuple>
 #include <utility>
 
-/*
 
 // debugging aid
 template<typename T, T... ints>
@@ -128,7 +118,6 @@ void bar(std::integer_sequence<size_t, inputs...> seq)
     ((std::cout << inputs << ' '), ...);
     std::cout << '\n';
 }
-*/
 
 /*
 template<typename T, T... ints>
@@ -191,10 +180,10 @@ void runAll(Array a, std::integer_sequence<T, values...> seq)
 
 
 int main() {
-    print_sequence(std::integer_sequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
-    print_sequence(std::make_integer_sequence<int, 20>{});
-    print_sequence(std::make_index_sequence<10>{});
-    print_sequence(std::index_sequence_for<float, std::iostream, char>{});
+//    print_sequence(std::integer_sequence<unsigned, 9, 2, 5, 1, 9, 1, 6>{});
+//    print_sequence(std::make_integer_sequence<int, 20>{});
+//    print_sequence(std::make_index_sequence<10>{});
+//    print_sequence(std::index_sequence_for<float, std::iostream, char>{});
 
     constexpr std::array<int, 4> array = {1, 2, 3, 4};
 
@@ -213,8 +202,8 @@ int main() {
     bar(std::make_index_sequence<10>{});
 
 //    testFoo<my::Value::one>();
-    runAll(std::integer_sequence<my::Value, my::Value::one, my::Value::two, my::Value::three>{});
-//    runAll(std::make_integer_sequence<int, 4>{});
+//    runAll(std::integer_sequence<my::Value, my::Value::one, my::Value::two, my::Value::three>{});
+    runAll(std::make_integer_sequence<int, 4>{});
 //    runAll(my::Values);
     runAll(my::Values, std::make_index_sequence<my::Values.size()>{});
 

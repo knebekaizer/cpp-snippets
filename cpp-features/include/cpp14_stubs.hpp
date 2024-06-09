@@ -1,9 +1,11 @@
-//
-// Created by vdi on 07.06.24.
-//
+// Copyright (c) 2023 Vladimir Ivanov <knebekaizer@gmail.com>.
 
-#ifndef TESTGEN_CPP14_STUBS_HPP
-#define TESTGEN_CPP14_STUBS_HPP
+/**
+ * \file
+ * C++14 compatibility helpers
+ */
+
+#pragma once
 
 #include <type_traits>
 #include <utility>
@@ -47,4 +49,3 @@ constexpr details::return_type<D, Types...> make_array(Types&&... t)
 }
 }
 
-#endif //TESTGEN_CPP14_STUBS_HPP
