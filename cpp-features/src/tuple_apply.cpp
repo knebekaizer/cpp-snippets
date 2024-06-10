@@ -9,6 +9,8 @@ struct Foo {
     Foo(int i, string s) { TraceX(i, s); }
     Foo(const Foo&) = delete; // apply by the pointer; no copy
     Foo(Foo&&) = delete;  // check copy elision
+    Foo& operator=(const Foo&) = delete;
+    Foo& operator=(Foo&&) = delete;
     static void callStatic(int i, string s) { TraceX(i, s); }
     void callDyn(int i, string s) { TraceX(i, s); }
 };

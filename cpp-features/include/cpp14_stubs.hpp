@@ -47,5 +47,36 @@ constexpr details::return_type<D, Types...> make_array(Types&&... t)
 {
 	return {std::forward<Types>(t)...};
 }
+
+namespace details {
+template <typename _Tp, typename _Tuple, size_t... _Idx>
+constexpr _Tp make_from_tuple_impl(_Tuple&& __t, std::index_sequence<_Idx...>) {
+    return _Tp(std::get<_Idx>(std::forward<_Tuple>(__t))...);
 }
+} // namespace details
+
+template <typename _Tp, typename _Tuple>
+constexpr _Tp
+    make_from_tuple(_Tuple&& __t)
+//        noexcept(__unpack_std_tuple<is_nothrow_constructible, _Tp, _Tuple>)
+{
+    return details::make_from_tuple_impl<_Tp>(
+        std::forward<_Tuple>(__t),
+        std::make_index_sequence<std::tuple_size<std::remove_reference_t<_Tuple>>::value>{});
+}
+
+template<typename x_Function> class
+    function_traits;
+
+// specialization for functions
+template<typename x_Result, typename... x_Args> class
+    function_traits<x_Result (x_Args...)>
+{
+public: using arguments = ::std::tuple<x_Args...>;
+};
+}
+
+using cpp14_stubs::make_array;
+using cpp14_stubs::make_from_tuple;
+using cpp14_stubs::function_traits;
 

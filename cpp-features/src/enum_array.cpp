@@ -10,7 +10,6 @@ using namespace std::string_literals;
 
 #if (__cplusplus < 201700)
 #include "cpp14_stubs.hpp"
-using cpp14_stubs::make_array;
 #endif
 
 namespace my {
