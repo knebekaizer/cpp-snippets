@@ -112,10 +112,6 @@ add_executable(deque_dtor
     deque_dtor.cpp
 )
 
-add_executable(variadic
-    variadic_tmpl.cpp
-)
-
 add_executable(extern_tmpl
         extern_tmpl.cpp
         extern_tmpl_2.cpp
@@ -142,7 +138,17 @@ add_executable(float_random
 )
 
 add_executable(set_algo set_algorithm.cpp)
+
+# meta...
+add_executable(variadic variadic_tmpl.cpp )
+
+add_executable(enum_array enum_array.cpp)
+add_executable(literals literals.cpp)
+
 add_executable(tuple_apply tuple_apply.cpp)
+add_executable(tuple_variadic tuple_variadic.cpp)
+add_executable(tuple_remap tuple_remap.cpp)
+
 
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")

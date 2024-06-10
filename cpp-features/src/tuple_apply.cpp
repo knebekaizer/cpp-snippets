@@ -9,13 +9,15 @@ struct Foo {
     Foo(int i, string s) { TraceX(i, s); }
     Foo(const Foo&) = delete; // apply by the pointer; no copy
     Foo(Foo&&) = delete;  // check copy elision
-    static void callMe(int i, string s) { TraceX(i, s); }
+    Foo& operator=(const Foo&) = delete;
+    Foo& operator=(Foo&&) = delete;
+    static void callStatic(int i, string s) { TraceX(i, s); }
     void callDyn(int i, string s) { TraceX(i, s); }
 };
 
 void test_apply(){
     tuple<int, string> param{11, "onetwo"s};
-    std::apply(Foo::callMe, param);
+    std::apply(Foo::callStatic, param);
     Foo foo(99, "three");
     std::apply(std::mem_fn(&Foo::callDyn), make_tuple(&foo, 11, "onetwo"s));
     auto s2 = make_from_tuple<Foo>(param);

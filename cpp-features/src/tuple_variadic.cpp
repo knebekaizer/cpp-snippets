@@ -1,5 +1,6 @@
 #include "trace.hpp"
 #include <iostream>
+#include <tuple>
 
 using namespace std;
 
@@ -49,8 +50,16 @@ void bar()
 
 #endif
 
+template <class ... Ts>
+struct VTuple {
+	using type = std::tuple<Ts ...>;
+};
+
 int main ()
 {
 	foo(2, 3, 4u, (int64_t) 9, 'a', 2.3);
 	bar<int, int, float>();
+
+	[[maybe_unused]]
+	VTuple<int, float>::type x;
 }
