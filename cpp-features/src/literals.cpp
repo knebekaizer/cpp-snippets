@@ -8,6 +8,7 @@
 
 using namespace std;
 
+auto x = hash<string>(string("ghjk"));
 #if (__cplusplus > 201703L) // __cpp_nontype_template_args >= 201911
 template <auto N>
 struct string_litteral {
@@ -46,11 +47,13 @@ std::ostream& operator<<(ostream& os, enum Num n) {
 	return os << s;
 }
 
+#if 0
+
 constexpr bool enum2bool(Num e) {
 	return e != Num::none;
 }
 
-#if (__cplusplus >= 202300)
+#if (__cplusplus >= 201700)
 template<typename T, T... index>
 constexpr enum Num str2enum(const char* str, std::integer_sequence<T, index...> seq)
 {
@@ -60,6 +63,12 @@ constexpr enum Num str2enum(const char* str, std::integer_sequence<T, index...> 
 	return found;
 }
 #else // 2014
+template <size_t index>
+constexpr auto cmp(const char* str, Num& found){ return std::get<index>(NumS) == (str);
+//constexpr auto cmp(const char* str, Num& found){ found = std::get<index>(NumS) == (str) ? static_cast<Num>(index) : found;
+//return 0;
+};
+
 template<typename T, T... index>
 constexpr enum Num str2enum(const char* str, std::integer_sequence<T, index...> seq)
 {
@@ -69,7 +78,8 @@ constexpr enum Num str2enum(const char* str, std::integer_sequence<T, index...> 
 	using unused = int[];
 
 	int val = 1;
-	(void)unused{ ((found = std::get<index>(NumS) == (str) ? static_cast<Num>(index) : found ), ++val)... };
+//	(void)unused{ ((found = std::get<index>(NumS) == (str) ? static_cast<Num>(index) : found ), ++val)... };
+	(void)unused{ (index + 5) ... };
 
 	return found;
 }
@@ -132,11 +142,16 @@ void testFooS2() {
 #else // __cplusplus >= 202002
 //#warning <user type> nontype template args not suppported
 #endif // __cplusplus >= 202002
+#endif // 0
 
 /**
  * If I don't need the enum names
  * then I can I use the literal as a typed named constant
  */
+
+//constexpr int cmp(int index) { return index; }
+template <int index>
+constexpr int cmp(const char* s) { return get<index>(NumS) == s; }
 
 enum class NoNum {}; // Empty
 #if (__cplusplus >= 201700)
@@ -147,11 +162,21 @@ enum class NoNum {}; // Empty
 #endif
 template<typename T, T... index>
 constexpr enum NoNum s2e(const char* str, std::integer_sequence<T, index...> seq) {
-    int found = -1;
+//	return static_cast<NoNum>(str[0] + str[1]); ok
+	return static_cast<NoNum>(hash<string>(string(str)));
+	int found = -1;
     using unused = int[];
 
-    int val = 1;
-    (void)unused{ ((found = std::get<index>(NumS) == (str) ? index : found ), ++val)... };
+	[[maybe_unused]] int val = 1;
+//    (void)unused{ ((found = std::get<index>(NumS) == string_view(str) ? index : found ), 0)... };
+//    (void)unused{ ((found = std::get<index>(NumS) == str ), val)... };
+//    (void)unused{ (found = index * (str == nullptr), ++val)... }; // ok
+//    (void)unused{ (found = index * (get<index>(NumS) == nullptr), ++val)... }; // ok
+//    (void)unused{ (found = index * (get<index>(NumS) == str), ++val)... }; // No
+//    (void)unused{ (found = index * (sizeof(get<index>(NumS))), ++val)... }; // ok
+    (void)unused{ (found = cmp<index>(str), ++val)... }; // ok
+//	[[maybe_unused]] unused xxx{ (std::get<index>(NumS)  ? 1 : 0)... };
+
 
     return static_cast<NoNum>(found);
 }
@@ -178,21 +203,22 @@ void bar() {
 
 
 int main() {
-	test();
-	[[maybe_unused]] constexpr auto t = "one"_tag;
-	bar<"one"_tag>();
-	bar<"two"_tag>();
-	bar<"blabla"_tag>();
+//	test();
+//	[[maybe_unused]] constexpr auto t = "one"_tag;
+//	bar<"one"_tag>();
+//	bar<"two"_tag>();
+//	bar<"blabla"_tag>();
+//
+//	TraceX('a'_s);
+//	log_trace << 0xa_s;
+//	log_trace << 0706_s;
+//	log_trace << 123_s;
+//	log_trace << 12345678_s;
+//
+//	TraceX((string{65,66,67}));
+//	TraceX((string{'a', 'b', 'c'}));
 
-	TraceX('a'_s);
-	log_trace << 0xa_s;
-	log_trace << 0706_s;
-	log_trace << 123_s;
-	log_trace << 12345678_s;
-
-	TraceX((string{65,66,67}));
-	TraceX((string{'a', 'b', 'c'}));
-
+    bar<static_cast<NoNum>(21)>();
     bar<"one"_f>();
     bar<"two"_f>();
     bar<"blabla"_f>();
