@@ -11,15 +11,36 @@ using namespace std::string_literals;
 
 using namespace std;
 
+class Foo;
 
-// custom class
+/**
+ * Use the type and value tags as semantic identifiers.
+ * Tag may be mapped to anything reasonable, for ex. Float might be actually `double`, or a custom type.
+ * for ex: EType::SequentialContainer
+*/
+enum class EType {Int, Float, Foo, String};
+enum class EValue {one, two, random};
+
+/**
+ * I want to initialize the variable of type EType with value EValue. The following should be acceptable:
+ * \code
+ * Foo(1, "abc"); // native ctor
+ * Foo(random);
+ * Foo(one, two);
+ * Foo(tuple{1, "abc"});
+ * Foo(tuple{one, two})
+ * \endcode
+ */
+
+
+// custom class example
 class Foo {
     friend ostream& operator<<(ostream& os, const Foo& foo);
 public:
     Foo(int i, const char* s) : i_{i}, s_{s} {}
     Foo(const Foo&) = delete;
     Foo(Foo&&) = delete; // C++17 only
-//    Foo(Foo&&) { assert(("Move ctor shall not be used"s, false)); } // c++14 requires move ctor even with copy elision
+    //    Foo(Foo&&) { assert(("Move ctor shall not be used"s, false)); } // c++14 requires move ctor even with copy elision
 private:
     int i_;
     string s_;
@@ -28,8 +49,6 @@ ostream& operator<<(ostream& os, const Foo& foo) {
     return os << "{" << foo.i_ << ", "  << foo.s_ << "}";
 }
 
-enum class EType {Int, Float, Foo};
-enum class EValue {one, two, random};
 
 namespace details {
 template <typename E, typename std::enable_if<std::is_enum<E>::value, bool>::type = true>
@@ -112,9 +131,10 @@ template <EType t, class E> struct Param {
         : Param(std::forward<Tuple>(tup),
             std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>{}) {}
 private:
-    template <typename _Tuple, size_t... _Idx>
-    constexpr Param(_Tuple&& __t, std::index_sequence<_Idx...>)
-        : value{std::get<_Idx>(std::forward<_Tuple>(__t))...} {}
+    // Helper to unpack tuple
+    template <typename Tuple, size_t... Idx>
+    constexpr Param(Tuple&& tup, std::index_sequence<Idx...>)
+        : value{std::get<Idx>(std::forward<Tuple>(tup))...} {}
 };
 
 
