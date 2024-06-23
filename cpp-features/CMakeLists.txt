@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.10)
 project(cpp-features)
 
 if (DEFINED CMAKE_CXX_STANDARD)
