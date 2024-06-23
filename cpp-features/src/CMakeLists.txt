@@ -148,6 +148,9 @@ add_executable(literals literals.cpp)
 add_executable(tuple_apply tuple_apply.cpp)
 add_executable(tuple_variadic tuple_variadic.cpp)
 add_executable(tuple_remap tuple_remap.cpp)
+add_executable(tuple_utils tuple_utils.cpp)
+
+add_executable(float_inf float_inf.cpp)
 
 
 #set(USER_HOME $ENV{HOME})
