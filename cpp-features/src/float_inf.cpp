@@ -17,22 +17,33 @@ bool equalBits(const T& f1, const T& f2) {
 
 void test_inf() {
 	using T = double;
-	auto Max = std::numeric_limits<T>::max();
-	auto Inf = std::numeric_limits<T>::infinity();
 	cout << boolalpha << setprecision(20);
-	TraceX(Inf > Max);
-	TraceX(Inf);
 
+	auto Max = std::numeric_limits<T>::max();
+	auto Min = std::numeric_limits<T>::min();
+	auto Inf = std::numeric_limits<T>::infinity();
+	TraceX(Max, Min, Inf);
+	TraceX(Inf > Max);  // true
+	TraceX(Max + Min);
+	TraceX(Max == (Max + Min)); // true
+
+	cout << endl;
+	log_trace << "m2 = nextafter(Max, Inf):";
 	auto m2 = nextafter(Max, Inf);
 	TraceX(Max, m2);
 	TraceX(m2 > Max);
 	TraceX(m2 == Inf);
+	TraceX(m2 == (Max + Min));
 
-	TraceX(Max * 2);
-	TraceX(Max / 0.0);
-	TraceX(sqrt(-1.0));
-	TraceX(acos(2));
-	TraceX(equalBits(acos(2), sqrt(-1.0)));
+	cout << endl;
+	log_trace<< "NaN Arithmetics:";
+	TraceX(Max * 2);    // inf
+	TraceX(Max / 0.0);  // inf
+	TraceX((Max / 0.0) == (Max * 2));   // true
+	TraceX(sqrt(-1.0)); // nan
+	TraceX(acos(2));    // nan
+	TraceX(acos(2) == sqrt(-1.0));  // false
+	TraceX(equalBits(acos(2), sqrt(-1.0))); // true
 
 	auto Nan = std::numeric_limits<T>::quiet_NaN();
 	auto Nan2 = std::numeric_limits<T>::quiet_NaN();
@@ -40,12 +51,12 @@ void test_inf() {
 	auto Nan1 = Nan;
 	TraceX(Nan, Nan2, Nan0);
 	TraceX((uint64_t)Nan == (uint64_t)Nan1);
-	TraceX(Nan == Nan1);
-	TraceX(Nan == Nan1);
-	TraceX(equalBits(Nan, Nan2));
-	TraceX(equalBits(Nan, Nan0));
-	TraceX(Nan > Max);
-	TraceX(Nan > Inf);
+	TraceX(Nan == Nan1);    // false
+	TraceX(Nan == Nan1);    // false
+	TraceX(equalBits(Nan, Nan2));   // true
+	TraceX(equalBits(Nan, Nan0));   // false
+	TraceX(Nan > Max); // false
+	TraceX(Nan > Inf); // false
 }
 
 int main() {
