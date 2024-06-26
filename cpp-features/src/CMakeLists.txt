@@ -151,6 +151,7 @@ add_executable(tuple_remap tuple_remap.cpp)
 add_executable(tuple_utils tuple_utils.cpp)
 
 add_executable(float_inf float_inf.cpp)
+add_executable(printable printable.cpp)
 
 
 #set(USER_HOME $ENV{HOME})
