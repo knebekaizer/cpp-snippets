@@ -95,9 +95,7 @@ add_executable(ranges_2
     ranges_2.cpp
 )
 
-add_executable(test_sfinae
-    sfinae.cpp
-)
+add_executable(sfinae sfinae.cpp)
 
 add_executable(par_algo
     par_algo.cpp
