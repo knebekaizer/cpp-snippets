@@ -14,10 +14,10 @@ struct B {
 };
 
 
-namespace details {
 template<class>
 struct sfinae_true : std::true_type{};
 
+namespace details {
 template<class T>
 static auto has_print(int) -> sfinae_true<decltype(&T::print)>;
 

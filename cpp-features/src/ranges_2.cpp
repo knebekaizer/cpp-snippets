@@ -4,7 +4,7 @@
 #include <map>
 #include <ostream>
 
-#define STD_RANGES 0
+#define STD_RANGES 1
 
 #ifndef STD_RANGES
 #ifdef __cpp_lib_ranges
@@ -77,6 +77,9 @@ auto eq_range(const auto& m, T x) {
 #undef make_subrange
 #endif
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
 void testMap() {
 	Map m;
 	[[maybe_unused]] auto push = [&](T x) {
@@ -85,7 +88,6 @@ void testMap() {
 		}
 		m.insert({x,x});
 	};
-
 	for (T x : {1,2,3}) push(x); TraceX(m);
 	for (T x : {200, 1,2}) push(x); TraceX(m);
 	for (T x : {10, 20, 30, 1,2}) push(x); TraceX(m);
@@ -111,6 +113,7 @@ void testMap() {
 	TraceX(*m.upper_bound(80));
 
 }
+#pragma GCC diagnostic pop
 
 int main() {
 	test_vector();
