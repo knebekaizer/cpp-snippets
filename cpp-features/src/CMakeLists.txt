@@ -150,6 +150,10 @@ add_executable(tuple_utils tuple_utils.cpp)
 
 add_executable(float_inf float_inf.cpp)
 add_executable(printable printable.cpp)
+add_executable(filesystem filesystem.cpp)
+
+add_executable(inline inline.cpp inline2.cpp)
+add_executable(overload overload.cpp overload2.cpp)
 
 
 #set(USER_HOME $ENV{HOME})

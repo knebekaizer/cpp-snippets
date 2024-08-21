@@ -1,7 +1,9 @@
 #include <exception>
 #include <cassert>
 #include <functional>
-#include "trace.h"
+#include <thread>
+#include <utility>
+#include "trace.hpp"
 
 
 /// Scope-based init / teardown

@@ -59,9 +59,40 @@ void test_inf() {
 	TraceX(Nan > Inf); // false
 }
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#include <cfloat>
+#include <limits>
+void test_div() {
+    // a = 0xBD4A3FFFFFFFFFFFULL; b = 0x80000000000000D2ULL; the algorithm returns 0x7ff0000000000000ULL
+    cout << boolalpha;
+    clock_t t;
+    {
+        uint64_t ai = 0xBD4A3FFFFFFFFFFFull;
+        uint64_t bi = 0x80000000000000D2ull;
+        double a = *(double*)&ai;
+        double b = *(double*)&bi;
+        double c = a / b;
+        printf("c = %lx\n", *(uint64_t*)&c); // DBL_MAX = 7fefffffffffffff
+        TraceX(c == numeric_limits<double>::max());
+    }
+    {
+        uint64_t ai = 0xBD4A3FFFFFFFFFFFull;
+        uint64_t bi = 0x80000000000000D1ull;
+        double a = *(double*)&ai;
+        double b = *(double*)&bi;
+        double c = a / b;
+        printf("c = %lx\n", *(uint64_t*)&c); // INF = 7ff0000000000000
+        TraceX(c == numeric_limits<double>::infinity());
+    }
+}
+#pragma GCC diagnostic pop
+
 int main() {
 	TraceX(sizeof(long double));
 
 	test_inf();
+    test_div();
 	return 0;
 }
