@@ -155,6 +155,7 @@ add_executable(filesystem filesystem.cpp)
 add_executable(inline inline.cpp inline2.cpp)
 add_executable(overload overload.cpp overload2.cpp)
 
+add_executable(graph graph.cpp)
 
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
