@@ -42,6 +42,9 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Werror -Wall")
 #SET(CMAKE_EXE_LINKER_FLAGS "-L/opt/llvm-15/lib/c++ -Wl,-rpath,/opt/llvm-15/lib/c++")
 
+# Use `-rdynamic` (needed for backtrace symbols)
+SET (CMAKE_ENABLE_EXPORTS TRUE)
+
 #message(STATUS ${CMAKE_CXX_COMPILER_ID})
 
 add_subdirectory("src")

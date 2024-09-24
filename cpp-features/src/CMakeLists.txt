@@ -11,9 +11,8 @@ add_executable(cpp-features
     ranges_2.cpp
 )
 
-add_executable(async
-    async.cpp
-)
+add_executable(async async.cpp)
+add_executable(async2 async2.cpp)
 
 add_executable(booStringlWrapper
     booStringlWrapper.cpp

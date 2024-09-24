@@ -11,6 +11,8 @@
 using namespace std::chrono_literals;
 using namespace std;
 
+extern std::string Backtrace(int skip = 1);
+
 string time() {
 	static auto start = std::chrono::steady_clock::now();
 	std::chrono::duration<double> d = std::chrono::steady_clock::now() - start;
