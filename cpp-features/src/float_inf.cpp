@@ -6,6 +6,7 @@
 #include <bitset>
 #include <string.h>
 #include <math.h>
+#include <string>
 
 #include "trace.hpp"
 using namespace std;
@@ -67,7 +68,6 @@ void test_inf() {
 void test_div() {
     // a = 0xBD4A3FFFFFFFFFFFULL; b = 0x80000000000000D2ULL; the algorithm returns 0x7ff0000000000000ULL
     cout << boolalpha;
-    clock_t t;
     {
         uint64_t ai = 0xBD4A3FFFFFFFFFFFull;
         uint64_t bi = 0x80000000000000D2ull;
@@ -89,10 +89,20 @@ void test_div() {
 }
 #pragma GCC diagnostic pop
 
+
+void test_NAN() {
+    auto quiet_NaN = numeric_limits<float>::quiet_NaN();
+    auto signaling_NaN = numeric_limits<float>::signaling_NaN();
+    TraceX(quiet_NaN == signaling_NaN);
+    hash<float> h;
+    TraceX(h(quiet_NaN) == h(signaling_NaN));
+}
+
 int main() {
 	TraceX(sizeof(long double));
 
 	test_inf();
     test_div();
+    test_NAN();
 	return 0;
 }
