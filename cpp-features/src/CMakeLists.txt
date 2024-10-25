@@ -157,6 +157,8 @@ add_executable(overload overload.cpp overload2.cpp)
 #add_executable(graph graph.cpp)
 add_executable(regex regex.cpp)
 
+add_executable(strings strings.cpp)
+
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
 

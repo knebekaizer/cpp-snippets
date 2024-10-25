@@ -457,6 +457,27 @@ void test_typeinfo() {
     TraceX(t4 == t3);
 }
 
+void test_common_type() {
+    [[maybe_unused]] auto a1 = true ? 1 : 2.5; // double
+    [[maybe_unused]] auto a2 = true ? 1 : 2u; // unsigned int
+    [[maybe_unused]] auto a3 = true ? 1l : 2u; // signed long
+    [[maybe_unused]] auto a4 = true ? 1 : '2'; // int
+//   [[maybe_unused]] auto a5 = true ? 1 : "2"; // error
+}
+
+void test_search() {
+    string a = "0123456789";
+    string b = "56789";
+    auto p = search(a.begin(), a.end(), b.begin(), b.end());
+    TraceX(p == a.end());
+    if (p != a.end()) {
+        TraceX(string_view(p, a.end()));
+    }
+    // The first iterator i in the range [first1,last1 - (last2-first2))
+    auto e = a.end() - (b.end() - b.begin());
+    TraceX(string_view(a.begin(), e));
+}
+
 int main() {
 	shared();
 	shared2();
@@ -495,6 +516,6 @@ int main() {
 //	testLogger();
 //	x2u128("5e1463677a8246bf2f99ea81f6baf1a6");
 
-    overload::test();
+    test_search();
 	return 0;
 }
