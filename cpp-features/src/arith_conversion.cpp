@@ -9,19 +9,57 @@
 
 using namespace std;
 
+#define TYPE(T) #T
+template <typename T> struct AType {
+//    static constexpr auto id = typeid(T);
+    std::string name = typeid(T).name();
+    static constexpr auto size = sizeof(T);
+    static constexpr auto bits = std::numeric_limits<T>::digits;
+    std::ostream& print(std::ostream& os) const {
+        return os << name << ':' << size << ':' << bits;
+    }
+};
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const AType<T>& t) {
+    return t.print(os);
+}
+
 void typeIDs() {
-    TraceX(typeid(char const*).name());
-    TraceX(typeid(char).name());
-    TraceX(typeid(unsigned char).name());
-    TraceX(typeid(signed char).name());
-    TraceX(typeid(int8_t).name());
-    TraceX(typeid(int16_t).name());
-    TraceX(typeid(uint16_t).name());
-    TraceX(typeid(int32_t).name());
-    TraceX(typeid(uint32_t).name());
-    TraceX(typeid(int64_t).name());
-    TraceX(typeid(uint64_t).name());
-    TraceX(sizeof(int), sizeof(long), sizeof(long long)); // 488 (64) or 448 (32)
+    TraceX(AType<char const*>());
+    TraceX(AType<char>());
+    TraceX(AType<unsigned char>());
+    TraceX(AType<signed char>());
+    TraceX(AType<int8_t>());
+    TraceX(AType<int16_t>());
+    TraceX(AType<uint16_t>());
+    TraceX(AType<int32_t>());
+    TraceX(AType<uint32_t>());
+    TraceX(AType<int64_t>());
+    TraceX(AType<uint64_t>());
+    TraceX(AType<int>()); // i:4:31
+    TraceX(AType<unsigned long int>()); // m:8:64
+    TraceX(AType<long long>()); // x:8:63
+    TraceX(AType<unsigned long long>()); // y:8:64
+    TraceX((AType<std::common_type_t<long long, unsigned long>>())); // y:8:64
+/*
+typeIDs> AType<char const*>() = PKc:8:0
+typeIDs> AType<char>() = c:1:7
+typeIDs> AType<unsigned char>() = h:1:8
+typeIDs> AType<signed char>() = a:1:7
+typeIDs> AType<int8_t>() = a:1:7
+typeIDs> AType<int16_t>() = s:2:15
+typeIDs> AType<uint16_t>() = t:2:16
+typeIDs> AType<int32_t>() = i:4:31
+typeIDs> AType<uint32_t>() = j:4:32
+typeIDs> AType<int64_t>() = l:8:63
+typeIDs> AType<uint64_t>() = m:8:64
+typeIDs> AType<int>() = i:4:31
+typeIDs> AType<unsigned long int>() = m:8:64
+typeIDs> AType<long long>() = x:8:63
+typeIDs> AType<unsigned long long>() = y:8:64
+typeIDs> (AType<std::common_type_t<long long, unsigned long>>()) = y:8:64
+*/
 }
 
 void arithm_conversion() {

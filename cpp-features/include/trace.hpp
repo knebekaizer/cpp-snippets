@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include <inttypes.h>
 #include <stdexcept>
 #include <string>
 #include <iostream>

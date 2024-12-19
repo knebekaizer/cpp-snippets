@@ -467,8 +467,10 @@ void test_common_type() {
 
 void test_search() {
     string a = "0123456789";
-    string b = "56789";
+    string b = "0123456789";
+//    string b = "56789";
     auto p = search(a.begin(), a.end(), b.begin(), b.end());
+    cout << boolalpha;
     TraceX(p == a.end());
     if (p != a.end()) {
         TraceX(string_view(p, a.end()));
@@ -477,6 +479,7 @@ void test_search() {
     auto e = a.end() - (b.end() - b.begin());
     TraceX(string_view(a.begin(), e));
 }
+
 
 int main() {
 	shared();
@@ -518,4 +521,11 @@ int main() {
 
     test_search();
 	return 0;
+
+    try {
+
+    }
+    catch (std::out_of_range& e1) {
+        throw std::logic_error(e1);
+    }
 }
