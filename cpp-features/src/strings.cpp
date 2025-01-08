@@ -160,9 +160,38 @@ void test_buffer() {
     log_trace << "4: " << secret();
 }
 
+void test_buffer_access() {
+    string secretStr("1234567890123456789 Secret");
+    const size_t secretOffset = secretStr.find("Secret"); // 20
+    TraceX(secretOffset);
+    const size_t initialSize = secretStr.size();
+    string newData("9876543210987654321");
+
+    // the lambda attempts to access the tail of the buffer
+    auto print_secret = [&](auto&& s) {
+        // if capacity is sufficient then try to access and print the buffer contents
+        if (s.capacity() >= initialSize)
+            std::cout << string_view(s.data() + newData.size() + 1, 6) << std::endl;
+        else
+            std::cout << "Not accessible\n";
+    };
+
+    std::cout << "Original data: ";
+    print_secret(secretStr);
+
+    secretStr.assign(newData.begin(), newData.end());
+    std::cout << "New data after assigning the range: ";
+    print_secret(secretStr);
+
+    secretStr.assign(string(newData.begin(), newData.end()));
+    std::cout << "New data as it's supposed to be: ";
+    print_secret(secretStr);
+}
+
 int main() {
     cout << boolalpha;
     test_alloc();
     test_buffer();
+    test_buffer_access();
     return 0;
 }
