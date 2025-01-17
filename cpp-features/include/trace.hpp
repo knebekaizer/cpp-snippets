@@ -43,33 +43,46 @@
 
 #ifndef TRACE_NOSYNC
 #include <mutex>
-namespace details {
-std::mutex trace_mutex_;
-}
-#define lock_me    std::lock_guard<std::mutex> lock(details::trace_mutex_)
+#endif
+
+#ifdef TRACE_PRETTY
+//#define TRACE_FUNC TRACE_PRETTY_FUNCTION
+#define TRACE_FUNC __PRETTY_FUNCTION__
 #else
-#define lock_me
+#define TRACE_FUNC __func__
 #endif
 
 namespace utils {
 
-struct tr_stream_helper {
-  std::ostream& get() {
-    return std::cout;
-  }
-  ~tr_stream_helper() {
-    lock_me;
-    std::cout << std::endl;
-  }
+class sync_base {
+#ifndef TRACE_NOSYNC
+private:
+    std::mutex& mtx_() {
+        static std::mutex m;
+        return m;
+    }
+    std::lock_guard<std::mutex> lock_;
+public:
+    sync_base() : lock_(mtx_()) {}
+#endif
 };
 
-struct err_stream_helper {
-  std::ostream& get() {
-    return std::cerr;
-  }
-  ~err_stream_helper() {
-    std::cerr << std::endl;
-  }
+struct tr_stream_helper : private sync_base {
+    std::ostream& get() {
+        return std::cout;
+    }
+    ~tr_stream_helper() {
+        std::cout << std::endl;
+    }
+};
+
+struct err_stream_helper : private sync_base {
+    std::ostream& get() {
+        return std::cerr;
+    }
+    ~err_stream_helper() {
+        std::cerr << std::endl;
+    }
 };
 
 
