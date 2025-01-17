@@ -41,6 +41,16 @@
 #define TRACE_FUNC __func__
 #endif
 
+#ifndef TRACE_NOSYNC
+#include <mutex>
+namespace details {
+std::mutex trace_mutex_;
+}
+#define lock_me    std::lock_guard<std::mutex> lock(details::trace_mutex_)
+#else
+#define lock_me
+#endif
+
 namespace utils {
 
 struct tr_stream_helper {
@@ -48,6 +58,7 @@ struct tr_stream_helper {
     return std::cout;
   }
   ~tr_stream_helper() {
+    lock_me;
     std::cout << std::endl;
   }
 };
