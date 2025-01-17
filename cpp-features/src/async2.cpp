@@ -2,8 +2,10 @@
 #include <future>
 #include <chrono>
 #include <vector>
+#include <string.h>
 
 #include "trace.hpp"
+#include "require.hpp"
 
 using namespace std;
 
@@ -70,27 +72,16 @@ struct R {
 	int count = ++g_count;
 	~R() { --g_count; }
 };
-atomic<int> R::g_count = 0;
+atomic<int> R::g_count{0};
 ostream& operator<<(ostream& os, const R& r) { return os << r.count; }
 
 void test_threadLimit() {
-<<<<<<< HEAD
-	auto f = std::async(std::launch::async, []{
-		R r;
-		TraceX(r);
-		std::this_thread::sleep_for(1s);
-		return 42;
-	});
-	log_trace << time() << " waiting for the future, f.valid() == " << f.valid();
-	int n = f.get();
-	log_trace << time() << " future.get() returned with " << n << ". f.valid() = " << f.valid();
-=======
     int max_async_count = 0;
     auto fun = [&max_async_count]{
         R r;
         int c = R::g_count;
         max_async_count = max(max_async_count, c);
-//        TraceX(r);
+        TraceX(r);
         std::this_thread::sleep_for(1s);
     };
     vector<future<void>> v;
@@ -106,7 +97,6 @@ void test_threadLimit() {
     }
 //    log_trace << time() << " waiting for the future, f.valid() == " << f.valid();
 //    log_trace << time() << " future.get() returned with " << n << ". f.valid() = " << f.valid();
->>>>>>> 87d9e88 (async2 Fix test_limit)
 }
 
 
@@ -116,33 +106,58 @@ void test_threadLimit() {
 ostream& operator<<(ostream& os, const rlimit& r) {
 	return os << '{' << r.rlim_cur << ',' << r.rlim_max << '}';
 }
-<<<<<<< HEAD
-void test_limit() {
-	struct rlimit rlim;
-	int err = getrlimit(RLIMIT_NPROC, &rlim);
-//	perror(err);
-	TraceX(1, err, rlim);
-	rlim.rlim_cur -= 1;
-	rlim.rlim_max -= 1;
-	err = setrlimit(RLIMIT_NPROC, &rlim);
-	TraceX(2, err, rlim);
-	err = getrlimit(RLIMIT_NPROC, &rlim);
-	TraceX(3, err, rlim);
-}
 
-int main() {
-//    test();
-	test_limit();
-	test_promise();
-	test_promise2();
-	test_async_deferred();
-=======
+class ThreadLimit {
+	rlimit save_ = {0};
+public:
+//#ifdef RLIMIT_NTHR
+#ifdef __QNX__
+	static const auto RSRC = RLIMIT_NTHR;
+	static const rlim_t GUESS_ = 5;
+#else // Linux
+	static const auto RSRC = RLIMIT_NPROC;
+	static const rlim_t GUESS_ = 5000;
+#endif
+	rlim_t rlim_cur;
+	ThreadLimit(rlim_t lim = GUESS_)
+		: save_(get_())
+		, rlim_cur(min(lim, save_.rlim_cur))
+	{
+		TraceX(save_, rlim_cur);
+		rlimit tmp{.rlim_cur = rlim_cur, .rlim_max = save_.rlim_max};
+		TraceX(tmp);
+		set_(tmp);
+//		set_({.rlim_cur = rlim_cur, .rlim_max = save_.rlim_max});
+		tmp = get_();  // check the actual
+		TraceX(tmp);
+		require(tmp.rlim_cur == rlim_cur) << "Failed to set requested limit: " << lim
+		                                  << "; Result: " << tmp;
+	}
+	~ThreadLimit() {
+		TraceF;
+		set_(save_);
+	}
+
+private:
+	rlimit get_() {
+		rlimit tmp = {0};
+		int err = getrlimit(RSRC, &tmp);
+		require(err == 0) << "getrlimit failed: " << strerror(errno);
+		TraceX(tmp);
+		return tmp;
+	}
+	void set_(rlimit lim) {
+		TraceX(lim);
+		int err = setrlimit(RSRC, &lim);
+		require(err == 0) << "setrlimit failed: " << strerror(errno);
+	}
+
+};
+
 void test_limit(int rmax = -1) {
     struct rlimit rlim;
     int err = getrlimit(RLIMIT_NPROC, &rlim);
-    if (err) perror(0);
-    (err = getrlimit(RLIMIT_NPROC, &rlim))
-        && log_error << "getrlimit(RLIMIT_NPROC, &rlim) failed";
+	require(err == 0) << "getrlimit failed: " << strerror(errno);
     TraceX(1, err, rlim);
     if (rmax <= 0) {
         rlim.rlim_cur -= 1;
@@ -152,15 +167,29 @@ void test_limit(int rmax = -1) {
 //        rlim.rlim_max = rmax;
     }
     err = setrlimit(RLIMIT_NPROC, &rlim);
-    TraceX(2, err, rlim);
+	require(err == 0) << "setrlimit(" << RLIMIT_NPROC << ", " << rlim << ") failed: " << strerror(errno);
+	TraceX(2, err, rlim);
     err = getrlimit(RLIMIT_NPROC, &rlim);
     TraceX(3, err, rlim);
 }
 
-int main() {
+int main() try {
     test();
-    test_limit(5000);
-    test_threadLimit();
->>>>>>> 87d9e88 (async2 Fix test_limit)
+	{
+		ThreadLimit lim;
+	}
+	test_limit(5000);
+	test_threadLimit();
+	test_promise();
+	test_promise2();
+	test_async_deferred();
     return 0;
+}
+//catch (const err::tr_error& e) {
+//	log_error << "[FAILED] " << e.what() << "\nat " << e.where();
+//	return -1;
+//}
+catch (const std::exception& e) {
+	log_error << "[FAILED] " << e.what();
+	return -1;
 }
