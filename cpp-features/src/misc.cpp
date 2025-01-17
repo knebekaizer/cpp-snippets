@@ -120,7 +120,7 @@ unique_ptr<B> test_uptr() {
 class Base {};
 using FuncT = Base* (*)();
 Base* foo() { return new Base; }
-constexpr std::array<FuncT, 16> factoryMap{0,0,foo};
+[[maybe_unused]] constexpr std::array<FuncT, 16> factoryMap{0,0,foo};
 
 
 class Smth {
@@ -455,6 +455,13 @@ void test_typeinfo() {
     TraceX(t1 == t2);
     TraceX(t2 == t3);
     TraceX(t4 == t3);
+
+	cout << boolalpha;
+	TraceX(typeid(int).before(typeid(int)));
+	TraceX(typeid(int).before(typeid(long)));
+	TraceX(typeid(long).before(typeid(int)));
+	struct чтото{};
+	TraceX(typeid(чтото).name());
 }
 
 void test_common_type() {
@@ -497,7 +504,6 @@ int main() {
     string_length_error();
 
 //    test_fclose();
-    test_typeinfo();
 
 	signed_overflow();
 
@@ -520,6 +526,8 @@ int main() {
 //	x2u128("5e1463677a8246bf2f99ea81f6baf1a6");
 
     test_search();
+
+	test_typeinfo();
 	return 0;
 
     try {
