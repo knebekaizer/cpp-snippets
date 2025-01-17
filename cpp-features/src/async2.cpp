@@ -76,6 +76,7 @@ void test_threadLimit() {
 		R r;
 		TraceX(r);
 		std::this_thread::sleep_for(1s);
+		return 42;
 	});
 	log_trace << time() << " waiting for the future, f.valid() == " << f.valid();
 	int n = f.get();
@@ -84,13 +85,14 @@ void test_threadLimit() {
 
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <stdio.h>
 ostream& operator<<(ostream& os, const rlimit& r) {
 	return os << '{' << r.rlim_cur << ',' << r.rlim_max << '}';
 }
 void test_limit() {
 	struct rlimit rlim;
 	int err = getrlimit(RLIMIT_NPROC, &rlim);
-	perror(0);
+//	perror(err);
 	TraceX(1, err, rlim);
 	rlim.rlim_cur -= 1;
 	rlim.rlim_max -= 1;
