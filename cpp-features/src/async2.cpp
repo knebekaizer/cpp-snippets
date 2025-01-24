@@ -8,6 +8,7 @@
 #include "require.hpp"
 
 using namespace std;
+using namespace std::chrono_literals;
 
 string time() {
     static auto start = std::chrono::steady_clock::now();
@@ -118,23 +119,16 @@ public:
 	static const auto RSRC = RLIMIT_NPROC;
 	static const rlim_t GUESS_ = 5000;
 #endif
-	rlim_t rlim_cur;
 	ThreadLimit(rlim_t lim = GUESS_)
 		: save_(get_())
-		, rlim_cur(min(lim, save_.rlim_cur))
 	{
-		TraceX(save_, rlim_cur);
+        rlim_t rlim_cur = min(lim, save_.rlim_cur);
+        TraceX(save_, rlim_cur);
 		rlimit tmp{.rlim_cur = rlim_cur, .rlim_max = save_.rlim_max};
-		TraceX(tmp);
 		set_(tmp);
-//		set_({.rlim_cur = rlim_cur, .rlim_max = save_.rlim_max});
-		tmp = get_();  // check the actual
-		TraceX(tmp);
-		require(tmp.rlim_cur == rlim_cur) << "Failed to set requested limit: " << lim
-		                                  << "; Result: " << tmp;
 	}
 	~ThreadLimit() {
-		TraceF;
+        TraceF;
 		set_(save_);
 	}
 
@@ -150,6 +144,10 @@ private:
 		TraceX(lim);
 		int err = setrlimit(RSRC, &lim);
 		require(err == 0) << "setrlimit failed: " << strerror(errno);
+        // check success
+        rlimit tmp = get_();  // check the actual
+        require(tmp.rlim_cur == lim.rlim_cur) << "Failed to set requested limit: " << lim
+                                          << "; Result: " << tmp;
 	}
 
 };
@@ -171,6 +169,29 @@ void test_limit(int rmax = -1) {
 	TraceX(2, err, rlim);
     err = getrlimit(RLIMIT_NPROC, &rlim);
     TraceX(3, err, rlim);
+    rlimit restore{.rlim_cur = rlim.rlim_max, .rlim_max = rlim.rlim_max};
+    err = setrlimit(RLIMIT_NPROC, &restore);
+    err = getrlimit(RLIMIT_NPROC, &rlim);
+    TraceX(4, err, rlim);
+}
+
+int test_ex() {
+#ifdef __QNX__
+    static const auto RSRC = RLIMIT_NTHR;
+//    static const rlim_t GUESS_ = 5;
+#else // Linux
+    static const auto RSRC = RLIMIT_NPROC;
+//    static const rlim_t GUESS_ = 5000;
+#endif
+    rlimit lim;
+    int err = getrlimit(RSRC, &lim);
+    if (err) { cerr << "getrlimit failed: " << strerror(errno) << endl; return(err); }
+    lim.rlim_cur = 5;
+    setrlimit(RSRC, &lim);
+    if (err) { cerr << "setrlimit failed: " << strerror(errno) << endl; return(err); }
+
+    auto fut = async(launch::async, []{ return; });
+    return 0;
 }
 
 int main() try {
@@ -179,10 +200,11 @@ int main() try {
 		ThreadLimit lim;
 	}
 	test_limit(5000);
-	test_threadLimit();
-	test_promise();
-	test_promise2();
-	test_async_deferred();
+//	test_threadLimit();
+//	test_promise();
+//	test_promise2();
+//	test_async_deferred();
+    test_ex();
     return 0;
 }
 //catch (const err::tr_error& e) {
