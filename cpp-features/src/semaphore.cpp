@@ -103,7 +103,72 @@ void Queue::stop() {
 	log_trace << "finishing...";
 }
 
+#include <semaphore.h>
+#include <future>
+#include <iostream>
+#include <vector>
+#include <stdlib.h>
+using namespace std;
+
+class ThreadLimit {
+    static struct initializer {
+        const unsigned max_;
+        initializer(unsigned limit) : max_(limit) {
+            sem_init(&x_, 0, max_);
+        }
+        operator sem_t*() { return &x_; }
+        sem_t x_;
+    } sem_;
+public:
+    struct Guard {
+        ~Guard() { sem_post(ThreadLimit::sem_); }
+    };
+    static int tryGetOrWait() { return sem_trywait(sem_); }
+    static int getOrWait() { return sem_wait(sem_); }
+    static int free() {
+        int n = 0;
+        return sem_getvalue(sem_, &n) ? -1 : n;
+    }
+    static int used() {
+        int n = 0;
+        return sem_getvalue(sem_, &n) ? -1 : (int)sem_.max_ - n;
+    }
+    friend struct ThreadLimit::Guard;
+};
+
+ThreadLimit::initializer ThreadLimit::sem_{10};
+std::mutex coutMtx; // used to synchronize output
+
+void threads_limit() {
+    std::vector<future<void>> v;
+    for (auto n = 20; --n;) {
+        if (ThreadLimit::tryGetOrWait()) {
+            if (errno == EAGAIN) {
+                unique_lock lk(coutMtx);
+                cout << "Main thread shall wait" << endl;
+            }
+            ThreadLimit::getOrWait(); // wait may block
+        }
+        try {
+            v.emplace_back(std::async(std::launch::async, [](){
+                ThreadLimit::Guard guard;
+                unsigned delay = random() & 7;
+                {
+                    unique_lock lk(coutMtx);
+                    cout << "Active threads: " << ThreadLimit::used() << "; free: " << ThreadLimit::free()
+                    << "; Worker thread will sleep for " << delay << " sec" << endl;
+                }
+                sleep(delay);
+            }));
+        } catch (std::system_error& e) {
+            cerr << "Exception `std::system_error` caught: " << e.what() << endl;
+        }
+    }
+}
+
 int main() {
+    threads_limit();
+    return 0;
 	Sink sink;
 	Queue queue(sink);
 

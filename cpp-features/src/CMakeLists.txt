@@ -15,6 +15,8 @@ add_executable(async async.cpp)
 add_executable(async1 async1.cpp)
 add_executable(async2 async2.cpp)
 
+add_executable(async_thinlock async_thinlock.cpp)
+
 add_executable(booStringlWrapper
     booStringlWrapper.cpp
 )
