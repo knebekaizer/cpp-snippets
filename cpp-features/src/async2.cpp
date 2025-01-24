@@ -8,6 +8,7 @@
 #include "require.hpp"
 
 using namespace std;
+using namespace std::chrono_literals;
 
 string time() {
     static auto start = std::chrono::steady_clock::now();
@@ -21,11 +22,11 @@ void test() {
     std::future<int> f = std::async(std::launch::async, []{
         TraceX( std::this_thread::get_id() );
         std::this_thread::sleep_for(1s);
-        return 7;
+        return 777;
     });
     log_trace << time() << " waiting for the future, f.valid() == " << f.valid();
     int n = f.get();
-    log_trace << time() << " future.get() returned with " << n << ". f.valid() = " << f.valid();
+    log_trace << time() << " future.get() returned with " << n << "; f.valid() = " << f.valid();
 }
 
 void test_async_deferred() {
@@ -42,17 +43,98 @@ void test_async_deferred() {
     log_trace << time() << " future.get() returned with " << n << ". f.valid() = " << f.valid();
 }
 
+void asyncTest_4() {
+    cout << endl;
+    log_trace << "Use promise to propagate exception from a thread";
+    std::promise<int> p;
+    std::future<int> f = p.get_future();
+
+    std::thread t([&p]{
+        try {
+            // code that may throw
+            throw std::runtime_error("Exception example");
+        } catch(...) {
+            try {
+                // store anything thrown in the promise
+                p.set_exception(std::current_exception());
+            } catch(...) {} // set_exception() may throw too
+        }
+    });
+
+    try {
+        std::cout << f.get();
+    } catch(const std::exception& e) {
+        std::cout << "Exception from the thread: " << e.what() << '\n';
+    }
+    t.join();
+}
+
 void test_promise() {
+    struct R {
+        int v = -1;
+    };
+    TraceX(sizeof(promise<void>), sizeof(promise<char>), sizeof(promise<R>));
+
+    promise<R> r;
+//    r.set_value({42});
+    r.set_exception(nullptr);
+    TraceX(r.get_future().get().v);
+
 	promise<int> prom;
 	auto fut = prom.get_future();
 	TraceX(fut.valid());
-	log_trace << "Waiting for 5s...";
-	fut.wait_for(5s);
+	log_trace << "Waiting for 3s...";
+	fut.wait_for(3s);
 	log_trace << "...done";
 	TraceX(fut.valid());
 	prom.set_value(42);
-	TraceX(fut.get());
-	TraceX(fut.valid());
+//    prom.set_exception(nullptr);
+    TraceX(fut.get());
+
+    try {
+        throw std::runtime_error("Exception example");
+    } catch (std::exception&) {
+        try {
+            // store anything thrown in the promise
+            prom.set_exception(std::current_exception());
+        } catch (std::exception& e) {  // set_exception() may throw too
+            log_trace << "Expected exception thrown from promise::set_exception " << e.what();
+        } catch (...) {}
+    }
+
+    TraceX((fut.valid() ? to_string(fut.get()) : "No state"));
+//    TraceX(fut.get());
+//    TraceX(fut.valid());
+
+    promise<void> p;
+    p.set_exception(std::current_exception());
+    p.get_future().get();
+}
+
+void test_promise_async() {
+    cout << endl;
+    log_trace << "Use promise to propagate exception from a thread";
+    std::promise<int> p;
+    std::future<int> f = p.get_future();
+
+    std::thread t([&p]{
+        try {
+            // code that may throw
+            throw std::runtime_error("Exception example");
+        } catch(...) {
+            try {
+                // store anything thrown in the promise
+                p.set_exception(std::current_exception());
+            } catch(...) {} // set_exception() may throw too
+        }
+    });
+
+    try {
+        std::cout << f.get();
+    } catch(const std::exception& e) {
+        std::cout << "Exception from the thread: " << e.what() << '\n';
+    }
+    t.join();
 }
 
 void test_promise2() {
@@ -63,7 +145,6 @@ void test_promise2() {
 	prom.set_value(21);
 	auto fut = prom.get_future();
 	TraceX(fut.get(), fut.valid());
-
 }
 
 
@@ -77,7 +158,7 @@ ostream& operator<<(ostream& os, const R& r) { return os << r.count; }
 
 void test_threadLimit() {
     int max_async_count = 0;
-    auto fun = [&max_async_count]{
+    auto fun = [&max_async_count] {
         R r;
         int c = R::g_count;
         max_async_count = max(max_async_count, c);
@@ -85,18 +166,16 @@ void test_threadLimit() {
         std::this_thread::sleep_for(1s);
     };
     vector<future<void>> v;
-    try {
-        for (auto n = 10000u; --n;) {
+    for (auto n = 10000u; --n;) {
+        try {
             v.emplace_back(std::async(std::launch::async, fun));
-            //        std::this_thread::sleep_for(10ms);
+        //        std::this_thread::sleep_for(10ms);
+        } catch (std::exception& e) {
+            log_error << e.what() << "; number of async threads: " << max_async_count;
+            TraceX(v.size());
+            throw;
         }
-    } catch (std::exception& e) {
-        throw;
-        log_error << e.what() <<"; number of async threads: " << max_async_count;
-        TraceX(v.size());
     }
-//    log_trace << time() << " waiting for the future, f.valid() == " << f.valid();
-//    log_trace << time() << " future.get() returned with " << n << ". f.valid() = " << f.valid();
 }
 
 
@@ -105,6 +184,12 @@ void test_threadLimit() {
 #include <stdio.h>
 ostream& operator<<(ostream& os, const rlimit& r) {
 	return os << '{' << r.rlim_cur << ',' << r.rlim_max << '}';
+}
+bool operator==(const rlimit& a, const rlimit& b) {
+    return a.rlim_cur == b.rlim_cur && a.rlim_max == b.rlim_max;
+}
+bool operator!=(const rlimit& a, const rlimit& b) {
+    return !(a == b);
 }
 
 class ThreadLimit {
@@ -118,71 +203,82 @@ public:
 	static const auto RSRC = RLIMIT_NPROC;
 	static const rlim_t GUESS_ = 5000;
 #endif
-	rlim_t rlim_cur;
 	ThreadLimit(rlim_t lim = GUESS_)
 		: save_(get_())
-		, rlim_cur(min(lim, save_.rlim_cur))
 	{
-		TraceX(save_, rlim_cur);
+        rlim_t rlim_cur = min(lim, save_.rlim_cur);
+//        TraceX(save_, rlim_cur);
 		rlimit tmp{.rlim_cur = rlim_cur, .rlim_max = save_.rlim_max};
-		TraceX(tmp);
 		set_(tmp);
-//		set_({.rlim_cur = rlim_cur, .rlim_max = save_.rlim_max});
-		tmp = get_();  // check the actual
-		TraceX(tmp);
-		require(tmp.rlim_cur == rlim_cur) << "Failed to set requested limit: " << lim
-		                                  << "; Result: " << tmp;
+        log_trace << "previous: " << save_ << "; current: " << get();
 	}
 	~ThreadLimit() {
-		TraceF;
 		set_(save_);
 	}
 
-private:
-	rlimit get_() {
+	static rlimit get() {
 		rlimit tmp = {0};
 		int err = getrlimit(RSRC, &tmp);
 		require(err == 0) << "getrlimit failed: " << strerror(errno);
-		TraceX(tmp);
+		return tmp;
+	}
+
+private:
+	static rlimit get_() {
+		rlimit tmp = get();
+//		TraceX(tmp);
 		return tmp;
 	}
 	void set_(rlimit lim) {
-		TraceX(lim);
+//		TraceX(lim);
 		int err = setrlimit(RSRC, &lim);
 		require(err == 0) << "setrlimit failed: " << strerror(errno);
+        // check success
+        rlimit tmp = get_();  // check the actual
+        require(tmp.rlim_cur == lim.rlim_cur) << "Failed to set requested limit: " << lim
+                                          << "; Result: " << tmp;
 	}
 
 };
 
-void test_limit(int rmax = -1) {
-    struct rlimit rlim;
-    int err = getrlimit(RLIMIT_NPROC, &rlim);
-	require(err == 0) << "getrlimit failed: " << strerror(errno);
-    TraceX(1, err, rlim);
-    if (rmax <= 0) {
-        rlim.rlim_cur -= 1;
-        rlim.rlim_max -= 1;
-    } else {
-        rlim.rlim_cur = rmax;
-//        rlim.rlim_max = rmax;
+int test_ex() {
+#ifdef __QNX__
+    static const auto RSRC = RLIMIT_NTHR;
+//    static const rlim_t GUESS_ = 5;
+#else // Linux
+    static const auto RSRC = RLIMIT_NPROC;
+//    static const rlim_t GUESS_ = 5000;
+#endif
+    rlimit lim;
+    int err = getrlimit(RSRC, &lim);
+    if (err) { cerr << "getrlimit failed: " << strerror(errno) << endl; return(err); }
+    lim.rlim_cur = 5;
+    setrlimit(RSRC, &lim);
+    if (err) { cerr << "setrlimit failed: " << strerror(errno) << endl; return(err); }
+
+    auto fut = async(launch::async, []{ return; });
+    return 0;
+}
+
+void test_ThreadLimit_scoped() {
+    auto save = ThreadLimit::get();
+    {
+        ThreadLimit lim;
     }
-    err = setrlimit(RLIMIT_NPROC, &rlim);
-	require(err == 0) << "setrlimit(" << RLIMIT_NPROC << ", " << rlim << ") failed: " << strerror(errno);
-	TraceX(2, err, rlim);
-    err = getrlimit(RLIMIT_NPROC, &rlim);
-    TraceX(3, err, rlim);
+    auto after = ThreadLimit::get();
+    if (save != after)
+        log_error << "ThreadLimit is not restored: save: " << save << "; after: " << after;
+
 }
 
 int main() try {
     test();
-	{
-		ThreadLimit lim;
-	}
-	test_limit(5000);
-	test_threadLimit();
+    test_ThreadLimit_scoped();
+//	test_threadLimit();
 	test_promise();
-	test_promise2();
-	test_async_deferred();
+//	test_promise2();
+//	test_async_deferred();
+    test_ex();
     return 0;
 }
 //catch (const err::tr_error& e) {
