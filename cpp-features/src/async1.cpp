@@ -15,6 +15,14 @@ extern std::string Backtrace(int skip = 1);
 
 #define log_thread log_trace << '[' << std::this_thread::get_id() << "] "
 
+//ostream& operator<<(ostream& os, future_status x) {
+//    return os << (
+//        x == future_status::ready ? "ready"
+//        : x == future_status::timeout ? "timeout"
+//        : x == future_status::deferred ? "deferred"
+//        : "unknown");
+//}
+
 namespace {
 using namespace std::chrono;
 struct Timer {
@@ -92,6 +100,40 @@ void future_deferred_get() {
     cout << endl;
 }
 
+void future_deferred_wait() {
+    auto policy = std::launch::deferred;
+    log_thread << "Main thread, policy `deferred`: " << (int)policy;
+    Timer t;
+    {
+        auto fut = std::async(
+            policy,
+            [&t](auto delay) {
+                log_thread << "Worker starts now; time: " << t.elapsed();
+                std::this_thread::sleep_for(delay);
+                log_thread << "Worker finished; time: " << t.elapsed();
+            },
+            3s);
+        log_thread << "Main thread sleep for 1 s to allow worker first; time: " << t.elapsed();
+        std::this_thread::sleep_for(1s);
+        log_thread << "Main thread blocks at the future dtor until the shared state is ready; time: " << t.elapsed();
+        // launch::async policy: Does not block on the dtor
+        // launch::deferred is lasy: does not call the callback if there is no fut.get
+        log_thread << "Main thread is waiting for future::get(); time: " << t.elapsed();
+        log_thread << "future::valid: " << fut.valid() << "; time: " << t.elapsed();
+        log_thread << "run wait_for:";
+        auto status = fut.wait_for(1s);
+        log_thread << "status: " << status << "; time: " << t.elapsed();
+        log_thread << "run wait:";
+        fut.wait();
+        log_thread << "future::valid: " << fut.valid() << "; time: " << t.elapsed();
+        log_thread << "run get:";
+        fut.get();
+        log_thread << "future::valid: " << fut.valid() << "; time: " << t.elapsed();
+    }
+    log_thread << "Main thread unblocked now; time: " << t.elapsed();
+    cout << endl;
+}
+
 void future_deferred_dtor() {
     auto policy = std::launch::deferred;
     log_thread << "Main thread, policy `deferred`: " << (int)policy;
@@ -160,10 +202,11 @@ void future_async_wait_for() {
 
 int main() {
     cout << boolalpha;
-    future_async_dtor();
-    future_deferred_dtor();
-    future_deferred_get();
-    future_async_deferred_dtor();
-    future_async_wait_for();
+//    future_async_dtor();
+//    future_deferred_dtor();
+//    future_deferred_get();
+    future_deferred_wait();
+//    future_async_deferred_dtor();
+//    future_async_wait_for();
 	return 0;
 }
