@@ -57,11 +57,12 @@ namespace utils {
 class sync_base {
 #ifndef TRACE_NOSYNC
 private:
-    std::mutex& mtx_() {
-        static std::mutex m;
+    using Mtx = std::recursive_mutex;
+    Mtx& mtx_() {
+        static Mtx m;
         return m;
     }
-    std::lock_guard<std::mutex> lock_;
+    std::lock_guard<Mtx> lock_;
 public:
     sync_base() : lock_(mtx_()) {}
 #endif

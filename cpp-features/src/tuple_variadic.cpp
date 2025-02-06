@@ -6,7 +6,7 @@ using namespace std;
 
 #if (__cplusplus >= 201700)
 template <class ... Ts>
-void foo(Ts && ... inputs)
+void foo(Ts&& ... inputs)
 {
 	int i = 0;
 	([&] {		// Do things in your "loop" lambda
@@ -27,7 +27,7 @@ void bar()
 #else
 
 template <class ... Ts>
-void foo(Ts && ... inputs)
+void foo(Ts&& ... inputs)
 {
 	using unused = int[];
 	int i = 0;

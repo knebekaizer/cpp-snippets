@@ -15,7 +15,7 @@ add_executable(async async.cpp)
 add_executable(async1 async1.cpp)
 add_executable(async2 async2.cpp)
 
-add_executable(async_thinlock async_thinlock.cpp)
+#add_executable(async_thinlock async_thinlock.cpp)
 
 add_executable(booStringlWrapper
     booStringlWrapper.cpp
@@ -144,6 +144,7 @@ add_executable(variadic variadic_tmpl.cpp )
 
 add_executable(enum_array enum_array.cpp)
 add_executable(literals literals.cpp)
+add_executable(folding fold_expr.cpp)
 
 add_executable(tuple_apply tuple_apply.cpp)
 add_executable(tuple_variadic tuple_variadic.cpp)
@@ -161,7 +162,7 @@ add_executable(overload overload.cpp overload2.cpp)
 add_executable(regex regex.cpp)
 
 add_executable(strings strings.cpp)
-#add_executable(string_assign string_assign.cpp)
+add_executable(string_assign string_assign.cpp)
 
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
