@@ -8,7 +8,7 @@
 
 using namespace std;
 
-auto x = hash<string>(string("ghjk"));
+auto x = hash<string>()(string("ghjk"));
 #if (__cplusplus > 201703L) // __cpp_nontype_template_args >= 201911
 template <auto N>
 struct string_litteral {
@@ -163,7 +163,7 @@ enum class NoNum {}; // Empty
 template<typename T, T... index>
 constexpr enum NoNum s2e(const char* str, std::integer_sequence<T, index...> seq) {
 //	return static_cast<NoNum>(str[0] + str[1]); ok
-	return static_cast<NoNum>(hash<string>(string(str)));
+	return static_cast<NoNum>(hash<string>()(string(str)));
 	int found = -1;
     using unused = int[];
 

@@ -24,21 +24,44 @@ constexpr auto Tags<EValue> = cpp14_stubs::make_array(
 );
 using Num = EValue;
 
-
 enum class EValue { none, one, two, three};
 
 
 namespace details {
+template <typename E, typename T, T... index> constexpr E s2e(const char* str, std::integer_sequence<T, index...> seq);
+
+//template <typename E, typename T, T... index> constexpr E s2e(const char* str, std::integer_sequence<T, index...> seq) {
+//    constexpr T invalid = static_cast<T>(-1);
+//    T found = invalid;
+//    constexpr auto isValid = [invalid](T x) { return x != invalid; };
+//    (isValid(found = (std::get<index>(Tags<E>) == str) ? index : found) || ...);
+//    //	int x[found] = {};
+//    //	static_assert(found != invalid, "Unknown tag");
+//    return static_cast<E>(found);
+//}
+
+template <typename T> constexpr T invalid = static_cast<T>(-1);
+template <typename T> constexpr bool isValid(T x) { return x != invalid<T>; };
+
+
+template<class F, class A0>
+auto fold(F&&, A0&& a0) {
+    return std::forward<A0>(a0);
+}
+
+template<class F, class A0, class...As>
+auto fold(F&& f, A0&&a0, As&&...as) {
+    return f(std::forward<A0>(a0), fold(f, std::forward<As>(as)...));
+}
+
 template <typename E, typename T, T... index> constexpr E s2e(const char* str, std::integer_sequence<T, index...> seq) {
     constexpr T invalid = static_cast<T>(-1);
     T found = invalid;
-    constexpr auto isValid = [invalid](T x) { return x != invalid; };
-    (isValid(found = (std::get<index>(Tags<E>) == std::string_view(str)) ? index : found) || ...);
-    //	int x[found] = {};
-    //	static_assert(found != invalid, "Unknown tag");
+//    return (str == Tags<EValue>[1] ? EValue::one : (str == Tags<EValue>[2] ? EValue::two : EValue::none));
+//    [[maybe_unused]] constexpr auto isValid = [invalid](T x) { return x != invalid; };
+    (isValid(found = (std::get<index>(Tags<E>) == str) ? index : found) || ...);
     return static_cast<E>(found);
 }
-
 
 template <typename E> constexpr E s2e(const char* str) {
     return s2e<E>(str, std::make_integer_sequence<int, Tags<E>.size()>{});
@@ -191,7 +214,7 @@ std::ostream& operator<<(ostream& os, enum NoNum n) {
 
 template <EValue n>
 void bar() {
-    TraceX(n);
+    TraceX((int)n);
 }
 
 

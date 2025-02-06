@@ -145,6 +145,7 @@ add_executable(variadic variadic_tmpl.cpp )
 add_executable(enum_array enum_array.cpp)
 add_executable(literals literals.cpp)
 add_executable(literals2 literals2.cpp)
+add_executable(folding fold_expr.cpp)
 
 add_executable(tuple_apply tuple_apply.cpp)
 add_executable(tuple_variadic tuple_variadic.cpp)
