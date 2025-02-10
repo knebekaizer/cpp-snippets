@@ -180,7 +180,7 @@ SpacesInSquareBrackets: false
 # Kt https://kotlinlang.org/docs/reference/coding-conventions.html#formatting
 TabWidth: 4
 # Kt https://kotlinlang.org/docs/reference/coding-conventions.html#formatting
-UseTab: Never
+UseTab: ForIndentation
 
 PenaltyBreakAssignment: 2
 PenaltyBreakBeforeFirstCallParameter: 1
