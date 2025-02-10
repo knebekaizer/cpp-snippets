@@ -203,14 +203,12 @@ public:
 	static const auto RSRC = RLIMIT_NPROC;
 	static const rlim_t GUESS_ = 5000;
 #endif
-	ThreadLimit(rlim_t lim = GUESS_)
-		: save_(get_())
-	{
-        rlim_t rlim_cur = min(lim, save_.rlim_cur);
-//        TraceX(save_, rlim_cur);
+	ThreadLimit(rlim_t lim = GUESS_) : save_(get_()) {
+		rlim_t rlim_cur = min(lim, save_.rlim_cur);
+//		TraceX(save_, rlim_cur);
 		rlimit tmp{.rlim_cur = rlim_cur, .rlim_max = save_.rlim_max};
 		set_(tmp);
-        log_trace << "previous: " << save_ << "; current: " << get();
+//		log_trace << "previous: " << save_ << "; current: " << get();
 	}
 	~ThreadLimit() {
 		set_(save_);
@@ -241,23 +239,33 @@ private:
 
 };
 
-int test_ex() {
-#ifdef __QNX__
-    static const auto RSRC = RLIMIT_NTHR;
-//    static const rlim_t GUESS_ = 5;
-#else // Linux
-    static const auto RSRC = RLIMIT_NPROC;
-//    static const rlim_t GUESS_ = 5000;
-#endif
-    rlimit lim;
-    int err = getrlimit(RSRC, &lim);
-    if (err) { cerr << "getrlimit failed: " << strerror(errno) << endl; return(err); }
-    lim.rlim_cur = 5;
-    setrlimit(RSRC, &lim);
-    if (err) { cerr << "setrlimit failed: " << strerror(errno) << endl; return(err); }
+ostream& operator<<(ostream& os, const future_status s) {
+	return os << (s == future_status::ready ? "ready"
+	    : s == future_status::timeout ? "timeout"
+	    : s == future_status::deferred ? "deferred"
+		: "unknown");
 
-    auto fut = async(launch::async, []{ return; });
-    return 0;
+}
+
+void test_ThreadLimitException() {
+	try {
+		ThreadLimit lim(10);
+		auto fut = async(launch::async, [] { return; });
+		auto status = fut.wait_for(1s); // shall not reach here
+		log_trace << "fut.wait_for returns: " << status;
+	} catch (exception& e) {
+		log_trace << "Expected exception: " << e.what();
+	}
+
+	// however, when run with async | deferred it will run as deferred, instead of failure
+	try {
+		ThreadLimit lim(10);
+		auto fut = async(launch::async | launch::deferred, [] { this_thread::sleep_for(3s); });
+		auto status = fut.wait_for(1s);
+		log_trace << "fut.wait_for returns: " << status;
+	} catch (exception& e) {
+		log_trace << "Expected exception: " << e.what();
+	}
 }
 
 void test_ThreadLimit_scoped() {
@@ -272,19 +280,14 @@ void test_ThreadLimit_scoped() {
 }
 
 int main() try {
-    test();
-    test_ThreadLimit_scoped();
-//	test_threadLimit();
+	test();
+//	test_ThreadLimit_scoped();
 	test_promise();
-//	test_promise2();
-//	test_async_deferred();
-    test_ex();
-    return 0;
+	//	test_promise2();
+	//	test_async_deferred();
+	test_ThreadLimitException();
+	return 0;
 }
-//catch (const err::tr_error& e) {
-//	log_error << "[FAILED] " << e.what() << "\nat " << e.where();
-//	return -1;
-//}
 catch (const std::exception& e) {
 	log_error << "[FAILED] " << e.what();
 	return -1;
