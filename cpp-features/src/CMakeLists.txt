@@ -4,11 +4,11 @@
 #include_directories(ranges ${RANGES_INCLUDE})
 
 add_executable(cpp-features
-    main.cpp
-    structured.cpp
-    functional.cpp
-    scoped.cpp
-    ranges_2.cpp
+        main.cpp
+        structured.cpp
+        functional.cpp
+        scoped.cpp
+        ranges_2.cpp
 )
 
 add_executable(async async.cpp)
@@ -18,51 +18,51 @@ add_executable(async2 async2.cpp)
 #add_executable(async_thinlock async_thinlock.cpp)
 
 add_executable(booStringlWrapper
-    booStringlWrapper.cpp
+        booStringlWrapper.cpp
 )
 
 add_executable(deleter
-    deleter.cpp
+        deleter.cpp
 )
 
 add_executable(semaphore
-    semaphore.cpp
+        semaphore.cpp
 )
 
 add_executable(ranges
-    ranges.cpp
+        ranges.cpp
 )
 
 add_executable(concept
-    concept.cpp
+        concept.cpp
 )
 
 add_executable(testSpan
-    spanning.cpp
+        spanning.cpp
 )
 
 add_executable(testPolicy
-    policy.cpp
+        policy.cpp
 )
 
 add_executable(testShared
-    shared_ptr.cpp
+        shared_ptr.cpp
 )
 
 add_executable(random
-    random.cpp
+        random.cpp
 )
 
 add_executable(lookup
-    lookup.cpp
+        lookup.cpp
 )
 
 add_executable(exception
-    ExceptionSafety.cpp
+        ExceptionSafety.cpp
 )
 
 add_executable(misc
-    misc.cpp
+        misc.cpp
 )
 
 add_executable(factory
@@ -70,46 +70,46 @@ add_executable(factory
 )
 
 add_executable(bitset
-    bitset.cpp
+        bitset.cpp
 )
 
 add_executable(bitmap
-    bitmap.cpp
+        bitmap.cpp
 )
 
 add_executable(ringbuffer
-    ringbuffer.cpp
+        ringbuffer.cpp
 )
 
 add_executable(std-ranges
-    std-ranges.cpp
+        std-ranges.cpp
 )
 
 add_executable(layout
-    layout.cpp
+        layout.cpp
 )
 
 add_executable(WrapOut
-    WrapOut.cpp
+        WrapOut.cpp
 )
 
 add_executable(ranges_2
-    ranges_2.cpp
+        ranges_2.cpp
 )
 
 add_executable(sfinae sfinae.cpp)
 
 add_executable(par_algo
-    par_algo.cpp
+        par_algo.cpp
 )
 
 add_executable(par_algo_none
-    par_algo.cpp
+        par_algo.cpp
 )
 target_compile_definitions(par_algo PUBLIC "-DPARALLEL")
 
 add_executable(deque_dtor
-    deque_dtor.cpp
+        deque_dtor.cpp
 )
 
 add_executable(extern_tmpl
@@ -140,10 +140,11 @@ add_executable(float_random
 add_executable(set_algo set_algorithm.cpp)
 
 # meta...
-add_executable(variadic variadic_tmpl.cpp )
+add_executable(variadic variadic_tmpl.cpp)
 
 add_executable(enum_array enum_array.cpp)
 add_executable(literals literals.cpp)
+add_executable(literal2 literal2.cpp)
 add_executable(folding fold_expr.cpp)
 
 add_executable(tuple_apply tuple_apply.cpp)
@@ -176,4 +177,4 @@ add_executable(string_assign string_assign.cpp)
 if (CMAKE_CXX_STANDARD EQUAL "17")
     set_source_files_properties(bitmap.cpp PROPERTIES COMPILE_FLAGS -std=c++20)
     message(STATUS "Set std=c++20 for bitmap.cpp")
-endif()
+endif ()
