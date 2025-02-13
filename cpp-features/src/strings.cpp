@@ -188,10 +188,49 @@ void test_buffer_access() {
     print_secret(secretStr);
 }
 
+/**
+ * SSO = Short String Optimization
+ * no swap() function invalidates any references, pointers, or iterators referring to the elements of the
+ * containers being swapped. [ Note: The end() iterator does not refer to any element, so it may be
+ * invalidated. —end note ]
+ */
+void test_SSO() {
+	{
+		string s1 = "123";
+		auto p = &s1[1];
+		string s2(std::move(s1));
+		TraceX((p == &s2[1]));
+	}
+	{
+		string s1(100, 'a');
+		auto p = &s1[1];
+		string s2(std::move(s1));
+		TraceX((p == &s2[1]));
+	}
+	{
+		string s1 = "123";
+		auto p = &s1[1];
+		TraceX(1, *p);
+		string s2("456");
+		s1.swap(s2);
+		TraceX(2, *p);
+	}
+	{
+		string s1 = "123";
+		auto p = &s1[1];
+		TraceX(1, *p);
+		string s2(100, 'a');
+		s1.swap(s2);
+		TraceX(2, *p);
+	}
+}
+
 int main() {
     cout << boolalpha;
     test_alloc();
     test_buffer();
     test_buffer_access();
+	check_allocator<std::allocator<char>>();
+	test_SSO();
     return 0;
 }
