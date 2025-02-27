@@ -529,11 +529,4 @@ int main() {
 
 	test_typeinfo();
 	return 0;
-
-    try {
-
-    }
-    catch (std::out_of_range& e1) {
-        throw std::logic_error(e1);
-    }
 }
