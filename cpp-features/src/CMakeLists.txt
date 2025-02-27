@@ -164,6 +164,8 @@ add_executable(regex regex.cpp)
 add_executable(strings strings.cpp)
 #add_executable(string_assign string_assign.cpp)
 
+add_executable(copy_elision copy_elision.cpp)
+
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
 
