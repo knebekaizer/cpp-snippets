@@ -279,13 +279,59 @@ void test_ThreadLimit_scoped() {
 
 }
 
+struct Uniq {
+	int& count;
+	explicit Uniq(int& c) : count(c) { ++count; }
+	~Uniq() { --count; }
+	Uniq() = delete;
+	Uniq(const Uniq&) = delete;
+	Uniq(Uniq&&) = delete;
+};
+
+struct Runnable {
+	unique_ptr<Uniq> uniq;
+	chrono::steady_clock::duration delay{3s};
+	void operator()() { this_thread::sleep_for(delay); }
+	explicit Runnable(unique_ptr<Uniq>&& u) : uniq{std::move(u)} { TraceX(uniq->count); }
+	Runnable(Runnable&&) = default;
+	Runnable& operator=(Runnable&&) = default;
+	~Runnable() { if (uniq) TraceX(uniq->count); }
+};
+
+void test_functor() {
+	int count = 0;
+	{
+		auto fut = async(launch::async, Runnable(make_unique<Uniq>(count)));
+		this_thread::sleep_for(1ms);
+		TraceX(count);
+	}
+	TraceX(count);
+
+	struct C {
+		C() { TraceF;}
+		~C() { TraceF;}
+	};
+	auto prom = make_unique<promise<C>>();
+	auto fut = prom->get_future();
+	TraceX(1);
+	prom->set_value(C());
+	TraceX(2);
+	prom.reset();
+	TraceX(21);
+	{
+		fut.get();
+	}
+	TraceX(3);
+}
+
 int main() try {
 	test();
 //	test_ThreadLimit_scoped();
 	test_promise();
 	//	test_promise2();
 	//	test_async_deferred();
-	test_ThreadLimitException();
+//	test_ThreadLimitException();
+	test_functor();
 	return 0;
 }
 catch (const std::exception& e) {
