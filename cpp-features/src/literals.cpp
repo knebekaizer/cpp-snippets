@@ -40,7 +40,7 @@ template <typename T, T... index> constexpr NoNum s2e(const char* str, std::inte
 template <typename Str>
 constexpr size_t hashString(const Str& toHash)
 {
-	static_assert(sizeof(size_t) == 8);
+	static_assert(sizeof(size_t) == 8, "FNV algorithm requires 64-bit size_t");
 	// FNV-1a 64 bit algorithm
 	size_t result = 0xcbf29ce484222325; // FNV offset basis
 	for (auto const* p = toHash; *p; ++p  ) { const char c = *p;
@@ -57,18 +57,15 @@ constexpr int s2e_unfold(const char str[]) {
 
 template <typename T, class...Ts>
 constexpr T s2e_unfold(const char* str, T&& i, Ts&&...as) {
-//template <typename Str, typename T, class...Ts>
-//constexpr T s2e_unfold(const Str& str, T&& i, Ts&&...as) {
 //	if (str == NumS[i]) return i;
 	if (hashString(str) == hashString(NumS[i])) return i;
-//	if (hashString(str) == 0) return i;
-//	if (str == nullptr) return i;
-//	if (std::get<0>(NumS) == NumS[i]) return i; // ok
 	return s2e_unfold(str, std::forward<Ts>(as)...);
 }
 
 template <typename Str, typename T, T... index>
 constexpr NoNum s2e(const Str& str, std::integer_sequence<T, index...> seq) {
+//	constexpr T found = s2e_unfold(str, index...);
+	static_assert(false, "Invalid tag");
 	return static_cast<NoNum>(s2e_unfold(str, index...));
 }
 
