@@ -59,6 +59,48 @@ void test_revert(const T1& first, const T2& second) {
 	cout << endl;
 }
 
+
+template <class T, typename = void>
+struct Foo;
+
+template <class T>
+struct Foo<T, enable_if_t<is_integral<T>::value>> {
+	void operator()() { log_trace << "integral type"; }
+};
+
+template <class T>
+struct Foo<T, enable_if_t<!is_integral<T>::value>> {
+	void operator()() { log_trace << "non-integral type"; }
+};
+
+
+enum class E : unsigned {none, one, two, three};
+ostream& operator<<(ostream& os, E e) {
+	static constexpr const char* a[] = {"none", "one", "two", "three"};
+	auto i = underlying_type_t<E>(e);
+	assert(i < sizeof(a) / sizeof(*a));
+	return os << a[i];
+}
+
+template <E e, typename = void>
+struct Bar;
+
+template <E e>
+struct Bar<e, enable_if_t<e == E::none>> {
+	void operator()() { TraceX(1, e); }
+};
+
+template <E e>
+struct Bar<e, enable_if_t<e != E::none>> {
+	void operator()() { TraceX(2, e); }
+};
+
+//template <E e, enable_if_t<e == E::none, bool> = true>
+//struct Foo {
+//	void operator()() { TraceX(1, e); }
+//};
+
+
 /// has_member test: 1st way
 template <typename Container>
 struct has_push_back {
@@ -121,5 +163,10 @@ int main() {
 	static_assert(is_printable<B>::value, "Printable check");
 	log_trace << "B is printable: " << B();
 
+	Foo<int>()();
+	Foo<float>()();
+
+	Bar<E::none>()();
+	Bar<E::one>()();
 	return 0;
 }
