@@ -61,6 +61,26 @@ ostream& operator<<(ostream& os, const tuple<Args...>&& tup) {
 	return details::printTuple(os, tup, std::make_index_sequence<size>{});
 }
 
+template <typename T, typename ...Args> class Combo;
+class Pancake;
+
+template <typename T, typename ...Args>
+auto LastParamType(Combo<T, Args...>&& c) {
+	using Tuple = tuple<Args...>;
+	using Last = typename std::tuple_element<std::tuple_size_v<Tuple> - 1, Tuple>::type;
+	return is_same<Last, Pancake>::value;
+}
+
+template <class Combo1, class Combo2, typename std::enable_if<!std::is_same<LastParamType(Combo1),LastParamType<Combo2>>::value, bool>::type = true>
+auto add(Combo1&& c1, Combo c2) {
+
+}
+
+template <class Combo1, typename T, typename ...Args>
+auto operator+(Combo1&& c1, Combo<T, Args...>&& c2) {
+	return add(c1, c2);
+}
+
 int main() {
 //	printAll(1,2.0, "wertyu");
 	cout << "Tuple: " << make_tuple(1,2.0, "wertyu") << endl;
