@@ -489,6 +489,8 @@ void test_search() {
 
 
 int main() {
+	// string<const char> s; // error: multiple overloads of '_S_copy_chars'
+
 	shared();
 	shared2();
 	string_test();
