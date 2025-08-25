@@ -147,6 +147,33 @@ void test_promise2() {
 	TraceX(fut.get(), fut.valid());
 }
 
+ostream& operator<<(ostream& os, const struct  S&);
+struct S {
+	static int uniq;
+	int id;
+	S() : id(++uniq) { TraceX(id); }
+	S(S&& x) : id(x.uniq) { log_trace << "move> " << *this; }
+	~S() { TraceX(id); }
+};
+int S::uniq = 0;
+ostream& operator<<(ostream& os, const S& r) { return os << r.id; }
+
+auto makeFuture() {
+	auto prom = std::promise<S>{};
+	{
+//		auto fut = prom.get_future();
+	}
+	prom.set_value(S());
+	auto fut = prom.get_future();
+	TraceX(fut.valid());
+	return fut;
+}
+
+void test_makeFuture() {
+	auto fut = makeFuture();
+	auto get = fut.get();
+	TraceX(get);
+}
 
 struct R {
 	static atomic<int> g_count;
@@ -330,8 +357,7 @@ int main() try {
 	test_promise();
 	//	test_promise2();
 	//	test_async_deferred();
-//	test_ThreadLimitException();
-	test_functor();
+	test_ThreadLimitException();
 	return 0;
 }
 catch (const std::exception& e) {
