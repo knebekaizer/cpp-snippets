@@ -528,5 +528,8 @@ int main() {
     test_search();
 
 	test_typeinfo();
+
+	// nullptr_t a, b;
+	// if (a < b) log_trace << "ok"; // error: ordered comparison of pointer with integer zero (‘std::nullptr_t’ and ‘std::nullptr_t’)
 	return 0;
 }
