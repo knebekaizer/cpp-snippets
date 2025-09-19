@@ -37,7 +37,24 @@ void test_match(const std::string& in, const std::string& re) {
 		std::cout << "input=[" << in << "], regex=[" << re << "]: NO MATCH\n";
 }
 
+// #include <regex>
+// #include <iostream>
+
+int test_tl()
+{
+	using namespace std::regex_constants;
+	std::regex e {"\\b.*"};
+	const std::string s {"that that"};
+	match_flag_type flags = match_not_bow;
+
+	bool r = std::regex_search(s.begin(), s.end(), e, flags);
+	std::cout << "Result: " << r << std::endl;
+	return 0;
+}
+
 int main() {
+	test_tl();
+	return 0;
 	// Alternatives
 	test_search("abcdef", "abc|def");
 	test_search("abc", "ab|abc"); // left Alternative matched first
