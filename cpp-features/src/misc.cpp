@@ -487,6 +487,7 @@ void test_search() {
     TraceX(string_view(a.begin(), e));
 }
 
+#include <sys/resource.h>
 
 int main() {
 	// string<const char> s; // error: multiple overloads of '_S_copy_chars'
