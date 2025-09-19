@@ -2,6 +2,7 @@
 // Created by Vladimir on 2024-06-12.
 //
 
+#include "trace.hpp"
 #include <tuple>
 #include <iostream>
 
@@ -61,29 +62,52 @@ ostream& operator<<(ostream& os, const tuple<Args...>&& tup) {
 	return details::printTuple(os, tup, std::make_index_sequence<size>{});
 }
 
-template <typename T, typename ...Args> class Combo;
-class Pancake;
+template <typename T, typename ...Args> class Combo {};
 
 template <typename T, typename ...Args>
-auto LastParamType(Combo<T, Args...>&& c) {
+constexpr auto getLastParamType(Combo<T, Args...>* c) {
 	using Tuple = tuple<Args...>;
 	using Last = typename std::tuple_element<std::tuple_size_v<Tuple> - 1, Tuple>::type;
-	return is_same<Last, Pancake>::value;
+	return (Last*)nullptr; // is_same<Last, P>::value;
 }
 
-template <class Combo1, class Combo2, typename std::enable_if<!std::is_same<LastParamType(Combo1),LastParamType<Combo2>>::value, bool>::type = true>
-auto add(Combo1&& c1, Combo c2) {
+template <typename Combo>
+struct LastParam  {
+//	std::conditional_t<isLastParamType<Pancake, Combo>, , B1> {};
+//	using type = std::invoke_result_t<decltype(foo<E>), E>; getLastParamType((Combo*)nullptr);
+//	using type = decltype(getLastParamType(std::declval<Combo>()));
+	using type = decltype(*getLastParamType((Combo*)nullptr));
+};
 
+template <typename First, class Combo1, class Combo2, typename std::enable_if<
+        !std::is_same<typename LastParam<Combo1>::type, First>::value, bool>::type = true>
+auto add(const Combo1& c1, const Combo2& c2) {
+//	TraceX(typeid(typename LastParam<Combo1>::type).name(), typeid(First).name());
+	return true; // Fixme
 }
 
-template <class Combo1, typename T, typename ...Args>
-auto operator+(Combo1&& c1, Combo<T, Args...>&& c2) {
-	return add(c1, c2);
+template <class Combo1, typename First, typename ...Args>
+auto operator+(const Combo1& a, const Combo<First, Args...>& b) {
+	using type = decltype(getLastParamType((Combo1*)nullptr));
+	TraceX(typeid(type).name());
+	return add<First>(a, b);
+}
+
+void testCombo() {
+	class P {}; // Pancake;
+	class C {}; // Caviar;
+
+	Combo<P,C,P> c1;
+	Combo<C, P> c2;
+	[[maybe_unused]] auto x1 = c1 + c2; // ok
+	Combo<P, C> c3;
+	[[maybe_unused]] auto x2 = c1 + c3; // Fails
 }
 
 int main() {
 //	printAll(1,2.0, "wertyu");
 	cout << "Tuple: " << make_tuple(1,2.0, "wertyu") << endl;
 	cout << "Done." << endl;
+	testCombo();
 	return 0;
 }

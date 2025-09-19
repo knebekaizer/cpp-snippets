@@ -140,6 +140,56 @@ ostream& operator<<(std::ostream& os, T const& x) {
 	return x.print(os);
 }
 
+// --------------
+
+template <typename T, typename ...Args> class Combo {};
+
+template <typename T, typename ...Args>
+constexpr auto getLastParamType(Combo<T, Args...>* c) {
+	using Tuple = tuple<Args...>;
+//	if constexpr (std::tuple_size_v<Tuple> > 0) {
+		using Last = typename std::tuple_element<std::tuple_size_v<Tuple> - 1, Tuple>::type;
+		return (Last*)nullptr;
+//	} else {
+//		return (T*)nullptr;
+//	}
+}
+
+template <typename Combo>
+struct LastParam  {
+	using type = decltype(*getLastParamType((Combo*)nullptr));
+};
+
+template <typename First, class Combo1, class Combo2, typename std::enable_if<
+		!std::is_same<typename LastParam<Combo1>::type, First>::value, bool>::type = true>
+auto add(const Combo1& c1, const Combo2& c2) {
+	TraceX(typeid(typename LastParam<Combo1>::type).name(), typeid(First).name());
+	bool isSame = std::is_same<typename LastParam<Combo1>::type, First>::value;
+	TraceX(isSame);
+	return true; // TODO
+}
+
+template <class Combo1, typename First, typename ...Args>
+auto operator+(const Combo1& a, const Combo<First, Args...>& b) {
+	return add<First>(a, b);
+}
+
+void testCombo() {
+	class P {}; // Pancake;
+	class C {}; // Caviar;
+
+	Combo<P,C,P> c1;
+	Combo<C, P> c2;
+	[[maybe_unused]] auto x1 = c1 + c2; // ok
+//	Combo<P>{} + Combo<C>{};
+	[[maybe_unused]] Combo<P, C> c3;
+	[[maybe_unused]] auto x2 = c1 + c3; // Fails, as expected
+//	Combo<P,P>{} + Combo<C,C>{}; // ok
+//	[[maybe_unused]] auto x4 = Combo<P,C>{} + Combo<C,P>{}; // ok
+}
+
+// ----------------------
+
 
 int main() {
 	test<int,long>();
@@ -168,5 +218,7 @@ int main() {
 
 	Bar<E::none>()();
 	Bar<E::one>()();
+
+	testCombo();
 	return 0;
 }
