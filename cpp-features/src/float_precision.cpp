@@ -114,7 +114,135 @@ void typesRepresentation() {
     TraceX(numeric_limits<float>::digits);
 }
 
+
+#include <iostream>
+#include <complex>
+#include <cmath>
+#include <limits>
+
+using T = long double;
+
+template <class _Tp>
+std::complex<_Tp> test_division_operator(const std::complex<_Tp>& __z, const std::complex<_Tp>& __w) {
+  _Tp a = __z.real();
+  _Tp b = __z.imag();
+  _Tp c = __w.real();
+  _Tp d = __w.imag();
+
+  std::cout << "=== Traditional Division Test ===" << std::endl;
+  std::cout << "Input: (" << a << " + " << b << "i) / (" << c << " + " << d << "i)" << std::endl;
+
+  _Tp den, r, re, im;
+
+  if (fabs(c) < fabs(d))
+  {
+    std::cout << "Using fabs(c) < fabs(d) branch" << std::endl;
+    r = c / d;
+    std::cout << "r = c / d = " << c << " / " << d << " = " << r << std::endl;
+    den = (c * r) + d;
+    std::cout << "den = (c * r) + d = (" << c << " * " << r << ") + " << d << " = " << den << std::endl;
+
+    _Tp numerator_re = (a * r) + b;
+    _Tp numerator_im = (b * r) - a;
+    std::cout << "numerator_re = (a * r) + b = (" << a << " * " << r << ") + " << b << " = " << numerator_re << std::endl;
+    std::cout << "numerator_im = (b * r) - a = (" << b << " * " << r << ") - " << a << " = " << numerator_im << std::endl;
+
+    re = numerator_re / den;
+    im = numerator_im / den;
+  }
+  else
+  {
+    std::cout << "Using fabs(c) >= fabs(d) branch" << std::endl;
+    r = d / c;
+    std::cout << "r = d / c = " << d << " / " << c << " = " << r << std::endl;
+    den = (d * r) + c;
+    std::cout << "den = (d * r) + c = (" << d << " * " << r << ") + " << c << " = " << den << std::endl;
+
+    _Tp numerator_re = a + (b * r);
+    _Tp numerator_im = b - (a * r);
+    std::cout << "numerator_re = a + (b * r) = " << a << " + (" << b << " * " << r << ") = " << numerator_re << std::endl;
+    std::cout << "numerator_im = b - (a * r) = " << b << " - (" << a << " * " << r << ") = " << numerator_im << std::endl;
+
+    re = numerator_re / den;
+    im = numerator_im / den;
+  }
+
+  std::cout << "Initial result: re = " << re << ", im = " << im << std::endl;
+
+  if (std::isnan(re) && std::isnan(im))
+  {
+    std::cout << "Both re and im are NaN, checking special cases..." << std::endl;
+    if (den == 0.0 && (!std::isnan(a) || !std::isnan(b)))
+    {
+      std::cout << "Special case: denominator is zero with finite numerator" << std::endl;
+      re = std::copysign(INFINITY, c) * a;
+      im = std::copysign(INFINITY, c) * b;
+      std::cout << "After special case 1: re = " << re << ", im = " << im << std::endl;
+    }
+    else if ((std::isinf(a) || std::isinf(b)) && std::isfinite(c) && std::isfinite(d))
+    {
+      std::cout << "Special case: infinite numerator with finite denominator" << std::endl;
+      a = std::copysign(std::isinf(a) ? 1 : 0, a);
+      b = std::copysign(std::isinf(b) ? 1 : 0, b);
+      re = INFINITY * (a * c + b * d);
+      im = INFINITY * (b * c - a * d);
+      std::cout << "After special case 2: re = " << re << ", im = " << im << std::endl;
+    }
+    else if ((std::isinf(c) || std::isinf(d)) && std::isfinite(a) && std::isfinite(b))
+    {
+      std::cout << "Special case: infinite denominator with finite numerator" << std::endl;
+      c = std::copysign(std::isinf(c) ? 1 : 0, c);
+      d = std::copysign(std::isinf(d) ? 1 : 0, d);
+      re = 0.0 * (a * c + b * d);
+      im = 0.0 * (b * c - a * d);
+      std::cout << "After special case 3: re = " << re << ", im = " << im << std::endl;
+    }
+    else
+    {
+      std::cout << "No special case matched, keeping NaN values" << std::endl;
+    }
+  }
+  else
+  {
+    std::cout << "No NaN handling needed" << std::endl;
+  }
+
+  std::cout << "Final result: (" << re << " + " << im << "i)" << std::endl;
+  std::cout << "==================================" << std::endl;
+
+  return std::complex<_Tp>(re, im);
+}
+
+int test_complex() {
+    std::cout << "Testing Complex Division Operator" << std::endl;
+    std::cout << "=================================" << std::endl;
+
+    // Test case 1: Normal values
+    std::complex<T> c1(3.0L, 4.0L);
+    std::complex<T> c2(1.0L, 2.0L);
+
+    std::cout << "\nTest 1: Normal values" << std::endl;
+    auto result1_custom = test_division_operator(c1, c2);
+    auto result1_std = c1 / c2;
+    std::cout << "Custom result: " << result1_custom << std::endl;
+    std::cout << "Std result:    " << result1_std << std::endl;
+
+    // Test case 2: Extreme values (like in your test)
+    std::complex<T> c3(-42.0L, -1.18973e+4932L);
+    std::complex<T> c4(-1.18973e+4932L, -42.0L);
+
+    std::cout << "\nTest 2: Extreme values" << std::endl;
+    auto result2_custom = test_division_operator(c3, c4);
+    auto result2_std = c3 / c4;
+    std::cout << "Custom result: " << result2_custom << std::endl;
+    std::cout << "Std result:    " << result2_std << std::endl;
+
+    return 0;
+}
+
 int main() {
+	test_complex();
+	return 0;
 //    typesRepresentation();
     testDouble();
     testF();
@@ -123,3 +251,4 @@ int main() {
     }
     return 0;
 }
+
