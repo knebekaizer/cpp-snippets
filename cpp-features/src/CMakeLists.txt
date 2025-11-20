@@ -166,6 +166,7 @@ add_executable(strings strings.cpp)
 
 add_executable(copy_elision copy_elision.cpp)
 add_executable(rlimits rlimits.cpp)
+add_executable(initialization initialization.cpp)
 
 #set(USER_HOME $ENV{HOME})
 #set(BOOST_INCLUDE "${USER_HOME}/work/3d/boost_1_78_0")
