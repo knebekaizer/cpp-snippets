@@ -65,6 +65,12 @@ int test_RepeatMatcher() {
 	const std::regex e2 {pattern, regex_constants::extended};
 	r = std::regex_match(s, e2);
 	std::cout << "Result extended: " << r << std::endl;
+
+	r = std::regex_match(s, regex(pattern, egrep));
+	std::cout << "Result egrep: " << r << std::endl;
+
+	r = std::regex_match(s, regex(pattern, awk));
+	std::cout << "Result awk: " << r << std::endl;
 	return 0;
 
 }
