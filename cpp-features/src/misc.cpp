@@ -487,6 +487,17 @@ void test_search() {
     TraceX(string_view(a.begin(), e));
 }
 
+
+// Template ctor vs. default copy ctor
+template <typename T> struct S0 {
+	S0() = default;
+	template <class U> S0(const S0<U>&) noexcept { log_trace << "S0(const S0<U>&)"; }
+};
+void test_tmpl_vs_implicit() {
+	S0<int> x;
+	S0<double> y(x);
+}
+
 #include <sys/resource.h>
 
 int main() {
@@ -534,5 +545,7 @@ int main() {
 
 	// nullptr_t a, b;
 	// if (a < b) log_trace << "ok"; // error: ordered comparison of pointer with integer zero (‘std::nullptr_t’ and ‘std::nullptr_t’)
+
+	test_tmpl_vs_implicit();
 	return 0;
 }

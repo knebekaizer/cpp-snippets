@@ -228,8 +228,12 @@ int test_complex() {
     std::cout << "Std result:    " << result1_std << std::endl;
 
     // Test case 2: Extreme values (like in your test)
-    std::complex<T> c3(-42.0L, -1.18973e+4932L);
-    std::complex<T> c4(-1.18973e+4932L, -42.0L);
+//    std::complex<T> c3(-42.0L, -1.18973e+4932L);
+	TraceX(sizeof(T));
+	TraceX(numeric_limits<T>::lowest());
+    std::complex<T> c3(-42.0L, numeric_limits<T>::lowest());
+//    std::complex<T> c4(-1.18973e+4932L, -42.0L);
+    std::complex<T> c4(numeric_limits<T>::lowest(), -42.0L);
 
     std::cout << "\nTest 2: Extreme values" << std::endl;
     auto result2_custom = test_division_operator(c3, c4);
