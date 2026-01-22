@@ -40,6 +40,7 @@ void test_match(const std::string& in, const std::string& re) {
 // #include <regex>
 // #include <iostream>
 
+// Test match_not_bow
 int test_tl()
 {
 	using namespace std::regex_constants;
@@ -52,8 +53,25 @@ int test_tl()
 	return 0;
 }
 
+int test_RepeatMatcher() {
+	using namespace std::regex_constants;
+	string pattern = R"~(((aaa)|(bbb)){2}\2\3)~";
+	TraceX(pattern);
+	const std::regex e {pattern, regex_constants::ECMAScript};
+	const std::string s {"aaabbbaaabbb"};
+	bool r = std::regex_match(s, e);
+	std::cout << "Result ECMAScript: " << r << std::endl;
+
+	const std::regex e2 {pattern, regex_constants::extended};
+	r = std::regex_match(s, e2);
+	std::cout << "Result extended: " << r << std::endl;
+	return 0;
+
+}
+
 int main() {
 	test_tl();
+	test_RepeatMatcher();
 	return 0;
 	// Alternatives
 	test_search("abcdef", "abc|def");
