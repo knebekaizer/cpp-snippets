@@ -487,6 +487,38 @@ void test_search() {
     TraceX(string_view(a.begin(), e));
 }
 
+
+namespace my {
+extern "C" void val_log_flush(const char* buf) {
+	// set breakpoint here
+	printf("%s\n", buf);
+}
+
+class cout {
+private:
+	std::ostringstream buf_;
+
+public:
+	// Upon destruction, store the log messages in the global buffer
+	~cout() {
+		val_log_flush(buf_.str().c_str());
+	}
+
+	// Stream insertion operator to add content to the logger
+	template <typename T>
+		cout& operator<<(const T& x) {
+		buf_ << x;
+		return *this;
+	}
+	template<typename _CharT, typename _Traits>
+		cout&
+		operator<<(std::basic_ostream<_CharT, _Traits>& (*__pf)(std::basic_ostream<_CharT, _Traits>&)) {
+		buf_ << __pf;
+		return *this;
+	}
+};
+
+}
 #include <sys/resource.h>
 
 int main() {
