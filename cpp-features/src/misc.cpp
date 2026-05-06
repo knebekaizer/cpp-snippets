@@ -494,35 +494,71 @@ extern "C" void val_log_flush(const char* buf) {
 	printf("%s\n", buf);
 }
 
-class cout {
+class Logger {
 private:
 	std::ostringstream buf_;
 
 public:
 	// Upon destruction, store the log messages in the global buffer
-	~cout() {
+	~Logger() {
 		val_log_flush(buf_.str().c_str());
 	}
 
 	// Stream insertion operator to add content to the logger
 	template <typename T>
-		cout& operator<<(const T& x) {
+		Logger& operator<<(const T& x) {
 		buf_ << x;
 		return *this;
 	}
 	template<typename _CharT, typename _Traits>
-		cout&
-		operator<<(std::basic_ostream<_CharT, _Traits>& (*__pf)(std::basic_ostream<_CharT, _Traits>&)) {
-		buf_ << __pf;
+		Logger&
+		operator<<(std::basic_ostream<_CharT, _Traits>& (*pf)(std::basic_ostream<_CharT, _Traits>&)) {
+		buf_ << pf;
 		return *this;
 	}
+
+	typedef std::ostream& (*PF)(std::ostream&);
+	Logger&
+	operator<<(std::ostream& (*pf)(std::ostream&)) {
+		if (pf == (PF)std::endl) {  // -fpermissive ?
+			log_trace << "std::endl";
+		} else if (pf == (PF)std::flush) {
+			log_trace << "std::flush";
+		}
+		buf_ << pf;
+		return *this;
+	}
+
 };
 
+Logger cout;
 }
-#include <sys/resource.h>
+
+void test_logger() {
+	my::cout << "bla-bla " << 1234 << std::endl;
+	my::cout << std::flush;
+}
+
+void test_stupid() {
+	auto x = std::string("0" + std::to_string(42) + "Hello");
+	TraceX(x);
+	auto s = std::to_string(42);
+}
+
+void foo(int i) { TraceX(i); }
+#define foo(i) { TraceX(i); }
+void test_func_vs_macro() {
+	log_trace << "Macro: ";
+	foo(42);
+	log_trace << "Function: ";
+	(foo)(42);
+}
 
 int main() {
 	// string<const char> s; // error: multiple overloads of '_S_copy_chars'
+	test_func_vs_macro();
+	test_stupid();
+	test_logger(); return 0;
 
 	shared();
 	shared2();
