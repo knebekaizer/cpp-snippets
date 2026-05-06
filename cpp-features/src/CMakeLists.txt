@@ -61,9 +61,8 @@ add_executable(exception
         ExceptionSafety.cpp
 )
 
-add_executable(misc
-        misc.cpp
-)
+add_executable(misc  misc.cpp)
+target_compile_options(misc PRIVATE "-fpermissive")
 
 add_executable(factory
         factory.cpp factory.hpp factory_impl.cpp
