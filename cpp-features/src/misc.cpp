@@ -487,7 +487,6 @@ void test_search() {
     TraceX(string_view(a.begin(), e));
 }
 
-
 // Template ctor vs. default copy ctor
 template <typename T> struct S0 {
 	S0() = default;
@@ -498,10 +497,42 @@ void test_tmpl_vs_implicit() {
 	S0<double> y(x);
 }
 
+
+// template member overloading
+template <typename _T1, typename _T2> struct Foo {
+	template <typename _U1, typename _U2> void assign(Foo<_U1, _U2>);
+	template <typename _U1> void assign(Foo<_U1, _T2>);
+	template <typename _U2> void assign(Foo<_T1, _U2>);
+	_T1 x;
+	_T2 y;
+};
+template<typename _T1, typename _T2>
+ostream& operator<<(ostream& os, const Foo<_T1, _T2>& f) { return os << "{" << f.x << ", " << f.y << "}"; }
+
+template <typename _T1, typename _T2> 
+template <typename _U1, typename _U2>
+void Foo<_T1,_T2>::assign(Foo<_U1, _U2> other) { x = other.x; y = other.y; }
+
+template <typename _T1, typename _T2> 
+template <typename _U1>
+void Foo<_T1,_T2>::assign(Foo<_U1, _T2> other) { x = other.x; }
+
+template <typename _T1, typename _T2> 
+template <typename _U1>
+void Foo<_T1,_T2>::assign(Foo<_T1, _U1> other) { y = other.y; }
+
+void test_overload() {
+	Foo<long, long> foo{0, 0}; TraceX(foo);
+	foo.assign(Foo<int, int>{1, 1}); TraceX(foo);
+	foo.assign(Foo<long, int>{2, 2}); TraceX(foo);
+	foo.assign(Foo<int, long>{3, 3}); TraceX(foo);
+}
+
 #include <sys/resource.h>
 
 int main() {
 	// string<const char> s; // error: multiple overloads of '_S_copy_chars'
+	test_overload(); return 0;
 
 	shared();
 	shared2();
@@ -545,7 +576,5 @@ int main() {
 
 	// nullptr_t a, b;
 	// if (a < b) log_trace << "ok"; // error: ordered comparison of pointer with integer zero (‘std::nullptr_t’ and ‘std::nullptr_t’)
-
-	test_tmpl_vs_implicit();
 	return 0;
 }
